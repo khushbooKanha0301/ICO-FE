@@ -24,6 +24,5 @@ const countrySlice = createSlice({
 });
 
 export const { defineCountry, definePhoneCode, defineCurrency } =countrySlice.actions;
- console.log("defineCountry ", defineCountry);
 
 export default countrySlice.reducer;

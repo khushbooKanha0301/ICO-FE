@@ -29,6 +29,8 @@ export const PersonalData = () => {
   const [location, setLocation] = useState("");
   const [countryCallingCode, setCountryCallingCode] = useState("");
   const userDetailsAll = useSelector(userGetFullDetails);
+  const [showOptions, setShowOptions] = useState(false);
+  const [showCountryOptions, setShowCountryOptions] = useState(false);
 
   useEffect(() => {
     let user = userDetailsAll;
@@ -41,7 +43,7 @@ export const PersonalData = () => {
       setDob(user?.dob ? moment(user?.dob, "DD/MM/YYYY").toDate() : "");
       setLocation(user?.location ? user?.location : "");
     }
-    
+
     if (user?.location) {
       setLocation(user?.location);
     } else {
@@ -128,14 +130,13 @@ export const PersonalData = () => {
       let updateUser = await jwtAxios
         .put(`/users/updateAccountSettings`, formSubmit)
         .catch((error) => {
-          if(typeof error == "string")
-          {
+          if (typeof error == "string") {
             dispatch(notificationFail(error));
           }
           if (error?.response?.data?.message === "") {
             dispatch(notificationFail("Invalid "));
           }
-          if(error?.response?.data?.message){
+          if (error?.response?.data?.message) {
             dispatch(notificationFail(error?.response?.data?.message));
           }
         });
@@ -147,9 +148,15 @@ export const PersonalData = () => {
   };
 
   const DatepickerCustomInput = forwardRef(({ value, onClick }, ref) => (
-    <div style={{display:"flex"}} onClick={onClick} >
-    <Form.Control className="example-custom-input" ref={ref} value={value} readOnly placeholder="DD MMMM YYYY" />
-    <CalenderIcon width={30} height={30} />
+    <div style={{ display: "flex" }} onClick={onClick}>
+      <Form.Control
+        className="example-custom-input"
+        ref={ref}
+        value={value}
+        readOnly
+        placeholder="DD MMMM YYYY"
+      />
+      <CalenderIcon width={30} height={30} />
     </div>
   ));
 
@@ -160,6 +167,14 @@ export const PersonalData = () => {
 
   const countryName = () => {
     return `https://flagcdn.com/h40/${location?.toLowerCase()}.png`;
+  };
+
+  const toggleOptions = () => {
+    setShowOptions((prevShowOptions) => !prevShowOptions);
+  };
+
+  const toggleCountryOptions = () => {
+    setShowCountryOptions((prevShowOptions) => !prevShowOptions);
   };
 
   return (
@@ -208,37 +223,30 @@ export const PersonalData = () => {
             </Form.Group>
           </Col>
           <Col md="6">
-            <Form.Group className="form-group">
+            <Form.Group className="form-group mb-4">
               <Form.Label>Phone number (required)</Form.Label>
-                <div className="d-flex align-items-center">
-                  <Form.Control
-                    placeholder={countryCallingCode}
-                    name="phone"
-                    type="text"
-                    value={phone}
-                    onChange={(e) => {
-                      onChange(e);
-                    }}
-                    maxLength="10"
+              <div className="d-flex align-items-center">
+                <Form.Control
+                  placeholder={countryCallingCode}
+                  name="phone"
+                  type="text"
+                  value={phone}
+                  onChange={(e) => {
+                    onChange(e);
+                  }}
+                  maxLength="10"
+                />
+                {countryCallingCode ? (
+                  <img
+                    src={phoneCountry()}
+                    alt="Flag"
+                    className="circle-data"
                   />
-
-                  {countryCallingCode ? (
-                    <img
-                      src={phoneCountry()}
-                      alt="Flag"
-                      className="circle-data"
-                    />
-                  ) : (
-                    "No Flag"
-                  )}
-                  <p className="text-white mb-0">
-                    {
-                      listData.find((item) => item?.code === countryCallingCode)
-                        ?.cca3
-                    }
-                  </p>
-                  <div className="country-select">
-                    <Form.Select
+                ) : (
+                  "No Flag"
+                )}
+                <div className="country-select">
+                  {/* <Form.Select
                       size="sm"
                       onChange={(e) => {
                         setCountryCallingCode(e.target.value);
@@ -251,9 +259,33 @@ export const PersonalData = () => {
                           {data?.country} ({data?.code})
                         </option>
                       ))}
-                    </Form.Select>
+                    </Form.Select> */}
+                  <div
+                    className="dropdownPersonalData form-select form-select-sm"
+                    onClick={toggleOptions}
+                  >
+                    {
+                      listData.find((item) => item?.code === countryCallingCode)
+                        ?.cca3
+                    }
                   </div>
+                  {showOptions && (
+                    <ul className="options personalData">
+                      {listData.map((data, key) => (
+                        <li
+                          key={key}
+                          onClick={() => {
+                            setCountryCallingCode(data?.code);
+                            dispatch(definePhoneCode(data?.code));
+                          }}
+                        >
+                          {data?.country} ({data?.code})
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
+              </div>
             </Form.Group>
           </Col>
         </Row>
@@ -277,46 +309,62 @@ export const PersonalData = () => {
           <Col md="6">
             <Form.Group className="form-group">
               <Form.Label>Location</Form.Label>
-                <div className="d-flex align-items-center">
-                  <Form.Control
-                    placeholder={"Newyork"}
-                    name="city"
-                    value={city}
+              <div className="d-flex align-items-center">
+                <Form.Control
+                  placeholder={"Newyork"}
+                  name="city"
+                  value={city}
+                  onChange={(e) => {
+                    onChange(e);
+                  }}
+                />
+                {location ? (
+                  <img src={countryName()} alt="Flag" className="circle-data" />
+                ) : (
+                  "No Flag"
+                )}
+                {/* <p className="text-white mb-0">
+                  {listData.find((item) => item?.iso === location)?.cca3}
+                </p> */}
+                <div className="country-select">
+                  {/* <Form.Select
+                    size="sm"
                     onChange={(e) => {
-                      onChange(e);
+                      setLocation(e.target.value);
+                      dispatch(defineCountry(e.target.value));
                     }}
-                  />
-
-                  {location ? (
-                    <img
-                      src={countryName()}
-                      alt="Flag"
-                      className="circle-data"
-                    />
-                  ) : (
-                    "No Flag"
-                  )}
-                  <p className="text-white mb-0">
+                    value={location}
+                    disabled={userDetailsAll?.location ? true : false}
+                  >
+                    {listData.map((data, key) => (
+                      <option value={`${data.iso}`} key={key}>
+                        {data.country}
+                      </option>
+                    ))}
+                  </Form.Select> */}
+                  <div
+                    className="dropdownPersonalData form-select form-select-sm"
+                    onClick={toggleCountryOptions}
+                  >
                     {listData.find((item) => item?.iso === location)?.cca3}
-                  </p>
-                  <div className="country-select">
-                    <Form.Select
-                      size="sm"
-                      onChange={(e) => {
-                        setLocation(e.target.value);
-                        dispatch(defineCountry(e.target.value));
-                      }}
-                      value={location}
-                      disabled={userDetailsAll?.location ? true : false}
-                    >
-                      {listData.map((data, key) => (
-                        <option value={`${data.iso}`} key={key}>
-                          {data.country}
-                        </option>
-                      ))}
-                    </Form.Select>
                   </div>
+                  {showCountryOptions && (
+                    <ul className="options personalData">
+                      {listData.map((data, key) => (
+                        <li
+                          key={key}
+                          onClick={() => {
+                            setLocation(data?.iso);
+                            dispatch(defineCountry(data?.iso));
+                          }}
+                        >
+                          {data?.country}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
+              </div>
             </Form.Group>
           </Col>
         </Row>

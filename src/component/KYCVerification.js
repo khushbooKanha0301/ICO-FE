@@ -300,12 +300,11 @@ export const KYCVerification = (props) => {
 
   const nationalityData = () => {
     const result = listData.find((item) => item?.country === nationality);
-    return `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`;
+    return `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`;   
   };
 
   const CountyOfIssueData = () => {
     const result = listData.find((item) => item?.country === country_of_issue);
-
     return `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`;
   };
 

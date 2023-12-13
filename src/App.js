@@ -83,7 +83,7 @@ export const App = () => {
   }, [userData]);
 
   return (
-    <>
+    <>              
       <Container fluid="xxl" className={`${isOpen ? "open-sidebar" : ""} p-0`}>
         <ToastContainer />
         <SnackBar />

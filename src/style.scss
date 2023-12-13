@@ -1309,6 +1309,12 @@ body {
         @include media-breakpoint-up(md) {
           max-width: 185px;
         }
+        @include media-breakpoint-up(lg) {
+          max-width: 185px;
+        }
+        @include media-breakpoint-up(xl) {
+          max-width: 185px;
+        }
 
         border-radius: 16px;
         background: $cards-footer;
@@ -3818,7 +3824,7 @@ img.circle-data {
 }
 
 .country-select {
-  margin-left: 8px;
+  // margin-left: 8px;
 
   .form-select {
     color: white;
@@ -3842,9 +3848,9 @@ img.circle-data {
   }
 }
 
-.country-select .form-select {
-  padding: 0 10px;
-}
+// .country-select .form-select {
+//   padding: 0 10px;
+// }
 
 .country-select {
   position: relative;
@@ -3888,4 +3894,54 @@ img.circle-data {
 .country-select ul.options li:hover {
   background-color: #1b75d0;
   color: #fff;
+}
+
+
+.customSelectBox{
+  position: relative;
+  width: 185px;
+  @include media-breakpoint-up(md) {
+    width: 185px;
+  }
+}
+.customSelectBox ul.options {
+  position: absolute;
+  width: 125px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #ccc;
+  z-index: 9;
+  background: #1e1f24;
+  color: #808191;
+  white-space: nowrap;
+  @include media-breakpoint-up(md) {
+    width: 185px;
+  }
+  @include media-breakpoint-up(lg) {
+    width: 185px;
+  }
+  @include media-breakpoint-up(xl) {
+    width: 185px;
+  }
+}
+.personalData {
+  color: white;
+  display: block;
+  padding: 0px 2px 1px;
+  white-space: nowrap;
+}
+.personalData li{
+  font-size: 0.875rem;
+}
+
+.customSelectBox ul.options li{
+  padding: 0 10px 8px;
+}
+.customSelectBox ul.options li:hover {
+  background-color: #1b75d0;
+  color: #fff;
+}
+.dropdownPersonalData{
+  width: auto !important;
 }

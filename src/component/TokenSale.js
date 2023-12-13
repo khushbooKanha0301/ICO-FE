@@ -10,6 +10,7 @@ export const TokenSale = () => {
   const [filterLabel, setFilterLabel] = useState("This Week");
   const [lineToken, setLineToken] = useState({});
   const [transactions, setTransactions] = useState([]);
+  const [showOptions, setShowOptions] = useState(false);
 
   useEffect(() => {
     setGraphOptions([
@@ -39,13 +40,16 @@ export const TokenSale = () => {
       },
     ]);
   }, []);
-  const selectedValue = async (e) => {
-    const value = e.target.value;
-    const selectedIndex = e.target.selectedIndex;
-    const label = graphOptions[selectedIndex].label;
-    setFilterValue(value);
-    setFilterLabel(label);
-  };
+  // const selectedValue = async (e) => {
+  //   const value = e.target.value;
+  //   console.log("value ", value);
+  //   const selectedIndex = e.target.selectedIndex;
+  //   console.log("selectedIndex ", selectedIndex);
+  //   const label = graphOptions[selectedIndex].label;
+  //   console.log("label ", label);
+  //   setFilterValue(value);
+  //   setFilterLabel(label);
+  // };
 
   const setTotalTokenValue = (value) => {
     setTotalToken(value);
@@ -57,19 +61,52 @@ export const TokenSale = () => {
     setTransactions(value);
   };
 
+  const toggleOptions = () => {
+    setShowOptions((prevShowOptions) => !prevShowOptions);
+  };
+
+  const handleSelectedClick = (value) => {
+    setFilterValue(value);
+    setShowOptions(false);
+  };
+
   return (
     <Card className="cards-dark statistics" style={{ minHeight: "281px" }}>
       <Card.Body>
         <div className="d-flex justify-content-between align-items-center">
           <Card.Title as="h3">Token Sale Graph</Card.Title>
-          <Form.Select
+          {/* <Form.Select
             aria-label="This Week"
             onChange={(e) => selectedValue(e)}
           >
             {graphOptions?.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
-          </Form.Select>
+          </Form.Select> */}
+          <div className="customSelectBox">
+            <div
+              className="form-select"
+              onClick={toggleOptions}
+              aria-label="This Week"
+            >
+              {graphOptions.find((cat) => cat.value === filterValue)?.label ||
+                "Select category"}
+            </div>
+            {showOptions && (
+              <ul className="options">
+                {graphOptions.map((option) => (
+                  <li
+                    key={option.value}
+                    onClick={() => {handleSelectedClick(option.value);
+                      setFilterLabel(option.label)}
+                    }
+                  >
+                    {option.label}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
         <div className="transaction-view">
           <div className="transaction">
