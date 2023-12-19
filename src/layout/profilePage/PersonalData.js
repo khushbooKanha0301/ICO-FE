@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -31,6 +31,33 @@ export const PersonalData = () => {
   const userDetailsAll = useSelector(userGetFullDetails);
   const [showOptions, setShowOptions] = useState(false);
   const [showCountryOptions, setShowCountryOptions] = useState(false);
+
+  const countryDropdownRef = useRef(null);
+  const optionsDropdownRef = useRef(null);
+  
+  const handleGlobalClick = (event) => {
+    // Close dropdowns if the click is outside of them
+    if (
+      countryDropdownRef.current &&
+      !countryDropdownRef.current.contains(event.target) &&
+      optionsDropdownRef.current &&
+      !optionsDropdownRef.current.contains(event.target) 
+    ) {
+      setShowCountryOptions(false);
+      setShowOptions(false);
+    }
+  };
+
+  useEffect(() => {
+    // Add global click event listener
+    document.addEventListener('click', handleGlobalClick);
+
+    // Remove the event listener when the component unmounts
+    return () => {
+      document.removeEventListener('click', handleGlobalClick);
+    };
+  }, []);
+
 
   useEffect(() => {
     let user = userDetailsAll;
@@ -171,10 +198,12 @@ export const PersonalData = () => {
 
   const toggleOptions = () => {
     setShowOptions((prevShowOptions) => !prevShowOptions);
+    setShowCountryOptions(false)
   };
 
   const toggleCountryOptions = () => {
     setShowCountryOptions((prevShowOptions) => !prevShowOptions);
+    setShowOptions(false)
   };
 
   return (
@@ -245,7 +274,7 @@ export const PersonalData = () => {
                 ) : (
                   "No Flag"
                 )}
-                <div className="country-select">
+                <div className="country-select" ref={countryDropdownRef}>
                   {/* <Form.Select
                       size="sm"
                       onChange={(e) => {
@@ -326,7 +355,7 @@ export const PersonalData = () => {
                 {/* <p className="text-white mb-0">
                   {listData.find((item) => item?.iso === location)?.cca3}
                 </p> */}
-                <div className="country-select">
+                <div className="country-select" ref={optionsDropdownRef}>
                   {/* <Form.Select
                     size="sm"
                     onChange={(e) => {

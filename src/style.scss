@@ -3766,9 +3766,6 @@ img.circle-data {
   color: #fff;
 }
 
-.country-select .form-select {
-  padding: 0 10px;
-}
 
 @media screen and (max-width: 1199px) {
   .profile-details-view .two-fa {
@@ -3817,6 +3814,10 @@ img.circle-data {
 }
 
 
+.country-select .form-select {
+  padding: 0 10px;
+}
+
 .country-select-dropdown {
   padding-right: 25px !important;
   margin-right: 10px !important;
@@ -3825,7 +3826,7 @@ img.circle-data {
 
 .country-select {
   // margin-left: 8px;
-
+  position: relative;
   .form-select {
     color: white;
     border: none;
@@ -3848,13 +3849,6 @@ img.circle-data {
   }
 }
 
-// .country-select .form-select {
-//   padding: 0 10px;
-// }
-
-.country-select {
-  position: relative;
-}
 
 .country-select ul.options {
   overflow-y: auto;

@@ -57,6 +57,33 @@ export const KYCVerification = (props) => {
   const [showOptions, setShowOptions] = useState(false);
   const [showCountryOptions, setShowCountryOptions] = useState(false);
 
+  const countryDropdownRef = useRef(null);
+  const optionsDropdownRef = useRef(null);
+  
+  const handleGlobalClick = (event) => {
+    // Close dropdowns if the click is outside of them
+    if (
+      countryDropdownRef.current &&
+      !countryDropdownRef.current.contains(event.target) &&
+      optionsDropdownRef.current &&
+      !optionsDropdownRef.current.contains(event.target) 
+    ) {
+      setShowCountryOptions(false);
+      setShowOptions(false);
+    }
+  };
+
+  useEffect(() => {
+    // Add global click event listener
+    document.addEventListener('click', handleGlobalClick);
+
+    // Remove the event listener when the component unmounts
+    return () => {
+      document.removeEventListener('click', handleGlobalClick);
+    };
+  }, []);
+
+
   const onChange = (e) => {
     if (e.target.name === "nationality") {
       setNationality(e.target.value);
@@ -360,10 +387,12 @@ export const KYCVerification = (props) => {
   }
 
   const toggleOptions = () => {
-    setShowOptions((prevShowOptions) => !prevShowOptions);
+    setShowOptions(!showOptions);
+    setShowCountryOptions(false);
   };
   const toggleCountryOptions = () => {
-    setShowCountryOptions((prevShowOptions) => !prevShowOptions);
+    setShowCountryOptions(!showCountryOptions);
+    setShowOptions(false);
   };
 
   return (
@@ -442,8 +471,8 @@ export const KYCVerification = (props) => {
                   ) : (
                     "No Flag"
                   )}
-                  <div className="country-select">
-                    {/* <Form.Select
+                  {/* <div className="country-select">
+                    <Form.Select
                       size="sm"
                       className="country-select-dropdown"
                       onChange={(e) => {
@@ -457,9 +486,9 @@ export const KYCVerification = (props) => {
                           {data?.cca3}
                         </option>
                       ))}
-                    </Form.Select> */}
-                  </div>
-                  <div className="country-select">
+                    </Form.Select>
+                  </div> */}
+                  <div className="country-select" ref={optionsDropdownRef}> 
                     <div
                       className="country-select-dropdown form-select form-select-sm"
                       onClick={toggleOptions}
@@ -626,10 +655,10 @@ export const KYCVerification = (props) => {
                           {data?.cca3}
                         </option>
                       ))}
-                    </Form.Select> */}
-                    
+                    </Form.Select>
+                     */}
                   {/* </div> */}
-                  <div className="country-select">
+                  <div className="country-select" ref={countryDropdownRef}>
                     <div
                       className="country-select-dropdown form-select form-select-sm"
                       onClick={toggleCountryOptions}

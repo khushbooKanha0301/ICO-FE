@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Card, Form } from "react-bootstrap";
 import StatisticsChart from "./StatisticsChart";
 import ThisMonthSale from "./ThisMonthSale";
@@ -11,6 +11,7 @@ export const TokenSale = () => {
   const [lineToken, setLineToken] = useState({});
   const [transactions, setTransactions] = useState([]);
   const [showOptions, setShowOptions] = useState(false);
+  const locationDropdownRef = useRef(null);
 
   useEffect(() => {
     setGraphOptions([
@@ -51,6 +52,26 @@ export const TokenSale = () => {
   //   setFilterLabel(label);
   // };
 
+  const handleGlobalClick = (event) => {
+    // Close dropdowns if the click is outside of them
+    if (
+      locationDropdownRef.current &&
+      !locationDropdownRef.current.contains(event.target)
+    ) {
+      setShowOptions(false);
+    }
+  };
+
+  useEffect(() => {
+    // Add global click event listener
+    document.addEventListener('click', handleGlobalClick);
+
+    // Remove the event listener when the component unmounts
+    return () => {
+      document.removeEventListener('click', handleGlobalClick);
+    };
+  }, []);
+  
   const setTotalTokenValue = (value) => {
     setTotalToken(value);
   };
@@ -83,7 +104,7 @@ export const TokenSale = () => {
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </Form.Select> */}
-          <div className="customSelectBox">
+          <div className="customSelectBox" ref={locationDropdownRef}>
             <div
               className="form-select"
               onClick={toggleOptions}
