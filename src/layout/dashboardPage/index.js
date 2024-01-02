@@ -30,6 +30,7 @@ export const DashboardPage = () => {
   const userDetailsAll = useSelector(userGetFullDetails);
 
   const navigate = useNavigate();
+  
   useEffect(() => {
     const getDashboardData = async () => {
       await dispatch(getTotalMid()).unwrap();

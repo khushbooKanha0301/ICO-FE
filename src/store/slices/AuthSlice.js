@@ -1,9 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import jwtAxios, { setAuthToken } from "../../service/jwtAxios";
 import { countryCodes } from "../countryCodes";
-import { setLoading } from "./commonSlice";
 import { notificationFail, notificationSuccess } from "./notificationSlice";
-
+import { setLoading } from "./commonSlice";
 const userData = JSON.parse(window?.localStorage?.getItem("userData"))
   ? JSON.parse(window.localStorage.getItem("userData"))
   : null;
@@ -114,7 +113,7 @@ export const checkAuth = createAsyncThunk(
           verifyTokenData.data?.userInfo?.is_2FA_login_verified === undefined ||
           verifyTokenData.data?.userInfo?.is_2FA_login_verified === true
         ) {
-          dispatch(notificationSuccess("user login successfully"));
+           return userData
         }
 
         return userData;

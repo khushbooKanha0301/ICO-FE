@@ -31,17 +31,18 @@ export const PersonalData = () => {
   const userDetailsAll = useSelector(userGetFullDetails);
   const [showOptions, setShowOptions] = useState(false);
   const [showCountryOptions, setShowCountryOptions] = useState(false);
+  const [loader, setLoader] = useState(true);
 
   const countryDropdownRef = useRef(null);
   const optionsDropdownRef = useRef(null);
-  
+
   const handleGlobalClick = (event) => {
     // Close dropdowns if the click is outside of them
     if (
       countryDropdownRef.current &&
       !countryDropdownRef.current.contains(event.target) &&
       optionsDropdownRef.current &&
-      !optionsDropdownRef.current.contains(event.target) 
+      !optionsDropdownRef.current.contains(event.target)
     ) {
       setShowCountryOptions(false);
       setShowOptions(false);
@@ -50,14 +51,13 @@ export const PersonalData = () => {
 
   useEffect(() => {
     // Add global click event listener
-    document.addEventListener('click', handleGlobalClick);
+    document.addEventListener("click", handleGlobalClick);
 
     // Remove the event listener when the component unmounts
     return () => {
-      document.removeEventListener('click', handleGlobalClick);
+      document.removeEventListener("click", handleGlobalClick);
     };
   }, []);
-
 
   useEffect(() => {
     let user = userDetailsAll;
@@ -168,8 +168,16 @@ export const PersonalData = () => {
           }
         });
       if (updateUser) {
-        dispatch(userGetData(userGetData.userid)).unwrap();
-        dispatch(notificationSuccess("User profile update successfully !"));
+        const response = await dispatch(
+          userGetData(userGetData.userid)
+        ).unwrap();
+        if (response) {
+          setLoader(false);
+          setTimeout(() => {
+            setLoader(true);
+            dispatch(notificationSuccess("User profile update successfully !"));
+          }, 2000);
+        }
       }
     }
   };
@@ -198,12 +206,12 @@ export const PersonalData = () => {
 
   const toggleOptions = () => {
     setShowOptions((prevShowOptions) => !prevShowOptions);
-    setShowCountryOptions(false)
+    setShowCountryOptions(false);
   };
 
   const toggleCountryOptions = () => {
     setShowCountryOptions((prevShowOptions) => !prevShowOptions);
-    setShowOptions(false)
+    setShowOptions(false);
   };
 
   return (
@@ -397,9 +405,23 @@ export const PersonalData = () => {
             </Form.Group>
           </Col>
         </Row>
-        <Button variant="primary" onClick={submitHandler}>
-          Update Profile
-        </Button>
+        {loader ? (
+          <Button variant="primary" onClick={submitHandler}>
+            Update Profile
+          </Button>
+        ) : (
+          <>
+            <div className="middenLoader calling">
+              <img src={require("../../content/images/logo.png")} />
+              <p>welcome</p>
+              <div class="snippet" data-title="dot-flashing">
+                <div class="stage">
+                  <div class="dot-flashing"></div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </Form>
     </Card>
   );

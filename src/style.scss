@@ -3939,3 +3939,61 @@ img.circle-data {
 .dropdownPersonalData{
   width: auto !important;
 }
+
+.middenLoader{
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(0,0,0,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+  flex-direction: column;
+  gap: 8px;
+
+  .dot-flashing {
+      position: relative;
+      width: 5px;
+      height: 5px;
+      border-radius: 5px;
+      background-color: #C6FA56;
+      color: #C6FA56;
+      animation: dot-flashing 1s infinite linear alternate;
+      animation-delay: 0.5s;
+      &:after,
+      &:before{
+          content: "";
+          display: inline-block;
+          position: absolute;
+          top: 0;
+      }
+      &:before {
+          left: -12px;
+          width: 5px;
+          height: 5px;
+          border-radius: 5px;
+          background-color: #C6FA56;
+          color: #C6FA56;
+          animation: dot-flashing 1s infinite alternate;
+          animation-delay: 0s;
+      }
+      &:after {
+          left: 12px;
+          width: 5px;
+          height: 5px;
+          border-radius: 5px;
+          background-color: #C6FA56;
+          color: #C6FA56;
+          animation: dot-flashing 1s infinite alternate;
+          animation-delay: 1s;
+        }
+    }
+
+  p{
+      color: #fff;
+      margin: 0;
+  }  
+}

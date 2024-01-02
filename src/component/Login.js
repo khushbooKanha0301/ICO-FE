@@ -25,7 +25,9 @@ export const LoginView = (props) => {
   const userData = useSelector(userDetails);
   const { library, chainId, account, activate, deactivate } = useWeb3React();
   const { ethereum } = window;
-
+  const [loader, setLoader] = useState(true);
+ console.log("loader ", loader);
+  
   const { signMessage, data, error } = useSignMessage();
   const { address, isConnected } = useAccount();
   const { connect, connectors: wagmiConnector } = useConnect();
@@ -289,7 +291,17 @@ export const LoginView = (props) => {
 
         settwofamodal(false);
         props.onHide();
-        dispatch(checkAuth(checkAuthParams)).unwrap();
+
+        const response = await dispatch(checkAuth(checkAuthParams)).unwrap();
+
+        if (response.authToken) {
+          setLoader(false);
+          //dispatch(notificationSuccess("user login successfully"))
+          setTimeout(() => {
+            setLoader(true);
+            dispatch(notificationSuccess("user login successfully"));
+          }, 5000);
+        }
       }
     };
     checkMetaAcc();
@@ -322,7 +334,7 @@ export const LoginView = (props) => {
   const fortmatic = async () => {
     const fm = await new Fortmatic(apiConfigs.FORTMATIC_KEY);
     window.web3 = await new Web3(fm.getProvider());
-    await window.web3.eth.getAccounts((error, accounts) => {
+    await window.web3.eth.getAccounts(async (error, accounts) => {
       if (error) {
         throw error;
       }
@@ -331,8 +343,16 @@ export const LoginView = (props) => {
         library: library,
         checkValue: checkValue,
       };
+      const response = await dispatch(checkAuth(checkAuthParams)).unwrap();
 
-      dispatch(checkAuth(checkAuthParams)).unwrap();
+      if (response.authToken) {
+        setLoader(false);
+        //dispatch(notificationSuccess("user login successfully"))
+        setTimeout(() => {
+          setLoader(true);
+          dispatch(notificationSuccess("user login successfully"));
+        }, 5000);
+      }
       props.onHide();
       setAccountAddress(accounts[0]);
     });
@@ -345,7 +365,18 @@ export const LoginView = (props) => {
       checkValue: checkValue,
       signMessage: signMessage,
     };
-    dispatch(checkAuth(checkAuthParams)).unwrap();
+    // dispatch(checkAuth(checkAuthParams)).unwrap();
+    const response = await dispatch(checkAuth(checkAuthParams)).unwrap();
+    
+    if (response.authToken) {
+      setLoader(false);
+      //dispatch(notificationSuccess("user login successfully"))
+      setTimeout(() => {
+        setLoader(true);
+        dispatch(notificationSuccess("user login successfully"));
+      }, 6000);
+    }
+
     setAccountAddress(address);
   };
 
@@ -363,15 +394,34 @@ export const LoginView = (props) => {
   }, [isConnected, userData?.account]);
 
   useEffect(() => {
-    if (data) {
-      let checkAuthParams = {
-        account: address,
-        checkValue: checkValue,
-        signature: data,
-      };
-      dispatch(checkAuth(checkAuthParams)).unwrap();
-      props.onHide();
-    }
+    const fetchData = async () => {
+      if (data) {
+        try {
+          let checkAuthParams = {
+            account: address,
+            checkValue: checkValue,
+            signature: data,
+          };
+          props.onHide();
+          const response = await dispatch(checkAuth(checkAuthParams)).unwrap();
+
+          // Your additional logic here based on the response
+          if (response.authToken) {
+            setLoader(false);
+            //dispatch(notificationSuccess("user login successfully"))
+            setTimeout(() => {
+              setLoader(true);
+              dispatch(notificationSuccess("user login successfully"));
+            }, 2000);
+          }
+        } catch (error) {
+          // Handle errors if necessary
+          console.error("Error fetching data:", error);
+        }
+      }
+    };
+
+    fetchData(); // Immediately invoke the async function
   }, [data]);
 
   useEffect(() => {
@@ -500,126 +550,146 @@ export const LoginView = (props) => {
 
   return (
     <>
-      {props.show && (
-        <Modal
-          {...props}
-          dialogClassName="login-modal"
-          backdropClassName="login-modal-backdrop"
-          aria-labelledby="contained-modal"
-          backdrop="static"
-          keyboard={false}
-          centered
-        >
-          <Modal.Body>
-            <h4>Connect Wallet</h4>
-            <p>
-              Connect with one of our available wallet providers or create a new
-              one.
-            </p>
-            <Form onSubmit={submitHandler}>
-              <Row>
-                <Col md="6">
-                  <div
-                    className="login-option form-check"
-                    onClick={() => onChange("wallet_connect")}
-                  >
-                    <div
-                      className={`form-check-input ${
-                        checkValue === "wallet_connect" ? "checked" : ""
-                      }`}
-                    />
-                    <label class="form-check-label">
-                      <>
-                        <img
-                          src={require("../content/images/wallet-connect.png")}
-                          alt="WalletConnect"
-                        />{" "}
-                        WalletConnect
-                      </>
-                    </label>
-                  </div>
-                </Col>
-                <Col md="6">
-                  <div
-                    className="login-option form-check"
-                    onClick={() => onChange("meta_mask")}
-                  >
-                    <div
-                      className={`form-check-input ${
-                        checkValue === "meta_mask" ? "checked" : ""
-                      }`}
-                    />
-                    <label class="form-check-label">
-                      <>
-                        <span>
-                          <img
-                            src={require("../content/images/metamask.png")}
-                            alt="Metamask"
-                          />{" "}
-                          Metamask
-                        </span>
-                      </>
-                    </label>
-                  </div>
-                </Col>
-                <Col md="6">
-                  <div
-                    className="login-option form-check"
-                    onClick={() => onChange("coinbase_wallet")}
-                  >
-                    <div
-                      className={`form-check-input ${
-                        checkValue === "coinbase_wallet" ? "checked" : ""
-                      }`}
-                    />
-                    <label class="form-check-label">
-                      <>
-                        <span>
-                          <img
-                            src={require("../content/images/coinbase-wallet.png")}
-                            alt="Coinbase Wallet"
-                          />{" "}
-                          Coinbase Wallet
-                        </span>
-                      </>
-                    </label>
-                  </div>
-                </Col>
-                <Col md="6">
-                  <div
-                    className="login-option form-check"
-                    onClick={() => onChange("fortmatic")}
-                  >
-                    <div
-                      className={`form-check-input ${
-                        checkValue === "fortmatic" ? "checked" : ""
-                      }`}
-                    />
-                    <label class="form-check-label">
-                      <>
-                        <span>
-                          <img
-                            src={require("../content/images/fortmatic.png")}
-                            alt="Fortmatic"
-                          />{" "}
-                          Fortmatic
-                        </span>
-                      </>
-                    </label>
-                  </div>
-                </Col>
-              </Row>
-              <div className="form-action-group">
-                <Button variant="primary" type="submit" disabled={!checkValue}>
-                  Connect Wallet
-                </Button>
-                <Button variant="secondary" onClick={cancelButtonHandler}>
-                  Cancel
-                </Button>
+      {!loader ? (
+        <>
+          <div className="middenLoader">
+            <img src={require("../content/images/logo.png")} />
+            <p>welcome</p>
+            <div class="snippet" data-title="dot-flashing">
+              <div class="stage">
+                <div class="dot-flashing"></div>
               </div>
-            </Form>
-          </Modal.Body>
-        </Modal>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {props.show && (
+            <Modal
+              {...props}
+              dialogClassName="login-modal"
+              backdropClassName="login-modal-backdrop"
+              aria-labelledby="contained-modal"
+              backdrop="static"
+              keyboard={false}
+              centered
+            >
+              <Modal.Body>
+                <h4>Connect Wallet</h4>
+                <p>
+                  Connect with one of our available wallet providers or create a
+                  new one.
+                </p>
+                <Form onSubmit={submitHandler}>
+                  <Row>
+                    <Col md="6">
+                      <div
+                        className="login-option form-check"
+                        onClick={() => onChange("wallet_connect")}
+                      >
+                        <div
+                          className={`form-check-input ${
+                            checkValue === "wallet_connect" ? "checked" : ""
+                          }`}
+                        />
+                        <label class="form-check-label">
+                          <>
+                            <img
+                              src={require("../content/images/wallet-connect.png")}
+                              alt="WalletConnect"
+                            />{" "}
+                            WalletConnect
+                          </>
+                        </label>
+                      </div>
+                    </Col>
+                    <Col md="6">
+                      <div
+                        className="login-option form-check"
+                        onClick={() => onChange("meta_mask")}
+                      >
+                        <div
+                          className={`form-check-input ${
+                            checkValue === "meta_mask" ? "checked" : ""
+                          }`}
+                        />
+                        <label class="form-check-label">
+                          <>
+                            <span>
+                              <img
+                                src={require("../content/images/metamask.png")}
+                                alt="Metamask"
+                              />{" "}
+                              Metamask
+                            </span>
+                          </>
+                        </label>
+                      </div>
+                    </Col>
+                    <Col md="6">
+                      <div
+                        className="login-option form-check"
+                        onClick={() => onChange("coinbase_wallet")}
+                      >
+                        <div
+                          className={`form-check-input ${
+                            checkValue === "coinbase_wallet" ? "checked" : ""
+                          }`}
+                        />
+                        <label class="form-check-label">
+                          <>
+                            <span>
+                              <img
+                                src={require("../content/images/coinbase-wallet.png")}
+                                alt="Coinbase Wallet"
+                              />{" "}
+                              Coinbase Wallet
+                            </span>
+                          </>
+                        </label>
+                      </div>
+                    </Col>
+                    <Col md="6">
+                      <div
+                        className="login-option form-check"
+                        onClick={() => onChange("fortmatic")}
+                      >
+                        <div
+                          className={`form-check-input ${
+                            checkValue === "fortmatic" ? "checked" : ""
+                          }`}
+                        />
+                        <label class="form-check-label">
+                          <>
+                            <span>
+                              <img
+                                src={require("../content/images/fortmatic.png")}
+                                alt="Fortmatic"
+                              />{" "}
+                              Fortmatic
+                            </span>
+                          </>
+                        </label>
+                      </div>
+                    </Col>
+                  </Row>
+                  <div className="form-action-group">
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      disabled={!checkValue}
+                    >
+                      Connect Wallet
+                    </Button>
+                    <Button variant="secondary" onClick={cancelButtonHandler}>
+                      Cancel
+                    </Button>
+                  </div>
+                </Form>
+              </Modal.Body>
+            </Modal>
+          )}
+        </>
       )}
     </>
   );
