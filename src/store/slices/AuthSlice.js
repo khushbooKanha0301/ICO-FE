@@ -3,6 +3,7 @@ import jwtAxios, { setAuthToken } from "../../service/jwtAxios";
 import { countryCodes } from "../countryCodes";
 import { notificationFail, notificationSuccess } from "./notificationSlice";
 import { setLoading } from "./commonSlice";
+import { setLoginLoading } from "./LoderSlice";
 const userData = JSON.parse(window?.localStorage?.getItem("userData"))
   ? JSON.parse(window.localStorage.getItem("userData"))
   : null;
@@ -78,6 +79,7 @@ export const checkAuth = createAsyncThunk(
         }
       }
       if (signature) {
+       
         let bodyData = { walletType: checkValue };
         let referredBy = window.localStorage.getItem("referred_by");
         if (referredBy) {
@@ -86,16 +88,25 @@ export const checkAuth = createAsyncThunk(
         let verifyTokenData = await jwtAxios
           .post(`/users/verify?signatureId=${signature}`, bodyData)
           .catch((error) => {
-            dispatch(notificationFail(error.response.data.message));
+            if (error.response.data.message) {
+              dispatch(notificationFail(error.response.data.message));
+            } else {
+              dispatch(
+                notificationSuccess(
+                  "Something Went Wrong. Can you please Connect wallet again?"
+                )
+              );
+            }
             window.localStorage.removeItem("token");
             window.localStorage.clear();
-            deactivate();
+            deactivate();          
           });
         if (verifyTokenData.data.token) {
           window.localStorage.removeItem("referred_by");
           setAuthToken(verifyTokenData.data.token);
         }
         if (verifyTokenData?.data?.token) {
+          dispatch(setLoginLoading(true));
           userData = {
             account: account,
             authToken: verifyTokenData.data.token,
@@ -105,6 +116,7 @@ export const checkAuth = createAsyncThunk(
           window.localStorage.setItem("userData", JSON.stringify(userData));
         }
         dispatch(setLoading(false));
+        dispatch(setLoginLoading(false));
         if(hideLoginModal)
         {
           hideLoginModal();
@@ -113,7 +125,7 @@ export const checkAuth = createAsyncThunk(
           verifyTokenData.data?.userInfo?.is_2FA_login_verified === undefined ||
           verifyTokenData.data?.userInfo?.is_2FA_login_verified === true
         ) {
-           return userData
+          dispatch(notificationSuccess("user login successfully"));
         }
 
         return userData;

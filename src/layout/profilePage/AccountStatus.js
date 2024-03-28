@@ -94,7 +94,13 @@ export const AccountStatus = () => {
             identity verification.
             <br />
             <br />
-            You have not submitted your documents to verify your identity (KYC).
+            {(userDetailsAll?.kyc_completed === false && kycSubmitted === false) && (
+            <>You have not submitted your documents to verify your identity (KYC).</>
+            )}
+            {(userDetailsAll?.kyc_completed === true || kycSubmitted === true) &&
+            (userDetailsAll?.is_verified === 2 && kycSubmitted === false) && 
+            (<>You have not submitted your documents to verify your identity (KYC).</>)
+            }
           </Card.Text>
 
           {(userDetailsAll?.kyc_completed === true || kycSubmitted === true) &&
@@ -111,6 +117,7 @@ export const AccountStatus = () => {
                 Your KYC Details is Under Review
               </Button>
             ) : null)}
+
           {(userDetailsAll?.kyc_completed === false && kycSubmitted === false) && (
             <Button variant="primary" onClick={modalToggle}>
               Click to Proceed

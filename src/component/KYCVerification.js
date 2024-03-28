@@ -47,10 +47,6 @@ export const KYCVerification = (props) => {
   const [isLoading, setLoading] = useState(false);
   const [isError, setError] = useState(false);
   const [isKYCSubmitted, setISKYCSubmitted] = useState(false);
-  const formRef = useRef(null);
-
-  const [country, setCountry] = useState("USA");
-
   const [checkboxState, setCheckboxState] = useState(
     flatted.parse(flatted.stringify([]))
   );
@@ -640,24 +636,6 @@ export const KYCVerification = (props) => {
                   ) : (
                     "No Flag"
                   )}
-                  {/* <div className="country-select"> */}
-                    {/* <Form.Select
-                      size="sm"
-                      className="country-select-dropdown"
-                      onChange={(e) => {
-                        setCountryOfIssue(e.target.value);
-                        dispatch(defineCountry(e.target.value));
-                      }}
-                      value={country_of_issue}
-                    >
-                      {listData?.map((data, key) => (
-                        <option value={`${data?.country}`} key={key}>
-                          {data?.cca3}
-                        </option>
-                      ))}
-                    </Form.Select>
-                     */}
-                  {/* </div> */}
                   <div className="country-select" ref={countryDropdownRef}>
                     <div
                       className="country-select-dropdown form-select form-select-sm"
@@ -688,24 +666,7 @@ export const KYCVerification = (props) => {
                 Only the following documents listed below will be accepted, all
                 other documents will be rejected.
               </p>
-              {/* <Form.Check
-                className="document-issued"
-                type="radio"
-                name="verified_with"
-                id="government-passport"
-                label={
-                  <>
-                    Passport
-                    <div className="checkmark">
-                      <CheckmarkIcon width="10" height="8" />
-                    </div>
-                  </>
-                }
-                checked={verified_with === "government-passport"}
-                value="government-passport"
-                onChange={(e) => onChange(e)}
-              /> */}
-
+            
               <div
                 className="document-issued form-check"
                 onClick={() => verifiedWith("government-passport")}
@@ -724,24 +685,6 @@ export const KYCVerification = (props) => {
                   </>
                 </label>
               </div>
-
-              {/* <Form.Check
-                className="document-issued"
-                type="radio"
-                name="verified_with"
-                id="government-license"
-                label={
-                  <>
-                    Driver's License
-                    <div className="checkmark">
-                      <CheckmarkIcon width="10" height="8" />
-                    </div>
-                  </>
-                }
-                checked={verified_with === "government-license"}
-                value="government-license"
-                onChange={(e) => onChange(e)}
-              /> */}
 
               <div
                 className="document-issued form-check"
@@ -904,15 +847,6 @@ export const KYCVerification = (props) => {
                 Please ensure that your face is centered well lit, and visible
                 when capturing the photo to avoid facial recognition errors
               </p>
-              {/* <Form.Check
-                className="terms-checkbox"
-                label="I have read the Terms and Condition and Privacy and Policy."
-                name="terms"
-                type="checkbox"
-                checked={checkboxState.terms}
-                onChange={handleCheckboxChange}
-                id="terms"
-              /> */}
               <div
                 className="terms-checkbox form-check"
                 onClick={() => handleCheckboxChange("terms")}
@@ -926,16 +860,6 @@ export const KYCVerification = (props) => {
                   I have read the Terms and Condition and Privacy and Policy.
                 </label>
               </div>
-
-              {/* <Form.Check
-                className="terms-checkbox"
-                label="All the personal information I have entered is correct."
-                name="terms"
-                type="checkbox"
-                id="personal"
-                checked={checkboxState.personal}
-                onChange={handleCheckboxChange}
-              /> */}
               <div
                 className="terms-checkbox form-check"
                 onClick={() => handleCheckboxChange("personal")}
@@ -949,16 +873,6 @@ export const KYCVerification = (props) => {
                   All the personal information I have entered is correct.
                 </label>
               </div>
-
-              {/* <Form.Check
-                className="terms-checkbox"
-                label="I certify that, I am registering to participate in the token distribution event(s) in the capacity of an individual (and beneficial owner) and not as an agent or representative of a third party corporate entity."
-                name="terms"
-                type="checkbox"
-                id="registering"
-                checked={checkboxState.registering}
-                onChange={handleCheckboxChange}
-              /> */}
               <div
                 className="terms-checkbox form-check"
                 onClick={() => handleCheckboxChange("registering")}
@@ -976,15 +890,6 @@ export const KYCVerification = (props) => {
                 </label>
               </div>
 
-              {/* <Form.Check
-                className="terms-checkbox"
-                label="I understand that, I can participate in the token distribution event(s) only with the wallet address that was entered in the application form."
-                name="terms"
-                type="checkbox"
-                id="participate"
-                checked={checkboxState.participate}
-                onChange={handleCheckboxChange}
-              /> */}
               <div
                 className="terms-checkbox form-check"
                 onClick={() => handleCheckboxChange("participate")}

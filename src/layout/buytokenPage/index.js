@@ -42,7 +42,6 @@ export const BuyTokenPage = () => {
     balanceMid,
   } = useSelector((state) => state?.currenyReducer);
   const [readyForPayment, setReadyForPayment] = useState(true);
-  const [loader, setLoader] = useState(true);
   const [modalLoginShow, setLoginModalShow] = useState(false);
   const modalLoginToggle = () => setLoginModalShow(!modalLoginShow);
   const [isSign, setIsSign] = useState(null);
@@ -118,19 +117,14 @@ export const BuyTokenPage = () => {
     const value = e.target.value.replace(/\D/g, "");
     if (selectedCrypto) {
       setAmount(value);
-      setLoader(false);
-     
+
       const usdAmount = value;
       const data = {
         usdAmount: usdAmount,
         cryptoSymbol: selectedCrypto,
       };
-       onChangeAmount(data);
+      onChangeAmount(data);
 
-      setTimeout(() => {
-        setLoader(true);
-      }, 2000);
-   
       if (value) {
         if (value > 0) {
           setReadyForPayment(false);
@@ -147,7 +141,6 @@ export const BuyTokenPage = () => {
   const onChangeAmount = useCallback(
     debounce((data) => {
       dispatch(convertToCrypto(data));
-      //setLoader(true);
     }, 500),
     []
   );
@@ -398,38 +391,20 @@ export const BuyTokenPage = () => {
                       {!cryptoAmount?.amount ? (
                         <>
                           <div className="currency-info">
-                            <div className="currency-type">
-                            0
-                            </div>
+                            <div className="currency-type">0</div>
                             <div className="currency-amount">MID</div>
                           </div>
                         </>
                       ) : (
                         <>
-                          {loader ? (
-                            <>
-                              <div className="currency-info">
-                                <div className="currency-type">
-                                  {cryptoAmount?.amount
-                                    ? cryptoAmount?.amount
-                                    : "0"}
-                                </div>
-                                <div className="currency-amount">MID</div>
-                              </div>
-                            </>
-                          ) : (
-                            <div className="middenLoader calling">
-                              <img
-                                src={require("../../content/images/logo.png")}
-                              />
-                              <p>welcome</p>
-                              <div class="snippet" data-title="dot-flashing">
-                                <div class="stage">
-                                  <div class="dot-flashing"></div>
-                                </div>
-                              </div>
+                          <div className="currency-info">
+                            <div className="currency-type">
+                              {cryptoAmount?.amount
+                                ? cryptoAmount?.amount
+                                : "0"}
                             </div>
-                          )}
+                            <div className="currency-amount">MID</div>
+                          </div>
                         </>
                       )}
                     </>

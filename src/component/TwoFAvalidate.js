@@ -102,7 +102,8 @@ const TwoFAvalidate = (props) => {
               setLastAttemptTime("");
               dispatch(userGetData());
               navigate("/");
-              dispatch(notificationSuccess("2FA Verified Successfully"));
+              // dispatch(notificationSuccess("2FA Verified Successfully"));
+              dispatch(notificationSuccess("user login successfully"));
             } else {
               if (now - lastAttemptTime1 >= 5 * 60 * 1000) {
                 setInvalidAttempts(1);

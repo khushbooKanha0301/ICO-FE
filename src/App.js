@@ -47,11 +47,11 @@ export const App = () => {
 
     handleResize();
     // Add an event listener to track window size changes
-    window.addEventListener('resize', handleResize);
-    
+    window.addEventListener("resize", handleResize);
+
     // Clean up the event listener when the component is unmounted
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
@@ -83,11 +83,16 @@ export const App = () => {
   }, [userData]);
 
   return (
-    <>              
+    <>
       <Container fluid="xxl" className={`${isOpen ? "open-sidebar" : ""} p-0`}>
         <ToastContainer />
         <SnackBar />
-        <Sidebar clickHandler={sidebarToggle} setIsOpen={setIsOpen} setModalShow={setModalShow} isResponsive={isResponsive} />
+        <Sidebar
+          clickHandler={sidebarToggle}
+          setIsOpen={setIsOpen}
+          setModalShow={setModalShow}
+          isResponsive={isResponsive}
+        />
         <div className="wrapper">
           <Header
             clickHandler={sidebarToggle}
@@ -111,8 +116,14 @@ export const App = () => {
               <Route
                 path="/buy-token"
                 element={
-                  // <AuthRoute setModalShow={setModalShow}>
+                  <>
                     <BuyTokenComponent />
+                    {twoFAModal === true &&
+                      userData?.is_2FA_login_verified === false && (
+                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} />
+                      )}
+                  </>
+                  // <AuthRoute setModalShow={setModalShow}>
                   // </AuthRoute>
                 }
               />
@@ -120,32 +131,49 @@ export const App = () => {
                 path="/ico-distribution"
                 element={
                   // <AuthRoute>
-                    <IcoDistributionComponent />
+
                   // </AuthRoute>
+                  <>
+                    <IcoDistributionComponent />
+                    {twoFAModal === true &&
+                      userData?.is_2FA_login_verified === false && (
+                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} />
+                      )}
+                  </>
                 }
               />
               <Route
                 path="/staking"
                 element={
                   // <AuthRoute>
-                    <StakeScallopComponent />
                   // </AuthRoute>
+                  <>
+                    <StakeScallopComponent />
+                    {twoFAModal === true &&
+                      userData?.is_2FA_login_verified === false && (
+                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} />
+                      )}
+                  </>
                 }
               />
               <Route
                 path="/transaction"
                 element={
-                  <AuthRoute>
-                    <TransactionComponent />
-                  </AuthRoute>
+                  <>
+                    <AuthRoute>
+                      <TransactionComponent />
+                    </AuthRoute>
+                  </>
                 }
               />
               <Route
                 path="/profile"
                 element={
-                  <AuthRoute>
-                    <ProfileComponent />
-                  </AuthRoute>
+                  <>
+                    <AuthRoute>
+                      <ProfileComponent />
+                    </AuthRoute>
+                  </>
                 }
               />
               <Route path="*" element={<Navigate to="/" />} />

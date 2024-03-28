@@ -31,8 +31,6 @@ export const PersonalData = () => {
   const userDetailsAll = useSelector(userGetFullDetails);
   const [showOptions, setShowOptions] = useState(false);
   const [showCountryOptions, setShowCountryOptions] = useState(false);
-  const [loader, setLoader] = useState(true);
-
   const countryDropdownRef = useRef(null);
   const optionsDropdownRef = useRef(null);
 
@@ -168,16 +166,8 @@ export const PersonalData = () => {
           }
         });
       if (updateUser) {
-        const response = await dispatch(
-          userGetData(userGetData.userid)
-        ).unwrap();
-        if (response) {
-          setLoader(false);
-          setTimeout(() => {
-            setLoader(true);
-            dispatch(notificationSuccess("User profile update successfully !"));
-          }, 2000);
-        }
+        dispatch(userGetData(userGetData.userid)).unwrap();
+        dispatch(notificationSuccess("User profile update successfully !"));
       }
     }
   };
@@ -405,23 +395,9 @@ export const PersonalData = () => {
             </Form.Group>
           </Col>
         </Row>
-        {loader ? (
-          <Button variant="primary" onClick={submitHandler}>
-            Update Profile
-          </Button>
-        ) : (
-          <>
-            <div className="middenLoader calling">
-              <img src={require("../../content/images/logo.png")} />
-              <p>welcome</p>
-              <div class="snippet" data-title="dot-flashing">
-                <div class="stage">
-                  <div class="dot-flashing"></div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+        <Button variant="primary" onClick={submitHandler}>
+          Update Profile
+        </Button>
       </Form>
     </Card>
   );

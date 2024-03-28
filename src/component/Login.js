@@ -17,16 +17,16 @@ import { connectors as web3Connectors } from "../connectors";
 export const LoginView = (props) => {
   const { handleaccountaddress, settwofamodal } = props;
   const [checkValue, setCheckValue] = useState(null);
+ console.log("checkValue ", checkValue);
   const [accountAddress, setAccountAddress] = useState("");
-  const [userchainId, SetUserChainId] = useState(null);
-  const [newChainId, setNewChainId] = useState(null);
+  // const [userchainId, SetUserChainId] = useState(null);
+  // const [newChainId, setNewChainId] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userData = useSelector(userDetails);
   const { library, chainId, account, activate, deactivate } = useWeb3React();
   const { ethereum } = window;
-  const [loader, setLoader] = useState(true);
- console.log("loader ", loader);
+  const { loading } = useSelector((state) => state?.loderReducer);
   
   const { signMessage, data, error } = useSignMessage();
   const { address, isConnected } = useAccount();
@@ -204,41 +204,41 @@ export const LoginView = (props) => {
     }
   }, [ethereum, userData.authToken, userData.address]);
 
-  useEffect(() => {
-    if (chainId) {
-      SetUserChainId(chainId);
-    }
-  }, [chainId]);
-  ethereum &&
-    ethereum.on("chainChanged", (networkId) => {
-      if (userchainId !== null && userchainId !== networkId) {
-        setNewChainId(Web3.utils.hexToNumber(networkId));
-      }
-    });
+  // useEffect(() => {
+  //   if (chainId) {
+  //     SetUserChainId(chainId);
+  //   }
+  // }, [chainId]);
+  // ethereum &&
+  //   ethereum.on("chainChanged", (networkId) => {
+  //     if (userchainId !== null && userchainId !== networkId) {
+  //       setNewChainId(Web3.utils.hexToNumber(networkId));
+  //     }
+  //   });
 
-  useEffect(() => {
-    const checkChain = async () => {
-      if (newChainId) {
-        const isChainSupported = await isChainIdSupported(newChainId);
-        if (!isChainSupported) {
-          await disconnect();
-          settwofamodal(false);
-          dispatch(
-            notificationFail(
-              "Network is unsupoorted, please switch to another network"
-            )
-          );
-        } else if (
-          newChainId &&
-          userchainId !== null &&
-          userchainId !== newChainId
-        ) {
-          dispatch(notificationSuccess("Network changed successfully !"));
-        }
-      }
-    };
-    checkChain();
-  }, [newChainId]);
+  // useEffect(() => {
+  //   const checkChain = async () => {
+  //     if (newChainId) {
+  //       const isChainSupported = await isChainIdSupported(newChainId);
+  //       if (!isChainSupported) {
+  //         await disconnect();
+  //         settwofamodal(false);
+  //         dispatch(
+  //           notificationFail(
+  //             "Network is unsupoorted, please switch to another network"
+  //           )
+  //         );
+  //       } else if (
+  //         newChainId &&
+  //         userchainId !== null &&
+  //         userchainId !== newChainId
+  //       ) {
+  //         dispatch(notificationSuccess("Network changed successfully !"));
+  //       }
+  //     }
+  //   };
+  //   checkChain();
+  // }, [newChainId]);
 
   useEffect(() => {
     handleaccountaddress(accountAddress);
@@ -291,17 +291,7 @@ export const LoginView = (props) => {
 
         settwofamodal(false);
         props.onHide();
-
-        const response = await dispatch(checkAuth(checkAuthParams)).unwrap();
-
-        if (response.authToken) {
-          setLoader(false);
-          //dispatch(notificationSuccess("user login successfully"))
-          setTimeout(() => {
-            setLoader(true);
-            dispatch(notificationSuccess("user login successfully"));
-          }, 5000);
-        }
+        dispatch(checkAuth(checkAuthParams)).unwrap();
       }
     };
     checkMetaAcc();
@@ -343,16 +333,7 @@ export const LoginView = (props) => {
         library: library,
         checkValue: checkValue,
       };
-      const response = await dispatch(checkAuth(checkAuthParams)).unwrap();
-
-      if (response.authToken) {
-        setLoader(false);
-        //dispatch(notificationSuccess("user login successfully"))
-        setTimeout(() => {
-          setLoader(true);
-          dispatch(notificationSuccess("user login successfully"));
-        }, 5000);
-      }
+      dispatch(checkAuth(checkAuthParams)).unwrap();
       props.onHide();
       setAccountAddress(accounts[0]);
     });
@@ -365,18 +346,7 @@ export const LoginView = (props) => {
       checkValue: checkValue,
       signMessage: signMessage,
     };
-    // dispatch(checkAuth(checkAuthParams)).unwrap();
-    const response = await dispatch(checkAuth(checkAuthParams)).unwrap();
-    
-    if (response.authToken) {
-      setLoader(false);
-      //dispatch(notificationSuccess("user login successfully"))
-      setTimeout(() => {
-        setLoader(true);
-        dispatch(notificationSuccess("user login successfully"));
-      }, 6000);
-    }
-
+    dispatch(checkAuth(checkAuthParams)).unwrap();
     setAccountAddress(address);
   };
 
@@ -403,17 +373,7 @@ export const LoginView = (props) => {
             signature: data,
           };
           props.onHide();
-          const response = await dispatch(checkAuth(checkAuthParams)).unwrap();
-
-          // Your additional logic here based on the response
-          if (response.authToken) {
-            setLoader(false);
-            //dispatch(notificationSuccess("user login successfully"))
-            setTimeout(() => {
-              setLoader(true);
-              dispatch(notificationSuccess("user login successfully"));
-            }, 2000);
-          }
+          dispatch(checkAuth(checkAuthParams)).unwrap();
         } catch (error) {
           // Handle errors if necessary
           console.error("Error fetching data:", error);
@@ -472,9 +432,9 @@ export const LoginView = (props) => {
     }
   };
 
-  const isChainIdSupported = async (chainId) => {
-    return web3Connectors?.injected?.supportedChainIds?.includes(chainId);
-  };
+  // const isChainIdSupported = async (chainId) => {
+  //   return web3Connectors?.injected?.supportedChainIds?.includes(chainId);
+  // };
 
   const submitHandler = async (event) => {
     event.preventDefault();
@@ -491,8 +451,8 @@ export const LoginView = (props) => {
         break;
 
       case "meta_mask":
-        let provider;
-        let currentChainId;
+        // let provider;
+        // let currentChainId;
         if (!window.ethereum) {
           dispatch(
             notificationFail("Please Install Meta Mask in Your system ")
@@ -500,24 +460,24 @@ export const LoginView = (props) => {
           return false;
         }
 
-        if (window.ethereum && !window.ethereum.providers) {
-          currentChainId = Web3.utils.hexToNumber(window.ethereum.chainId);
-        } else {
-          provider = window.ethereum.providers.find(
-            (provider) => provider.isMetaMask
-          );
-          currentChainId = Web3.utils.hexToNumber(provider.chainId);
-        }
-        const isChainSupported = await isChainIdSupported(currentChainId);
+        // if (window.ethereum && !window.ethereum.providers) {
+        //   currentChainId = Web3.utils.hexToNumber(window.ethereum.chainId);
+        // } else {
+        //   provider = window.ethereum.providers.find(
+        //     (provider) => provider.isMetaMask
+        //   );
+        //   currentChainId = Web3.utils.hexToNumber(provider.chainId);
+        // }
+        // const isChainSupported = await isChainIdSupported(currentChainId);
 
-        if (!isChainSupported) {
-          dispatch(
-            notificationFail(
-              "Network is unsupoorted, please switch to another network"
-            )
-          );
-          return false;
-        }
+        // if (!isChainSupported) {
+        //   dispatch(
+        //     notificationFail(
+        //       "Network is unsupoorted, please switch to another network"
+        //     )
+        //   );
+        //   return false;
+        // }
 
         await activateInjectedProvider("injected");
         activate(web3Connectors.injected);
@@ -550,7 +510,7 @@ export const LoginView = (props) => {
 
   return (
     <>
-      {!loader ? (
+      {loading ? (
         <>
           <div className="middenLoader">
             <img src={require("../content/images/logo.png")} />
