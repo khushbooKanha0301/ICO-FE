@@ -29,6 +29,8 @@
 		"ethers-react": "^1.1.0",
 		"firebase": "^9.23.0",
 		"flatted": "^3.2.9",
+		"flowbite": "^2.3.0",
+		"flowbite-react": "^0.9.0",
 		"fortmatic": "^2.4.0",
 		"highcharts": "^10.3.2",
 		"highcharts-react-official": "^3.1.0",

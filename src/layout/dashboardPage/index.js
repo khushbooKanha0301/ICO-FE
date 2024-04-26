@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Badge, Button, Card, Col, Row, Table } from "react-bootstrap";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   CheckCircleIcon,
   CloseIcon,
@@ -30,6 +30,9 @@ export const DashboardPage = () => {
   const userDetailsAll = useSelector(userGetFullDetails);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const referrance = queryParams.get("ref");
   
   useEffect(() => {
     const getDashboardData = async () => {
@@ -54,7 +57,6 @@ export const DashboardPage = () => {
     navigate("/buy-token");
   };
 
-  const location = useLocation();
   useEffect(() => {
     setTransactions([]);
     setTransactionLoading(true);
@@ -81,14 +83,14 @@ export const DashboardPage = () => {
     };
     gettransaction();
 
-    const queryParams = new URLSearchParams(location.search);
-    const referrance = queryParams.get("ref");
-    if (referrance) {
-      if (!acAddress.authToken) {
-        window.localStorage.setItem("referred_by", referrance);
-      }
-      navigate("/");
-    }
+    // const queryParams = new URLSearchParams(location.search);
+    // const referrance = queryParams.get("ref");
+    // if (referrance) {
+    //   if (!acAddress.authToken) {
+    //     window.localStorage.setItem("referred_by", referrance);
+    //   }
+    //   navigate("/");
+    // }
   }, [acAddress?.authToken, userDetailsAll?.is_2FA_login_verified]);
 
   const handleDownload = () => {
@@ -111,6 +113,12 @@ export const DashboardPage = () => {
   }else{
     addressLine = "Connect Wallet";
   }
+
+  useEffect(() => {
+    if (acAddress?.account === referrance) {
+      navigate("/")
+    }
+  }, [acAddress]);
 
   return (
     <>

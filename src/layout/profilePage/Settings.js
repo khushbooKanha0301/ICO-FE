@@ -52,7 +52,15 @@ export const Settings = () => {
         label="Alert me by email in case of unusual activity in my account"
         id="alert-switch"
       /> */}
-      <Button variant="primary">Update Profile</Button>
+       <div class="edit-btn ">
+          <button
+            type="button"
+            class="btn btn-success btn btn-success"
+          >
+            Update Profile
+          </button>
+        </div>
+     
     </Card>
   );
 };

@@ -412,13 +412,13 @@ export const TransactionPage = () => {
             pageSize={PageSize}
             onPageChange={(page) => setCurrentPage(page)}
           />
-          <div className="table-info">
+          {/* <div className="table-info">
             {currentPage === 1
               ? `${totalTransactionsCount > 0 ? 1 : 0}`
               : `${(currentPage - 1) * PageSize + 1}`}{" "}
             - {`${Math.min(currentPage * PageSize, totalTransactionsCount)}`} of{" "}
             {totalTransactionsCount}
-          </div>
+          </div> */}
         </div>
       )}
       <TransactionDetails

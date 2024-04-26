@@ -25,22 +25,23 @@ export const AccountStatus = () => {
   const [kycSubmitted,setKYCSubmitted]= useState(false);
   // const modalToggle = () => setModalShow(!modalShow);
   const modalToggle = async () => {
-    await jwtAxios
-      .get(`/users/getuser`)
-      .then((response) => {
-        if (
-          (response.data?.User?.kyc_completed === true &&
-            response.data?.User?.is_verified === 2) ||
-          response.data?.User?.kyc_completed === false
-        ) {
-          setModalShow(!modalShow);
-        } else {
-          dispatch(notificationFail("KYC already Submitted"));
-        }
-      })
-      .catch((error) => {
-        dispatch(notificationFail("Something went wrong with get user"));
-      });
+    setModalShow(!modalShow);
+    // await jwtAxios
+    //   .get(`/users/getuser`)
+    //   .then((response) => {
+    //     if (
+    //       (response.data?.User?.kyc_completed === true &&
+    //         response.data?.User?.is_verified === 2) ||
+    //       response.data?.User?.kyc_completed === false
+    //     ) {
+    //       setModalShow(!modalShow);
+    //     } else {
+    //       dispatch(notificationFail("KYC already Submitted"));
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     dispatch(notificationFail("Something went wrong with get user"));
+    //   });
   };
   const userDetailsAll = useSelector(userGetFullDetails);
   return (

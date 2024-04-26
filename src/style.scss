@@ -2701,19 +2701,6 @@ body {
     padding: 12px 16px;
   }
 
-  .tab-content {
-    .btn-primary {
-      margin-top: 32px;
-
-      @include media-breakpoint-down(md) {
-        margin-bottom: 16px;
-      }
-
-      padding: 15.5px 32px;
-      color: $modalContent;
-    }
-  }
-
   .two-fa {
     margin-top: 36px;
 
@@ -2865,6 +2852,15 @@ body {
 }
 
 @media screen and (max-width: 767px) {
+  .kyc-mobile-popup{
+    img.circle-data{
+      margin-right: -17px;
+      margin-left: 0px;
+    }
+  }
+  img.circle-data {
+    margin-left: 30px;
+  }
   .statistics {
     .card-body {
       .transaction-view {
@@ -2885,6 +2881,49 @@ body {
             margin-bottom: 0;
           }
         }
+      }
+
+      @include media-breakpoint-down(md) {
+        padding: 24px;
+  
+        form {
+            .form-group {
+                padding: 12px 16px;
+  
+                label.form-label {
+                    color: rgba(255, 255, 255, 0.6);
+                }
+  
+                label.form-control {
+                    color: #fff;
+                    font-weight: 400;
+                }
+  
+                .form-control {
+                    color: #fff;
+                    line-height: 42px;
+                    font-size: 16px;
+  
+                    &::-ms-input-placeholder {
+                        color: #fff;
+                    }
+  
+                    &::placeholder {
+                        color: #fff;
+                    }
+                }
+            }
+  
+        }
+      }
+    }
+  }
+  .phone-number-dropdown {
+    .dropdown-menu-inner {
+       .form-control {
+        margin-bottom: 0px !important;
+        font-size: 13px !important;
+        padding: 5px 0px;
       }
     }
   }
@@ -3707,7 +3746,7 @@ img.circle-data {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  margin-right: 4px;
+  // margin-left: 0px;
 
   &+p.text-white {
     font-size: 16px;
@@ -3730,7 +3769,8 @@ img.circle-data {
 
 .qrcode {
   height: 200px !important;
-  width: 200px !important
+  width: 200px !important;
+  margin: 0 auto 20px;
 }
 
 .digit-input {
@@ -3789,6 +3829,16 @@ img.circle-data {
 }
 
 @media screen and (max-width: 767px) {
+  .phone-number-dropdown svg {
+    right: 0px !important;
+    top: 9px !important;
+  }
+  
+  .token-sales-filter svg {
+      right: 21px !important;
+      top: 11px;
+  }
+
   .transaction-wrapper {
     width: 49%;
     text-align: center;
@@ -3997,4 +4047,462 @@ img.circle-data {
       color: #fff;
       margin: 0;
   }  
+}
+
+img.rectangle-data {
+  width: 20px;
+  height: 17px;
+  margin-right: 10px;
+  float: left;
+
+  &+p.text-white {
+      font-size: 16px;
+      line-height: 24px;
+  }
+}
+
+.phone-number-dropdown {
+  .dropdown-menu-inner {
+      display: flex;
+      background: #202127;
+      margin-bottom: 10px;
+      padding: 0 10px;
+      align-items: center;
+      border-radius: 20px;
+      .form-control {
+        margin-bottom: 0px !important;
+        font-size: 13px !important;
+        padding: 5px 0px;
+      }
+  }
+
+  .filter-option {
+    height: 322px;
+    overflow: auto;
+
+    .yourself-option {
+        position: relative;
+
+        .check-input {
+            position: absolute;
+            margin: 0;
+            background: #34363E;
+            background-repeat: no-repeat;
+            background-position: center;
+            width: 18px;
+            height: 18px;
+            border: none;
+            box-shadow: none;
+            top: 13px;
+            right: 20px;
+            border-radius: 50%;
+
+        }
+    }
+
+
+    .form-check {
+        height: 42px;
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        margin-right: 10px;
+        border-radius: 5px;
+
+        .form-check-label>div {
+            color: #fff;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 170px;
+            overflow: hidden;
+            text-align: left;
+            font-weight: unset;
+            font-family: 'eudoxus sans';
+            font-size: 13px;
+        }
+
+        .form-check-label {
+            width: 100%;
+            color: #fff;
+        }
+
+        input {
+            position: absolute;
+            right: 21px;
+            background: transparent;
+            border: none;
+            z-index: 9999;
+            border-radius: 50%;
+            top: 10px;
+
+            &:focus {
+                box-shadow: none;
+            }
+        }
+    }
+
+
+    &::-webkit-scrollbar {
+        width: 12px;
+        border-radius: 18px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #2F313E;
+        border-radius: 18px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: linear-gradient(263.76deg, #7FFC8D -28.53%, #C6FA56 140.05%);
+        border-radius: 18px;
+    }
+}
+
+  svg {
+      fill: white;
+      width: 12px;
+      position: absolute;
+      right: -2px;
+      top: 11px;
+  }
+  .dropdown-menu {
+      border-radius: 8px;
+      background-color: #1E1F24;
+      padding: 10px;
+      width: 100%;
+      transform: translate(0%, 25%) !important;
+      // top: 198% !important;
+  }
+}
+
+.account-setting-dropdown {
+  .dropdown-toggle {
+      color: #fff;
+      font-weight: unset;
+      background: none;
+      height: 100%;
+      position: relative;
+
+      &:first-child:active {
+          background-color: transparent;
+      }
+
+      &::after {
+          border: none;
+      }
+  }
+}
+
+.phone-number-dropdown .edit-btn {
+  margin-bottom: 5px !important;
+}
+
+
+#drawer-swipe {
+  border-radius: 8px;
+  background-color: #1E1F24 !important;
+  padding: 10px;
+}
+
+.mobile-setting-dropdown-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9;
+  position: fixed;
+}
+
+.phone-number-dropdown .filter-option .yourself-option .check-input.selected {
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOCIgaGVpZ2h0PSI4IiB2aWV3Qm94PSIwIDAgOCA4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8Y2lyY2xlIGN4PSI0IiBjeT0iNCIgcj0iNCIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzFfNTY4MSkiLz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl8xXzU2ODEiIHgxPSIxMC41MzI0IiB5MT0iLTguOTgzNDZlLTA3IiB4Mj0iLTQuMjUyNTUiIHkyPSIxLjYxNjU5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiM3RkZDOEQiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjQzZGQTU2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==);
+}
+
+.bg-gray {
+  background-color: #373A43 !important;
+}
+.mobile-setting-dropdown {
+  width: 250px;
+}
+
+.personalDataLocation {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 58px;
+}
+
+
+.card-body .form-group {
+  position: relative;
+}
+
+.phone-number-dropdown {
+  position: unset;
+}
+
+
+.card-body .form-group {
+  position: relative;
+}
+
+.account-setting-dropdown {
+  position: unset;
+}
+
+#drawer-swipe {
+  border-radius: 8px;
+  background-color: #1E1F24 !important;
+
+  .drawer-swipe-wrapper {
+      position: relative;
+      padding: 40px 10px 10px;
+
+      .drawer-swiper {
+          position: absolute;
+          content: "";
+          width: 59px;
+          height: 8px;
+          top: 16px;
+          left: 50%;
+          border-radius: 10px;
+          background: #40434F;
+          transform: translateX(-50%);
+      }
+  }
+
+}
+
+.mobile-setting-dropdown-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9;
+  position: fixed;
+}
+
+.phone-number-dropdown .filter-option .yourself-option .check-input.selected {
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOCIgaGVpZ2h0PSI4IiB2aWV3Qm94PSIwIDAgOCA4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8Y2lyY2xlIGN4PSI0IiBjeT0iNCIgcj0iNCIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzFfNTY4MSkiLz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl8xXzU2ODEiIHgxPSIxMC41MzI0IiB5MT0iLTguOTgzNDZlLTA3IiB4Mj0iLTQuMjUyNTUiIHkyPSIxLjYxNjU5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiM3RkZDOEQiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjQzZGQTU2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==);
+}
+
+.bg-gray {
+  background-color: #373A43 !important;
+}
+
+
+.edit-btn {
+  margin-top: 20px;
+  margin-bottom: 28px;
+
+  @include media-breakpoint-down(md) {
+      margin-top: 16px;
+      margin-bottom: 12px;
+  }
+
+  .btn {
+      border-radius: 16px;
+      padding: 18px 24px;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 20px;
+
+      @include media-breakpoint-down(md) {
+          width: 100%;
+      }
+
+      svg {
+          fill: $black;
+          margin-right: 12px;
+      }
+
+      &.btn-success {
+          color: $bg-color;
+          background-color: #92FC7F;
+
+          &:hover {
+              background-color: #61bb51;
+          }
+      }
+  }
+}
+
+
+// @media only screen and (max-width: 1199px) {
+//   .phone-number-dropdown .filter-option .form-check .form-check-label {
+//       width: 120px;
+//       font-size: 13px;
+//       text-align: left;
+//   }
+// }
+
+.edit-btn .btn{
+  border-radius: 16px;
+    padding: 18px 24px;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+
+.react-datepicker__header__dropdown {
+
+  .react-datepicker__month-select,
+  .react-datepicker__year-select {
+      background: #48484859;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+
+      option {
+          background: #24262c;
+      }
+
+      &:focus {
+          border: none;
+          box-shadow: none;
+          border-radius: 5px;
+      }
+  }
+}
+
+.react-datepicker__month-select {
+  position: relative;
+}
+
+.react-datepicker__month-dropdown-container--select:before,
+.react-datepicker__year-dropdown-container--select:before {
+  border-color: #ccc;
+  border-style: solid;
+  border-width: 2px 2px 0 0;
+  content: "";
+  display: block;
+  height: 7px;
+  position: absolute;
+  top: 11px;
+  width: 7px;
+  transform: rotate(136deg);
+  right: 6px;
+}
+
+.react-datepicker__month-dropdown-container--select,
+.react-datepicker__year-dropdown-container--select {
+  position: relative;
+}
+
+
+.kyc-step {
+  .form-group {
+      position: relative;
+
+      @include media-breakpoint-down(md) {
+          position: unset;
+      }
+
+      .dropdown-menu {
+          transform: translate(0%, 25%) !important;
+      }
+  }
+
+  .form-action-group {
+      margin-left: 2px;
+      margin-right: 2px;
+  }
+
+  .filter-option {
+      height: 275px;
+  }
+}
+
+
+.kyc-mobile-popup {
+  display: flex;
+  width: 125px;
+  align-items: center;
+
+  svg {
+      top: 8px;
+  }
+  .personalDataLocation {
+      overflow: hidden;
+      white-space: nowrap;
+      width: 80px;
+  }
+}
+
+.phone-number-dropdown-kyc {
+  .kyc-mobile-popup {
+      @include media-breakpoint-down(md) {
+          position: relative;
+      }
+  }
+
+  .phone-number-dropdown {
+      @include media-breakpoint-down(md) {
+          height: 100%
+      }
+  }
+
+  svg {
+      @include media-breakpoint-down(md) {
+          top: 8px !important;
+      }
+  }
+}
+
+.statisticBox {
+  background: #1e1f24;
+  padding: 4px 10px;
+  border-radius: 10px;
+  position: relative;
+
+  .form-control:focus {
+      box-shadow: none;
+  }
+
+  .form-control {
+      background: transparent;
+      color: #fff;
+      border: none;
+      font-size: 13px;
+      margin-bottom: 0px !important;
+      padding: 5px 0px;
+  }
+
+  .dropdown-menu {
+      transform: translate(0%, 15%) !important;
+  }
+
+  .form-check-label {
+      font-size: 13px !important;
+  }
+
+  .filter-option {
+      height: 290px;
+      .form-check {
+          margin-right: 0px !important;
+          padding-right: 0px !important;
+          input {
+            right: 12px;
+          }
+      }
+
+      .yourself-option {
+          .check-input {
+              right: 10px;
+          }
+      }
+      
+  }
+}
+::-webkit-scrollbar {
+  width: 0px;
 }

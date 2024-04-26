@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -8,15 +8,13 @@ import {
 import { userGetData, userGetFullDetails } from "../../store/slices/AuthSlice";
 import jwtAxios from "../../service/jwtAxios";
 import listData from "./../../component/countryData";
-import {
-  defineCountry,
-  definePhoneCode,
-} from "../../store/slices/countrySettingSlice";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import moment from "moment";
 import { CalenderIcon } from "../../component/SVGIcon";
 import { forwardRef } from "react";
+import SelectOptionDropdown from "./../../component/SelectOptionDropdown";
+import SelectLocationDropdown from "./../../component/SelectLocationDropdown";
 
 export const PersonalData = () => {
   const dispatch = useDispatch();
@@ -26,39 +24,63 @@ export const PersonalData = () => {
   const [phone, setPhone] = useState("");
   const [city, setCity] = useState("");
   const [dob, setDob] = useState("");
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState("US");
+ console.log("location ", location);
+  const [nationality, setNationality] = useState("United States");
   const [countryCallingCode, setCountryCallingCode] = useState("");
   const userDetailsAll = useSelector(userGetFullDetails);
-  const [showOptions, setShowOptions] = useState(false);
-  const [showCountryOptions, setShowCountryOptions] = useState(false);
-  const countryDropdownRef = useRef(null);
-  const optionsDropdownRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
+ 
+  const [imageUrlSet, setImageUrl] = useState("https://flagcdn.com/h40/us.png");
+ console.log("imageUrlSet ", imageUrlSet);
+  const [imageSearchUrlSet, setImageSearchUrl] = useState(
+    "https://flagcdn.com/h40/us.png"
+  );
 
-  const handleGlobalClick = (event) => {
-    // Close dropdowns if the click is outside of them
-    if (
-      countryDropdownRef.current &&
-      !countryDropdownRef.current.contains(event.target) &&
-      optionsDropdownRef.current &&
-      !optionsDropdownRef.current.contains(event.target)
-    ) {
-      setShowCountryOptions(false);
-      setShowOptions(false);
-    }
-  };
+  const [selectedOption, setSelectedOption] = useState({
+    country: "United States",
+    code: " +1",
+    iso: "US",
+    cca3: "USA",
+  });
+  console.log("-----", selectedOption)
+
+  const [searchText, setSearchText] = useState(
+    `${selectedOption?.country} (${selectedOption?.code})`
+  );
+
+  const [selectedLocationOption, setSelectedLocationOption] = useState({
+    country: "United States",
+    code: " +1",
+    iso: "US",
+    cca3: "USA",
+  });
+
+  const [imageUrlLocationSet, setImageLocationUrl] = useState(
+    "https://flagcdn.com/h40/us.png"
+  );
+
+  const [imageLocationSearchUrlSet, setImageLocationSearchUrl] = useState(
+    "https://flagcdn.com/h40/us.png"
+  );
+
+  const [searchLocationText, setSearchLocationText] = useState(
+    `${selectedLocationOption?.country}`
+  );
 
   useEffect(() => {
-    // Add global click event listener
-    document.addEventListener("click", handleGlobalClick);
-
-    // Remove the event listener when the component unmounts
-    return () => {
-      document.removeEventListener("click", handleGlobalClick);
+    const checkMobile = () => {
+      const mobileMatch = window.matchMedia("(max-width: 767px)");
+      setIsMobile(mobileMatch.matches);
     };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   useEffect(() => {
     let user = userDetailsAll;
+ console.log("user ", user);
     if (user) {
       setFname(user?.fname ? user?.fname : "");
       setLname(user?.lname ? user?.lname : "");
@@ -66,17 +88,31 @@ export const PersonalData = () => {
       setEmail(user?.email ? user?.email : "");
       setCity(user?.city ? user?.city : "");
       setDob(user?.dob ? moment(user?.dob, "DD/MM/YYYY").toDate() : "");
-      setLocation(user?.location ? user?.location : "");
+      setLocation(user?.location ? user?.location : "US");
     }
 
     if (user?.location) {
       setLocation(user?.location);
-    } else {
-      setLocation("US");
+      const result = listData.find((item) => item?.iso === user?.location);
+      setSelectedLocationOption(result);
+      setImageLocationUrl(
+        `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`
+      );
+      setImageLocationSearchUrl(
+        `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`
+      );
+      setSearchLocationText(result?.country);
     }
 
-    if (user?.phoneCountry) {
+     if (user?.phoneCountry) {
       setCountryCallingCode(user?.phoneCountry);
+      const result = listData.find((item) => item?.code === user?.phoneCountry);
+      setSelectedOption(result);
+      setImageUrl(`https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`);
+      setSearchText(`${result?.country} (${result?.code})`);
+      setImageSearchUrl(
+        `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`
+      );
     } else {
       setCountryCallingCode(" +1");
     }
@@ -91,14 +127,22 @@ export const PersonalData = () => {
       setEmail(user?.email ? user?.email : "");
       setCity(user?.city ? user?.city : "");
       setDob(user?.dob ? moment(user?.dob, "DD/MM/YYYY").toDate() : "");
-      setLocation(user?.location ? user?.location : "");
+      setLocation(user?.location ? user?.location : "US");
     }
 
     if (user?.location) {
       setLocation(user?.location);
-    } else {
-      setLocation("US");
+      const result = listData.find((item) => item?.iso === user?.location);
+      setSelectedLocationOption(result);
+      setImageLocationUrl(
+        `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`
+      );
+      setImageLocationSearchUrl(
+        `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`
+      );
+      setSearchLocationText(result?.country);
     }
+
 
     if (user?.phoneCountry) {
       setCountryCallingCode(user?.phoneCountry);
@@ -179,33 +223,14 @@ export const PersonalData = () => {
         ref={ref}
         value={value}
         readOnly
-        placeholder="DD MMMM YYYY"
+        placeholder="DD/MM/YYYY"
       />
       <CalenderIcon width={30} height={30} />
     </div>
   ));
 
-  const phoneCountry = () => {
-    const result = listData.find((item) => item?.code === countryCallingCode);
-    return `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`;
-  };
-
-  const countryName = () => {
-    return `https://flagcdn.com/h40/${location?.toLowerCase()}.png`;
-  };
-
-  const toggleOptions = () => {
-    setShowOptions((prevShowOptions) => !prevShowOptions);
-    setShowCountryOptions(false);
-  };
-
-  const toggleCountryOptions = () => {
-    setShowCountryOptions((prevShowOptions) => !prevShowOptions);
-    setShowOptions(false);
-  };
-
   return (
-    <Card body className="cards-dark">
+    <Card body className="cards-dark personal-data">
       <Card.Title as="h2">Personal Data</Card.Title>
       <Form>
         <Row>
@@ -252,67 +277,159 @@ export const PersonalData = () => {
           <Col md="6">
             <Form.Group className="form-group mb-4">
               <Form.Label>Phone number (required)</Form.Label>
-              <div className="d-flex align-items-center">
-                <Form.Control
-                  placeholder={countryCallingCode}
-                  name="phone"
-                  type="text"
-                  value={phone}
-                  onChange={(e) => {
-                    onChange(e);
-                  }}
-                  maxLength="10"
-                />
-                {countryCallingCode ? (
-                  <img
-                    src={phoneCountry()}
-                    alt="Flag"
-                    className="circle-data"
-                  />
-                ) : (
-                  "No Flag"
-                )}
-                <div className="country-select" ref={countryDropdownRef}>
-                  {/* <Form.Select
-                      size="sm"
+              <div
+                className={`d-flex items-center phone-number-dropdown justify-between relative`}
+              >
+                {!isMobile && (
+                  <>
+                    <Form.Control
+                      placeholder={countryCallingCode}
+                      name="phone"
+                      type="text"
+                      value={phone}
                       onChange={(e) => {
-                        setCountryCallingCode(e.target.value);
-                        dispatch(definePhoneCode(e.target.value));
+                        onChange(e);
                       }}
-                      value={countryCallingCode}
-                    >
-                      {listData.map((data, key) => (
-                        <option value={`${data?.code}`} key={key}>
-                          {data?.country} ({data?.code})
-                        </option>
-                      ))}
-                    </Form.Select> */}
-                  <div
-                    className="dropdownPersonalData form-select form-select-sm"
-                    onClick={toggleOptions}
-                  >
-                    {
-                      listData.find((item) => item?.code === countryCallingCode)
-                        ?.cca3
-                    }
-                  </div>
-                  {showOptions && (
-                    <ul className="options personalData">
-                      {listData.map((data, key) => (
-                        <li
-                          key={key}
-                          onClick={() => {
-                            setCountryCallingCode(data?.code);
-                            dispatch(definePhoneCode(data?.code));
-                          }}
-                        >
-                          {data?.country} ({data?.code})
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+                      maxLength="10"
+                    />
+                    {selectedOption?.code ? (
+                      <img
+                        src={imageUrlSet}
+                        alt="Flag"
+                        className="circle-data"
+                      />
+                    ) : (
+                      "No Flag"
+                    )}
+                    <SelectOptionDropdown
+                      imageUrlSet={imageUrlSet}
+                      setImageUrl={setImageUrl}
+                      selectedOption={selectedOption}
+                      setSelectedOption={setSelectedOption}
+                      setCountryCallingCode={setCountryCallingCode}
+                      countryCallingCode={countryCallingCode}
+                      setSearchText={setSearchText}
+                      searchText={searchText}
+                      setImageSearchUrl={setImageSearchUrl}
+                      imageSearchUrlSet={imageSearchUrlSet}
+                    />
+                  </>
+                )}
+                {isMobile && (
+                  <>
+                    <Form.Control
+                      placeholder={countryCallingCode}
+                      name="phone"
+                      type="text"
+                      value={phone}
+                      onChange={(e) => {
+                        onChange(e);
+                      }}
+                      maxLength="10"
+                      className="md:w-auto w-full"
+                    />
+                    <div className="text-center relative mobile-setting-dropdown flex items-center">
+                      {selectedOption?.code ? (
+                        <img
+                          src={imageUrlSet}
+                          alt="Flag"
+                          className="circle-data"
+                        />
+                      ) : (
+                        "No Flag"
+                      )}
+                      <SelectOptionDropdown
+                        imageUrlSet={imageUrlSet}
+                        setImageUrl={setImageUrl}
+                        selectedOption={selectedOption}
+                        setSelectedOption={setSelectedOption}
+                        setCountryCallingCode={setCountryCallingCode}
+                        countryCallingCode={countryCallingCode}
+                        setSearchText={setSearchText}
+                        searchText={searchText}
+                        setImageSearchUrl={setImageSearchUrl}
+                        imageSearchUrlSet={imageSearchUrlSet}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
+              {/* <div className={`d-flex items-center phone-number-dropdown justify-between relative`} >
+                {!isMobile && (
+                  <>
+                    <Form.Control
+                      placeholder={countryCallingCode}
+                      name="phone"
+                      type="text"
+                      value={phone}
+                      onChange={(e) => {
+                        onChange(e);
+                      }}
+                      maxLength="10"
+                    />
+                    {selectedOption?.code ? (
+                      <img
+                        src={imageUrlSet}
+                        alt="Flag"
+                        className="circle-data"
+                      />
+                    ) : (
+                      "No Flag"
+                    )}
+                    <SelectOptionDropdown
+                      imageUrlSet={imageUrlSet}
+                      setImageUrl={setImageUrl}
+                      selectedOption={selectedOption}
+                      setSelectedOption={setSelectedOption}
+                      setCountryCallingCode={setCountryCallingCode}
+                      countryCallingCode={countryCallingCode}
+                      setSearchText={setSearchText}
+                      searchText={searchText}
+                      setImageSearchUrl={setImageSearchUrl}
+                      imageSearchUrlSet={imageSearchUrlSet}
+                    />
+                  </>
+                )}
+                {isMobile && (
+                  <>
+                    <Form.Control
+                      placeholder={countryCallingCode}
+                      name="phone"
+                      type="text"
+                      value={phone}
+                      onChange={(e) => {
+                        onChange(e);
+                      }}
+                      maxLength="10"
+                      className="md:w-auto w-full"
+                    />
+                    <div className="text-center relative mobile-setting-dropdown flex items-center">
+                      {selectedOption?.code ? (
+                        <img
+                          src={imageUrlSet}
+                          alt="Flag"
+                          className="circle-data"
+                        />
+                      ) : (
+                        "No Flag"
+                      )}
+                      <SelectOptionDropdown
+                        imageUrlSet={imageUrlSet}
+                        setImageUrl={setImageUrl}
+                        selectedOption={selectedOption}
+                        setSelectedOption={setSelectedOption}
+                        setCountryCallingCode={setCountryCallingCode}
+                        countryCallingCode={countryCallingCode}
+                        setSearchText={setSearchText}
+                        searchText={searchText}
+                        setImageSearchUrl={setImageSearchUrl}
+                        imageSearchUrlSet={imageSearchUrlSet}
+                        
+                      />
+                    </div>
+                  </>
+                )}
+              </div> */}
             </Form.Group>
           </Col>
         </Row>
@@ -322,82 +439,113 @@ export const PersonalData = () => {
               <Form.Label>Date of Birth</Form.Label>
               <DatePicker
                 selected={dob}
-                onChange={(e) => setDob(e)}
+                onChange={(date) => setDob(date)}
                 className="form-control"
-                placeholderText="DD MMMM YYYY"
-                dateFormat="dd MMMM yyyy"
+                placeholderText="DD/MM/YYYY"
+                //dateFormat="dd MMMM yyyy"
                 name="dob"
                 maxDate={new Date()}
                 customInput={<DatepickerCustomInput />}
                 disabled={userDetailsAll?.dob ? true : false}
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode="select"
               />
             </Form.Group>
           </Col>
           <Col md="6">
             <Form.Group className="form-group">
               <Form.Label>Location</Form.Label>
-              <div className="d-flex align-items-center">
-                <Form.Control
-                  placeholder={"Newyork"}
-                  name="city"
-                  value={city}
-                  onChange={(e) => {
-                    onChange(e);
-                  }}
-                />
-                {location ? (
-                  <img src={countryName()} alt="Flag" className="circle-data" />
-                ) : (
-                  "No Flag"
+              <div className="d-flex items-center phone-number-dropdown justify-between relative">
+                {!isMobile && (
+                  <>
+                    <Form.Control
+                      placeholder={"City"}
+                      name="city"
+                      type="text"
+                      value={city}
+                      onChange={(e) => {
+                        onChange(e);
+                      }}
+                    />
+
+                    {location ? (
+                      <img
+                        src={imageUrlLocationSet}
+                        alt="Flag"
+                        className="circle-data"
+                      />
+                    ) : (
+                      "No Flag"
+                    )}
+                    <SelectLocationDropdown
+                      selectedLocationOption={selectedLocationOption}
+                      setSelectedLocationOption={setSelectedLocationOption}
+                      setImageLocationUrl={setImageLocationUrl}
+                      imageUrlLocationSet={imageUrlLocationSet}
+                      setImageLocationSearchUrl={setImageLocationSearchUrl}
+                      imageLocationSearchUrlSet={imageLocationSearchUrlSet}
+                      setSearchLocationText={setSearchLocationText}
+                      searchLocationText={searchLocationText}
+                      setCountry={setLocation}
+                      country={location}
+                      setNationality={setNationality}
+                    />
+                  </>
                 )}
-                {/* <p className="text-white mb-0">
-                  {listData.find((item) => item?.iso === location)?.cca3}
-                </p> */}
-                <div className="country-select" ref={optionsDropdownRef}>
-                  {/* <Form.Select
-                    size="sm"
-                    onChange={(e) => {
-                      setLocation(e.target.value);
-                      dispatch(defineCountry(e.target.value));
-                    }}
-                    value={location}
-                    disabled={userDetailsAll?.location ? true : false}
-                  >
-                    {listData.map((data, key) => (
-                      <option value={`${data.iso}`} key={key}>
-                        {data.country}
-                      </option>
-                    ))}
-                  </Form.Select> */}
-                  <div
-                    className="dropdownPersonalData form-select form-select-sm"
-                    onClick={toggleCountryOptions}
-                  >
-                    {listData.find((item) => item?.iso === location)?.cca3}
-                  </div>
-                  {showCountryOptions && (
-                    <ul className="options personalData">
-                      {listData.map((data, key) => (
-                        <li
-                          key={key}
-                          onClick={() => {
-                            setLocation(data?.iso);
-                            dispatch(defineCountry(data?.iso));
-                          }}
-                        >
-                          {data?.country}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+
+                {isMobile && (
+                  <>
+                    <Form.Control
+                      placeholder={"City"}
+                      name="city"
+                      type="text"
+                      value={city}
+                      className="md:w-auto w-full"
+                      onChange={(e) => {
+                        onChange(e);
+                      }}
+                    />
+
+                    <div className="text-center relative mobile-setting-dropdown flex items-center">
+                      {location ? (
+                        <img
+                          src={imageUrlLocationSet}
+                          alt="Flag"
+                          className="circle-data"
+                        />
+                      ) : (
+                        "No Flag"
+                      )}
+                      <SelectLocationDropdown
+                        selectedLocationOption={selectedLocationOption}
+                        setSelectedLocationOption={setSelectedLocationOption}
+                        setImageLocationUrl={setImageLocationUrl}
+                        imageUrlLocationSet={imageUrlLocationSet}
+                        setImageLocationSearchUrl={setImageLocationSearchUrl}
+                        imageLocationSearchUrlSet={imageLocationSearchUrlSet}
+                        setSearchLocationText={setSearchLocationText}
+                        searchLocationText={searchLocationText}
+                        setCountry={setLocation}
+                        country={location}
+                        setNationality={setNationality}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </Form.Group>
           </Col>
         </Row>
-        <Button variant="primary" onClick={submitHandler}>
-          Update Profile
-        </Button>
+        <div class="edit-btn ">
+          <button
+            type="button"
+            class="btn btn-success btn btn-success"
+            onClick={submitHandler}
+          >
+            Update Profile
+          </button>
+        </div>
       </Form>
     </Card>
   );

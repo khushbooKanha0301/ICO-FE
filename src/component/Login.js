@@ -3,7 +3,7 @@ import Fortmatic from "fortmatic";
 import React, { useEffect, useState } from "react";
 import { Button, Col, Form, Modal, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Web3 from "web3";
 import apiConfigs from "../service/config";
 import { checkAuth, logoutAuth, userDetails } from "../store/slices/AuthSlice";
@@ -17,12 +17,13 @@ import { connectors as web3Connectors } from "../connectors";
 export const LoginView = (props) => {
   const { handleaccountaddress, settwofamodal } = props;
   const [checkValue, setCheckValue] = useState(null);
- console.log("checkValue ", checkValue);
   const [accountAddress, setAccountAddress] = useState("");
-  // const [userchainId, SetUserChainId] = useState(null);
-  // const [newChainId, setNewChainId] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const referrance = queryParams.get("ref");
+
   const userData = useSelector(userDetails);
   const { library, chainId, account, activate, deactivate } = useWeb3React();
   const { ethereum } = window;
@@ -37,23 +38,36 @@ export const LoginView = (props) => {
     window.localStorage.setItem("provider", type);
   };
 
+  const refreshState = () => {
+    window.localStorage.setItem("provider", undefined);
+    window.localStorage.removeItem("userData");
+  };
+
   useEffect(() => {
     const connectWalletOnPageLoad = async () => {
       let storageProvider = window.localStorage.getItem("provider");
       let provider = null;
       let metaAccounts;
-
+  
       if (!ethereum?.providers) {
         return undefined;
       }
+  
+      // Check if there is a token stored in local storage
+      const token = localStorage.getItem("token");
+      if (token) {
+        // If token exists, the user is already logged in, so return early
+        return;
+      }
+  
       if (storageProvider == "injected") {
         if (!window.ethereum) {
           dispatch(
-            notificationFail("Please Install Meta Mask in Your system ")
+            notificationFail("Please Install Meta Mask in Your system")
           );
           return false;
         }
-
+  
         if (window.ethereum && !window.ethereum.providers) {
           metaAccounts = await window.ethereum.request({
             method: "eth_accounts",
@@ -68,19 +82,19 @@ export const LoginView = (props) => {
           }
         }
       }
-
+  
       if (storageProvider == "coinbaseWallet") {
         await activateInjectedProvider("coinbaseWallet");
+        setProvider("coinbaseWallet");
       }
-
+  
       if (
-        //!metaAccounts ||
-        metaAccounts &&
-        metaAccounts[0] != userData?.account?.toLowerCase()
+        !metaAccounts ||
+        (metaAccounts && metaAccounts[0] != userData?.account?.toLowerCase())
       ) {
         return false;
       }
-
+  
       if (localStorage?.getItem("token")) {
         try {
           if (storageProvider == "injected") {
@@ -93,8 +107,10 @@ export const LoginView = (props) => {
         }
       }
     };
+  
     connectWalletOnPageLoad();
   }, []);
+  
 
   useEffect(() => {
     const listenEventOnProvider = async () => {
@@ -138,56 +154,55 @@ export const LoginView = (props) => {
 
     listenEventOnProvider();
   }, []);
+  // useEffect(() => {
+  //   const listenEventOnCoinbaseProvider = async () => {
+  //     let coinbaseProvider;
 
-  useEffect(() => {
-    const listenEventOnCoinbaseProvider = async () => {
-      let coinbaseProvider;
+  //     if (!window.ethereum) {
+  //       return undefined;
+  //     }
 
-      if (!window.ethereum) {
-        return undefined;
-      }
+  //     if (window.ethereum && !window.ethereum.providers) {
+  //       coinbaseProvider = window.ethereum;
+  //     } else {
+  //       coinbaseProvider = window.ethereum.providers.find(
+  //         (provider) => provider.isCoinbaseWallet
+  //       );
+  //     }
 
-      if (window.ethereum && !window.ethereum.providers) {
-        coinbaseProvider = window.ethereum;
-      } else {
-        coinbaseProvider = window.ethereum.providers.find(
-          (provider) => provider.isCoinbaseWallet
-        );
-      }
+  //     let handleAccountsChangedOnCoinbase = async (accounts) => {
+  //       if (accounts.length) {
+  //         activateInjectedProvider("coinbaseWallet");
+  //         connect({ connector: wagmiConnector[1] });
+  //         setProvider("coinbaseWallet");
+  //       }
+  //     };
+  //     await coinbaseProvider.on(
+  //       "accountsChanged",
+  //       handleAccountsChangedOnCoinbase
+  //     );
 
-      let handleAccountsChangedOnCoinbase = async (accounts) => {
-        if (accounts.length) {
-          activateInjectedProvider("coinbaseWallet");
-          connect({ connector: wagmiConnector[1] });
-          setProvider("coinbaseWallet");
-        }
-      };
-      await coinbaseProvider.on(
-        "accountsChanged",
-        handleAccountsChangedOnCoinbase
-      );
+  //     return async () => {
+  //       if (
+  //         coinbaseProvider &&
+  //         typeof coinbaseProvider.removeListener === "function"
+  //       ) {
+  //         await coinbaseProvider.removeListener(
+  //           "accountsChanged",
+  //           handleAccountsChangedOnCoinbase
+  //         );
+  //       }
+  //     };
+  //   };
 
-      return async () => {
-        if (
-          coinbaseProvider &&
-          typeof coinbaseProvider.removeListener === "function"
-        ) {
-          await coinbaseProvider.removeListener(
-            "accountsChanged",
-            handleAccountsChangedOnCoinbase
-          );
-        }
-      };
-    };
+  //   listenEventOnCoinbaseProvider();
+  // }, []);
 
-    listenEventOnCoinbaseProvider();
-  }, []);
 
   useEffect(() => {
     const checkIfWalletIsConnected = async () => {
       try {
         const accounts = await ethereum.request({ method: "eth_accounts" });
-
         if (accounts !== 0) {
           let account = accounts[0]
             ? accounts[0]
@@ -271,11 +286,12 @@ export const LoginView = (props) => {
         }
 
         if (
-          !metaAccounts ||
+          //!metaAccounts ||
+          metaAccounts &&
           metaAccounts[0] != userData.account.toLowerCase()
         ) {
           await disconnect();
-          settwofamodal(false);
+          props.setTwoFAModal(false);
           dispatch(notificationSuccess("User logout successfully !"));
         }
       }
@@ -287,20 +303,22 @@ export const LoginView = (props) => {
           checkValue: checkValue,
           deactivate: deactivate,
           hideLoginModal: props.onHide,
+          refrence_by: referrance
         };
 
         settwofamodal(false);
         props.onHide();
-        dispatch(checkAuth(checkAuthParams)).unwrap();
+        let response = await dispatch(checkAuth(checkAuthParams)).unwrap();
+        if(referrance && response?.loginCheck == "success"){
+          dispatch(notificationSuccess("user login successfully"));
+          navigate("/")
+        } else if(response?.loginCheck == "success") {
+          dispatch(notificationSuccess("user login successfully"));
+        }
       }
     };
     checkMetaAcc();
   }, [account]);
-
-  const refreshState = () => {
-    window.localStorage.setItem("provider", undefined);
-    window.localStorage.removeItem("userData");
-  };
 
   useEffect(() => {
     if (props.issign === true) {
@@ -332,8 +350,15 @@ export const LoginView = (props) => {
         account: accounts[0],
         library: library,
         checkValue: checkValue,
+        refrence_by: referrance
       };
-      dispatch(checkAuth(checkAuthParams)).unwrap();
+      let response = await dispatch(checkAuth(checkAuthParams)).unwrap();
+      if(referrance && response?.loginCheck == "success"){
+        dispatch(notificationSuccess("user login successfully"));
+        navigate("/")
+      } else if(response?.loginCheck == "success") {
+        dispatch(notificationSuccess("user login successfully"));
+      }
       props.onHide();
       setAccountAddress(accounts[0]);
     });
@@ -345,8 +370,16 @@ export const LoginView = (props) => {
       library: null,
       checkValue: checkValue,
       signMessage: signMessage,
+      refrence_by: referrance
     };
-    dispatch(checkAuth(checkAuthParams)).unwrap();
+    
+    let response = await dispatch(checkAuth(checkAuthParams)).unwrap();
+    if(referrance && response?.loginCheck == "success"){
+      dispatch(notificationSuccess("user login successfully"));
+      navigate("/")
+    } else if(response?.loginCheck == "success") {
+      dispatch(notificationSuccess("user login successfully"));
+    }
     setAccountAddress(address);
   };
 
@@ -371,9 +404,16 @@ export const LoginView = (props) => {
             account: address,
             checkValue: checkValue,
             signature: data,
+            refrence_by: referrance
           };
           props.onHide();
-          dispatch(checkAuth(checkAuthParams)).unwrap();
+        let response = await dispatch(checkAuth(checkAuthParams)).unwrap();
+        if(referrance && response?.loginCheck == "success"){
+          dispatch(notificationSuccess("user login successfully"));
+          navigate("/")
+        } else if(response?.loginCheck == "success") {
+          dispatch(notificationSuccess("user login successfully"));
+        }
         } catch (error) {
           // Handle errors if necessary
           console.error("Error fetching data:", error);
@@ -398,7 +438,7 @@ export const LoginView = (props) => {
 
   useEffect(() => {
     if (address) {
-      if (userData?.account === "Connect Wallet") {
+      if (userData?.account === "Connect Wallet" && account) {
         getWalletConnect();
       } else {
         if (userData?.account != address) {
@@ -427,9 +467,9 @@ export const LoginView = (props) => {
         break;
     }
 
-    if (provider) {
-      ethereum.setSelectedProvider(provider);
-    }
+    // if (provider) {
+    //   ethereum.setSelectedProvider(provider);
+    // }
   };
 
   // const isChainIdSupported = async (chainId) => {
@@ -575,13 +615,11 @@ export const LoginView = (props) => {
                         />
                         <label class="form-check-label">
                           <>
-                            <span>
-                              <img
-                                src={require("../content/images/metamask.png")}
-                                alt="Metamask"
-                              />{" "}
-                              Metamask
-                            </span>
+                            <img
+                              src={require("../content/images/metamask.png")}
+                              alt="Metamask"
+                            />{" "}
+                            Metamask
                           </>
                         </label>
                       </div>
@@ -598,13 +636,11 @@ export const LoginView = (props) => {
                         />
                         <label class="form-check-label">
                           <>
-                            <span>
-                              <img
-                                src={require("../content/images/coinbase-wallet.png")}
-                                alt="Coinbase Wallet"
-                              />{" "}
-                              Coinbase Wallet
-                            </span>
+                            <img
+                              src={require("../content/images/coinbase-wallet.png")}
+                              alt="Coinbase Wallet"
+                            />{" "}
+                            Coinbase Wallet
                           </>
                         </label>
                       </div>
@@ -621,13 +657,11 @@ export const LoginView = (props) => {
                         />
                         <label class="form-check-label">
                           <>
-                            <span>
-                              <img
-                                src={require("../content/images/fortmatic.png")}
-                                alt="Fortmatic"
-                              />{" "}
-                              Fortmatic
-                            </span>
+                            <img
+                              src={require("../content/images/fortmatic.png")}
+                              alt="Fortmatic"
+                            />{" "}
+                            Fortmatic
                           </>
                         </label>
                       </div>

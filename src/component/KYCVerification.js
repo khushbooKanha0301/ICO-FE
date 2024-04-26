@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Col, Form, Modal, ProgressBar, Row } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -17,27 +17,27 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { userGetData, userGetFullDetails } from "../store/slices/AuthSlice";
 import moment from "moment";
-import listData from "./countryData";
-import { defineCountry } from "../store/slices/countrySettingSlice";
+
 import jwtAxios from "../service/jwtAxios";
 import { CalenderIcon } from "./SVGIcon";
 import { forwardRef } from "react";
 import * as flatted from "flatted";
-
+import SelectLocationDropdown from "./SelectLocationDropdown";
+import SelectLocationKYCDropdown from "./SelectKYCDropdown";
 
 export const KYCVerification = (props) => {
+  const [isMobile, setIsMobile] = useState(false);
   const { setkycsubmitted, ...rest } = props;
   const dispatch = useDispatch();
   const [step, setStep] = useState(1);
   const [fname, setFname] = useState(null);
   const [lname, setLname] = useState(null);
   const [dob, setDob] = useState(new Date());
-  const [country_of_issue, setCountryOfIssue] = useState("US");
+  const [country_of_issue, setCountryOfIssue] = useState("United States");
   const [city, setCity] = useState(null);
   const [mname, setMname] = useState(null);
   const [postal_code, setPostalCode] = useState(null);
   const [verified_with, setVerifiedWith] = useState(null);
-  const [nationality, setNationality] = useState(null);
   const [res_address, setResAddress] = useState(null);
   const [passport_url, setPassportUrl] = useState(null);
   const [user_photo_url, setUserPhotoUrl] = useState(null);
@@ -50,35 +50,57 @@ export const KYCVerification = (props) => {
   const [checkboxState, setCheckboxState] = useState(
     flatted.parse(flatted.stringify([]))
   );
-  const [showOptions, setShowOptions] = useState(false);
-  const [showCountryOptions, setShowCountryOptions] = useState(false);
+  const [imageUrlLocationSet, setImageLocationUrl] = useState(
+    "https://flagcdn.com/h40/us.png"
+  );
 
-  const countryDropdownRef = useRef(null);
-  const optionsDropdownRef = useRef(null);
-  
-  const handleGlobalClick = (event) => {
-    // Close dropdowns if the click is outside of them
-    if (
-      countryDropdownRef.current &&
-      !countryDropdownRef.current.contains(event.target) &&
-      optionsDropdownRef.current &&
-      !optionsDropdownRef.current.contains(event.target) 
-    ) {
-      setShowCountryOptions(false);
-      setShowOptions(false);
-    }
-  };
+  const [imageUrlCountrySet, setImageCountryUrl] = useState(
+    "https://flagcdn.com/h40/us.png"
+  );
+
+  const [imageLocationSearchUrlSet, setImageLocationSearchUrl] = useState(
+    "https://flagcdn.com/h40/us.png"
+  );
+
+  const [imageCountrySearchUrlSet, setImageCountrySearchUrl] = useState(
+    "https://flagcdn.com/h40/us.png"
+  );
+
+  const [selectedLocationOption, setSelectedLocationOption] = useState({
+    country: "United States",
+    code: " +1",
+    iso: "US",
+    cca3: "USA",
+  });
+
+  const [selectedCountryOption, setSelectedCountryOption] = useState({
+    country: "United States",
+    code: " +1",
+    iso: "US",
+    cca3: "USA",
+  });
+
+  const [searchLocationText, setSearchLocationText] = useState(
+    `${selectedLocationOption?.country}`
+  );
+
+  const [searchCountryText, setSearchCountryText] = useState(
+    `${selectedCountryOption?.country}`
+  );
+
+  const [country, setCountry] = useState("US");
+  const [location, setLocation] = useState("US");
+  const [nationality, setNationality] = useState("United States");
 
   useEffect(() => {
-    // Add global click event listener
-    document.addEventListener('click', handleGlobalClick);
-
-    // Remove the event listener when the component unmounts
-    return () => {
-      document.removeEventListener('click', handleGlobalClick);
+    const checkMobile = () => {
+      const mobileMatch = window.matchMedia("(max-width: 767px)");
+      setIsMobile(mobileMatch.matches);
     };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
-
 
   const onChange = (e) => {
     if (e.target.name === "nationality") {
@@ -229,7 +251,7 @@ export const KYCVerification = (props) => {
           if (mname) {
             formData.append("mname", mname);
           }
-
+          formData.append("nationality", nationality);
           formData.append("dob", dob.toLocaleDateString("en-GB"));
           formData.append("res_address", res_address);
           formData.append("city", city);
@@ -321,16 +343,6 @@ export const KYCVerification = (props) => {
     fetchKYCData(userDetailsAll);
   }, [userDetailsAll]);
 
-  const nationalityData = () => {
-    const result = listData.find((item) => item?.country === nationality);
-    return `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`;   
-  };
-
-  const CountyOfIssueData = () => {
-    const result = listData.find((item) => item?.country === country_of_issue);
-    return `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`;
-  };
-
   const handleFileUpload = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -371,24 +383,6 @@ export const KYCVerification = (props) => {
     setCheckboxState([]);
     props.onHide();
     setStep(1);
-  };
-
-  const handleSelectedClick = (value) => {
-    setNationality(value);
-    setShowOptions(false);
-  };
-  const handleSelectedCountryClick = (value) => {
-    setCountryOfIssue(value);
-    setShowCountryOptions(false)
-  }
-
-  const toggleOptions = () => {
-    setShowOptions(!showOptions);
-    setShowCountryOptions(false);
-  };
-  const toggleCountryOptions = () => {
-    setShowCountryOptions(!showCountryOptions);
-    setShowOptions(false);
   };
 
   return (
@@ -445,68 +439,86 @@ export const KYCVerification = (props) => {
             <>
               <Form.Group className="form-group">
                 <Form.Label>Nationality</Form.Label>
-                <div className="d-flex align-items-center">
-                  <Form.Control
-                    name="nationality"
-                    placeholder={nationality}
-                    type="text"
-                    value={nationality}
-                    onChange={(e) => {
-                      onChange(e);
-                    }}
-                    disabled
-                    maxLength="10"
-                  />
-
-                  {nationality ? (
-                    <img
-                      src={nationalityData()}
-                      alt="Flag"
-                      className="circle-data"
-                    />
-                  ) : (
-                    "No Flag"
+                <div className="d-flex items-center phone-number-dropdown justify-between phone-number-dropdown-kyc">
+                  {!isMobile && (
+                    <>
+                      <Form.Control
+                        name="nationality"
+                        placeholder={nationality}
+                        type="text"
+                        value={nationality}
+                        onChange={(e) => {
+                          onChange(e);
+                        }}
+                        disabled
+                        maxLength="10"
+                      />
+                      <div className="kyc-mobile-popup">
+                        {nationality ? (
+                          <img
+                            src={imageUrlLocationSet}
+                            alt="Flag"
+                            className="circle-data"
+                          />
+                        ) : (
+                          "No Flag"
+                        )}
+                        <SelectLocationKYCDropdown
+                          selectedLocationOption={selectedLocationOption}
+                          setSelectedLocationOption={setSelectedLocationOption}
+                          setImageLocationUrl={setImageLocationUrl}
+                          imageUrlLocationSet={imageUrlLocationSet}
+                          setImageLocationSearchUrl={setImageLocationSearchUrl}
+                          imageLocationSearchUrlSet={imageLocationSearchUrlSet}
+                          setSearchLocationText={setSearchLocationText}
+                          searchLocationText={searchLocationText}
+                          setCountry={setLocation}
+                          country={location}
+                          setNationality={setNationality}
+                        />
+                      </div>
+                    </>
                   )}
-                  {/* <div className="country-select">
-                    <Form.Select
-                      size="sm"
-                      className="country-select-dropdown"
-                      onChange={(e) => {
-                        setNationality(e.target.value);
-                        dispatch(defineCountry(e.target.value));
-                      }}
-                      value={nationality}
-                    >
-                      {listData?.map((data, key) => (
-                        <option value={`${data?.country}`} key={key}>
-                          {data?.cca3}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </div> */}
-                  <div className="country-select" ref={optionsDropdownRef}> 
-                    <div
-                      className="country-select-dropdown form-select form-select-sm"
-                      onClick={toggleOptions}
-                    >
-                      {listData.find((data) => data?.country === nationality)?.cca3 || ""}
-                    </div>
-                    {showOptions && (
-                      <ul className="options">
-                        {listData.map((data, key) => (
-                          <li
-                            key={key}
-                            onClick={() => {
-                              handleSelectedClick(data?.country);
-                              dispatch(defineCountry(data?.country));
-                            }}
-                          >
-                            {data?.cca3}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
+                  {isMobile && (
+                    <>
+                      <Form.Control
+                        name="nationality"
+                        placeholder={nationality}
+                        type="text"
+                        value={nationality}
+                        onChange={(e) => {
+                          onChange(e);
+                        }}
+                        className="md:w-auto w-full"
+                        disabled
+                      />
+
+                      <div className="text-center relative mobile-setting-dropdown flex items-center">
+                        {nationality ? (
+                          <img
+                            src={imageUrlLocationSet}
+                            alt="Flag"
+                            className="circle-data"
+                          />
+                        ) : (
+                          "No Flag"
+                        )}
+                        <SelectLocationKYCDropdown
+                          selectedLocationOption={selectedLocationOption}
+                          setSelectedLocationOption={setSelectedLocationOption}
+                          setImageLocationUrl={setImageLocationUrl}
+                          imageUrlLocationSet={imageUrlLocationSet}
+                          setImageLocationSearchUrl={setImageLocationSearchUrl}
+                          imageLocationSearchUrlSet={imageLocationSearchUrlSet}
+                          setSearchLocationText={setSearchLocationText}
+                          searchLocationText={searchLocationText}
+                          setCountry={setLocation}
+                          country={location}
+                          setNationality={setNationality}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </Form.Group>
               <Row>
@@ -558,11 +570,13 @@ export const KYCVerification = (props) => {
                       onChange={(date) => setDob(date)}
                       className="form-control"
                       placeholderText="DD/MM/YYYY"
-                      dateFormat="dd/MM/yyyy"
                       name="dob"
                       maxDate={new Date()}
                       customInput={<DatepickerCustomInput />}
                       disabled={userDetailsAll?.dob ? true : false}
+                      showMonthDropdown
+                      showYearDropdown
+                      dropdownMode="select"
                     />
                   </Form.Group>
                 </Col>
@@ -614,51 +628,87 @@ export const KYCVerification = (props) => {
             <>
               <Form.Group className="form-group mb-4">
                 <Form.Label>Country/Region of Issue</Form.Label>
-                <div className="d-flex align-items-center">
-                  <Form.Control
-                    name="nationality"
-                    placeholder={country_of_issue}
-                    type="text"
-                    value={country_of_issue}
-                    onChange={(e) => {
-                      onChange(e);
-                    }}
-                    disabled
-                    maxLength="10"
-                  />
+                <div className="d-flex items-center phone-number-dropdown justify-between phone-number-dropdown-kyc ">
+                  {!isMobile && (
+                    <>
+                      <Form.Control
+                        name="country"
+                        placeholder={country_of_issue}
+                        type="text"
+                        value={country_of_issue}
+                        onChange={(e) => {
+                          onChange(e);
+                        }}
+                        disabled
+                        maxLength="10"
+                      />
+                      <div className="kyc-mobile-popup">
+                        {country_of_issue ? (
+                          <img
+                            src={imageUrlCountrySet}
+                            alt="Flag"
+                            className="circle-data"
+                          />
+                        ) : (
+                          "No Flag"
+                        )}
 
-                  {country_of_issue ? (
-                    <img
-                      src={CountyOfIssueData()}
-                      alt="Flag"
-                      className="circle-data"
-                    />
-                  ) : (
-                    "No Flag"
+                        <SelectLocationDropdown
+                          selectedLocationOption={selectedCountryOption}
+                          setSelectedLocationOption={setSelectedCountryOption}
+                          setImageLocationUrl={setImageCountryUrl}
+                          imageUrlLocationSet={imageUrlCountrySet}
+                          setImageLocationSearchUrl={setImageCountrySearchUrl}
+                          imageLocationSearchUrlSet={imageCountrySearchUrlSet}
+                          setSearchLocationText={setSearchCountryText}
+                          searchLocationText={searchCountryText}
+                          setCountry={setCountry}
+                          country={country}
+                          setNationality={setCountryOfIssue}
+                        />
+                      </div>
+                    </>
                   )}
-                  <div className="country-select" ref={countryDropdownRef}>
-                    <div
-                      className="country-select-dropdown form-select form-select-sm"
-                      onClick={toggleCountryOptions}
-                    >
-                      {listData.find((data) => data?.country === country_of_issue)?.cca3 || ""}
-                    </div>
-                    {showCountryOptions && (
-                      <ul className="options">
-                        {listData.map((data, key) => (
-                          <li
-                            key={key}
-                            onClick={() => {
-                              handleSelectedCountryClick(data?.country);
-                              dispatch(defineCountry(data?.country));
-                            }}
-                          >
-                            {data?.cca3}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
+                  {isMobile && (
+                    <>
+                      <Form.Control
+                        name="country"
+                        placeholder={country_of_issue}
+                        type="text"
+                        value={country_of_issue}
+                        onChange={(e) => {
+                          onChange(e);
+                        }}
+                        className="md:w-auto w-full"
+                        disabled
+                      />
+
+                      <div className="text-center relative mobile-setting-dropdown flex items-center">
+                        {nationality ? (
+                          <img
+                            src={imageUrlLocationSet}
+                            alt="Flag"
+                            className="circle-data"
+                          />
+                        ) : (
+                          "No Flag"
+                        )}
+                        <SelectLocationDropdown
+                          selectedLocationOption={selectedCountryOption}
+                          setSelectedLocationOption={setSelectedCountryOption}
+                          setImageLocationUrl={setImageCountryUrl}
+                          imageUrlLocationSet={imageUrlCountrySet}
+                          setImageLocationSearchUrl={setImageCountrySearchUrl}
+                          imageLocationSearchUrlSet={imageCountrySearchUrlSet}
+                          setSearchLocationText={setSearchCountryText}
+                          searchLocationText={searchCountryText}
+                          setCountry={setCountry}
+                          country={country}
+                          setNationality={setCountryOfIssue}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </Form.Group>
               <h4>Use a valid government-issued document</h4>
@@ -666,7 +716,7 @@ export const KYCVerification = (props) => {
                 Only the following documents listed below will be accepted, all
                 other documents will be rejected.
               </p>
-            
+
               <div
                 className="document-issued form-check"
                 onClick={() => verifiedWith("government-passport")}
@@ -740,7 +790,7 @@ export const KYCVerification = (props) => {
                       {...getInputProps({ accept: "image/*, application/pdf" })}
                     />
                     <Row>
-                      <Col sm="12">
+                      <Col sm="12" className="d-flex items-center">
                         <CameraLineIcon width="23" height="24" /> Take a photo
                       </Col>
                       {passport_url && (
@@ -792,7 +842,7 @@ export const KYCVerification = (props) => {
                   <div {...getRootProps({ className: "dropzone" })}>
                     <input {...getInputProps()} />
                     <Row>
-                      <Col sm="12">
+                      <Col sm="12" className="d-flex items-center">
                         <CameraLineIcon width="23" height="24" /> Take a photo
                       </Col>
                       {user_photo_url && (

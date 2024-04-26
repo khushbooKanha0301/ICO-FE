@@ -21,7 +21,7 @@ import {
   userGetData,
   userGetFullDetails,
 } from "./store/slices/AuthSlice";
-import { database, firebaseConfig, firebaseMessages } from "./config";
+import { database, firebaseMessages } from "./config";
 import { onValue, ref } from "firebase/database";
 
 export const App = () => {
@@ -39,6 +39,7 @@ export const App = () => {
   const handleAccountAddress = (address) => {
     setIsSign(false);
   };
+  
   useEffect(() => {
     const handleResize = () => {
       // Check if the window width is below a specific breakpoint (e.g., 768px)
@@ -81,7 +82,7 @@ export const App = () => {
       setTwoFAModal(true);
     }
   }, [userData]);
-
+  
   return (
     <>
       <Container fluid="xxl" className={`${isOpen ? "open-sidebar" : ""} p-0`}>

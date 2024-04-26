@@ -30,6 +30,7 @@ export const checkAuth = createAsyncThunk(
       var deactivate = action.deactivate;
       let signMessage = action.signMessage;
       let hideLoginModal = action.hideLoginModal;
+      let referredBy = action.refrence_by;
       let signature;
       if (action.signature) {
         signature = action.signature;
@@ -79,9 +80,9 @@ export const checkAuth = createAsyncThunk(
         }
       }
       if (signature) {
-       
         let bodyData = { walletType: checkValue };
-        let referredBy = window.localStorage.getItem("referred_by");
+
+        // let referredBy = window.localStorage.getItem("referred_by");
         if (referredBy) {
           bodyData = { ...bodyData, referredBy };
         }
@@ -102,7 +103,7 @@ export const checkAuth = createAsyncThunk(
             deactivate();          
           });
         if (verifyTokenData.data.token) {
-          window.localStorage.removeItem("referred_by");
+          //window.localStorage.removeItem("referred_by");
           setAuthToken(verifyTokenData.data.token);
         }
         if (verifyTokenData?.data?.token) {
@@ -125,9 +126,8 @@ export const checkAuth = createAsyncThunk(
           verifyTokenData.data?.userInfo?.is_2FA_login_verified === undefined ||
           verifyTokenData.data?.userInfo?.is_2FA_login_verified === true
         ) {
-          dispatch(notificationSuccess("user login successfully"));
+          userData.loginCheck = 'success';
         }
-
         return userData;
       }
     } catch (error) {

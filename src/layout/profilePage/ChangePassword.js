@@ -56,7 +56,14 @@ export const ChangePassword = () => {
             </Form.Group>
           </Col>
         </Row>
-        <Button variant="primary">Update Profile</Button>
+        <div class="edit-btn ">
+          <button
+            type="button"
+            class="btn btn-success btn btn-success"
+          >
+            Update Profile
+          </button>
+        </div>
       </Form>
     </Card>
   )

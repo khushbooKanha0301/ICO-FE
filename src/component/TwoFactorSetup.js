@@ -100,7 +100,6 @@ const TwoFactorSetup = (props) => {
             if (res.data.verified) {
               props.onClose();
               dispatch(userGetData(userGetData.userid)).unwrap();
-              // dispatch(notificationSuccess("2FA Successfully Enabled"));
               dispatch(notificationSuccess("user login successfully"));
             } else {
               if (now - lastAttemptTime1 >= 5 * 60 * 1000) {
