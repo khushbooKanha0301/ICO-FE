@@ -1,5 +1,6 @@
 import React from "react";
 
+//this component is used for SVG icons 
 export const HomeIcon = ({ width, height }) => {
   return (
     <svg

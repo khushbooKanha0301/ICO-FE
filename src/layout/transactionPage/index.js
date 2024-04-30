@@ -146,14 +146,6 @@ export const TransactionPage = () => {
           title={<SettingIcon width="24" height="24" />}
         >
           <div className="dropdown-title">TYPES</div>
-          {/* <Form.Check
-            label="Referral"
-            name="setting-type"
-            type="checkbox"
-            id="setting-type"
-            onChange={handleFilterTypeChange}
-            value="referral"
-          /> */}
           <div
             className="form-check"
             onClick={() => handleFilterTypeChange("referral")}
@@ -165,16 +157,6 @@ export const TransactionPage = () => {
             />
             <label class="form-check-label">Referral</label>
           </div>
-
-          {/* <Form.Check
-            label="Purchase"
-            name="setting-type"
-            type="checkbox"
-            id="setting-type1"
-            onChange={handleFilterTypeChange}
-            value="purchase"
-          /> */}
-
           <div
             className="form-check"
             onClick={() => {
@@ -191,14 +173,7 @@ export const TransactionPage = () => {
 
           <Dropdown.Divider />
           <div className="dropdown-title">STATUS</div>
-          {/* <Form.Check
-            label="New"
-            name="setting-status"
-            type="checkbox"
-            id="setting-status"
-            value="new"
-            onChange={handleFilterStatusChange}
-          /> */}
+         
           <div
             className="form-check"
             onClick={() => handleFilterStatusChange("new")}
@@ -211,14 +186,6 @@ export const TransactionPage = () => {
             <label class="form-check-label">New</label>
           </div>
 
-          {/* <Form.Check
-            label="Pending"
-            name="setting-status"
-            type="checkbox"
-            id="setting-status1"
-            value="pending"
-            onChange={handleFilterStatusChange}
-          /> */}
           <div
             className="form-check"
             onClick={() => handleFilterStatusChange("pending")}
@@ -230,16 +197,6 @@ export const TransactionPage = () => {
             />
             <label class="form-check-label">Pending</label>
           </div>
-
-          {/* <Form.Check
-            label="Paid"
-            name="setting-status"
-            type="checkbox"
-            id="setting-status2"
-            value="paid"
-            onChange={handleFilterStatusChange}
-          /> */}
-
           <div
             className="form-check"
             onClick={() => handleFilterStatusChange("paid")}
@@ -252,14 +209,6 @@ export const TransactionPage = () => {
             <label class="form-check-label">Paid</label>
           </div>
 
-          {/* <Form.Check
-            label="Expired"
-            name="setting-status"
-            type="checkbox"
-            id="setting-status3"
-            value="expired"
-            onChange={handleFilterStatusChange}
-          /> */}
            <div
             className="form-check"
             onClick={() => handleFilterStatusChange("expired")}
@@ -412,13 +361,7 @@ export const TransactionPage = () => {
             pageSize={PageSize}
             onPageChange={(page) => setCurrentPage(page)}
           />
-          {/* <div className="table-info">
-            {currentPage === 1
-              ? `${totalTransactionsCount > 0 ? 1 : 0}`
-              : `${(currentPage - 1) * PageSize + 1}`}{" "}
-            - {`${Math.min(currentPage * PageSize, totalTransactionsCount)}`} of{" "}
-            {totalTransactionsCount}
-          </div> */}
+         
         </div>
       )}
       <TransactionDetails

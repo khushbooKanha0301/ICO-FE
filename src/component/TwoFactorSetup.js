@@ -24,6 +24,8 @@ const DigitInput = styled.input`
   margin: 0 5px;
   outline: none;
 `;
+
+// this component is used for two factor setup
 const TwoFactorSetup = (props) => {
   const [secret, setSecret] = useState("");
   const [qrCodeUrl, setQRCodeUrl] = useState("");

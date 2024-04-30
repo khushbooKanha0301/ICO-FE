@@ -11,6 +11,8 @@ import {
 } from "./SVGIcon";
 import { userDetails, userGetFullDetails } from "../store/slices/AuthSlice";
 import { useSelector } from "react-redux";
+
+//this component is used for sidebar view
 export const Sidebar = (props) => {
   const location = useLocation();
   const [activeKey, setActiveKey] = useState();

@@ -14,6 +14,7 @@ import {
 import { useAccount, useConnect, useDisconnect, useSignMessage } from "wagmi";
 import { connectors as web3Connectors } from "../connectors";
 
+// this component is used for login model with functionality 
 export const LoginView = (props) => {
   const { handleaccountaddress, settwofamodal } = props;
   const [checkValue, setCheckValue] = useState(null);
@@ -154,50 +155,6 @@ export const LoginView = (props) => {
 
     listenEventOnProvider();
   }, []);
-  // useEffect(() => {
-  //   const listenEventOnCoinbaseProvider = async () => {
-  //     let coinbaseProvider;
-
-  //     if (!window.ethereum) {
-  //       return undefined;
-  //     }
-
-  //     if (window.ethereum && !window.ethereum.providers) {
-  //       coinbaseProvider = window.ethereum;
-  //     } else {
-  //       coinbaseProvider = window.ethereum.providers.find(
-  //         (provider) => provider.isCoinbaseWallet
-  //       );
-  //     }
-
-  //     let handleAccountsChangedOnCoinbase = async (accounts) => {
-  //       if (accounts.length) {
-  //         activateInjectedProvider("coinbaseWallet");
-  //         connect({ connector: wagmiConnector[1] });
-  //         setProvider("coinbaseWallet");
-  //       }
-  //     };
-  //     await coinbaseProvider.on(
-  //       "accountsChanged",
-  //       handleAccountsChangedOnCoinbase
-  //     );
-
-  //     return async () => {
-  //       if (
-  //         coinbaseProvider &&
-  //         typeof coinbaseProvider.removeListener === "function"
-  //       ) {
-  //         await coinbaseProvider.removeListener(
-  //           "accountsChanged",
-  //           handleAccountsChangedOnCoinbase
-  //         );
-  //       }
-  //     };
-  //   };
-
-  //   listenEventOnCoinbaseProvider();
-  // }, []);
-
 
   useEffect(() => {
     const checkIfWalletIsConnected = async () => {
@@ -219,42 +176,7 @@ export const LoginView = (props) => {
     }
   }, [ethereum, userData.authToken, userData.address]);
 
-  // useEffect(() => {
-  //   if (chainId) {
-  //     SetUserChainId(chainId);
-  //   }
-  // }, [chainId]);
-  // ethereum &&
-  //   ethereum.on("chainChanged", (networkId) => {
-  //     if (userchainId !== null && userchainId !== networkId) {
-  //       setNewChainId(Web3.utils.hexToNumber(networkId));
-  //     }
-  //   });
-
-  // useEffect(() => {
-  //   const checkChain = async () => {
-  //     if (newChainId) {
-  //       const isChainSupported = await isChainIdSupported(newChainId);
-  //       if (!isChainSupported) {
-  //         await disconnect();
-  //         settwofamodal(false);
-  //         dispatch(
-  //           notificationFail(
-  //             "Network is unsupoorted, please switch to another network"
-  //           )
-  //         );
-  //       } else if (
-  //         newChainId &&
-  //         userchainId !== null &&
-  //         userchainId !== newChainId
-  //       ) {
-  //         dispatch(notificationSuccess("Network changed successfully !"));
-  //       }
-  //     }
-  //   };
-  //   checkChain();
-  // }, [newChainId]);
-
+  
   useEffect(() => {
     handleaccountaddress(accountAddress);
   }, [accountAddress]);
@@ -472,10 +394,6 @@ export const LoginView = (props) => {
     // }
   };
 
-  // const isChainIdSupported = async (chainId) => {
-  //   return web3Connectors?.injected?.supportedChainIds?.includes(chainId);
-  // };
-
   const submitHandler = async (event) => {
     event.preventDefault();
     if (!!account) {
@@ -491,33 +409,12 @@ export const LoginView = (props) => {
         break;
 
       case "meta_mask":
-        // let provider;
-        // let currentChainId;
         if (!window.ethereum) {
           dispatch(
             notificationFail("Please Install Meta Mask in Your system ")
           );
           return false;
         }
-
-        // if (window.ethereum && !window.ethereum.providers) {
-        //   currentChainId = Web3.utils.hexToNumber(window.ethereum.chainId);
-        // } else {
-        //   provider = window.ethereum.providers.find(
-        //     (provider) => provider.isMetaMask
-        //   );
-        //   currentChainId = Web3.utils.hexToNumber(provider.chainId);
-        // }
-        // const isChainSupported = await isChainIdSupported(currentChainId);
-
-        // if (!isChainSupported) {
-        //   dispatch(
-        //     notificationFail(
-        //       "Network is unsupoorted, please switch to another network"
-        //     )
-        //   );
-        //   return false;
-        // }
 
         await activateInjectedProvider("injected");
         activate(web3Connectors.injected);
@@ -539,7 +436,6 @@ export const LoginView = (props) => {
   };
 
   const onChange = (event) => {
-    // const { value } = event.target;
     setCheckValue(event);
   };
 

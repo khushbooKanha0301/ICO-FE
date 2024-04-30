@@ -138,54 +138,6 @@ export const StakeScallopPage = () => {
                 4 Y
                 </label>
               </div>
-              {/* <Form.Check
-                type="radio"
-                name="lockingperiod"
-                id="lockingperiod1"
-                label="1 M"
-              /> */}
-              {/* <Form.Check
-                type="radio"
-                name="lockingperiod"
-                id="lockingperiod2"
-                label="2 M"
-              /> */}
-              {/* <Form.Check
-                type="radio"
-                name="lockingperiod"
-                id="lockingperiod3"
-                label="3 M"
-              /> */}
-              {/* <Form.Check
-                type="radio"
-                name="lockingperiod"
-                id="lockingperiod4"
-                label="6 M"
-              /> */}
-              {/* <Form.Check
-                type="radio"
-                name="lockingperiod"
-                id="lockingperiod5"
-                label="1 Y"
-              /> */}
-              {/* <Form.Check
-                type="radio"
-                name="lockingperiod"
-                id="lockingperiod6"
-                label="2 Y"
-              />
-              <Form.Check
-                type="radio"
-                name="lockingperiod"
-                id="lockingperiod7"
-                label="3 Y"
-              />
-              <Form.Check
-                type="radio"
-                name="lockingperiod"
-                id="lockingperiod8"
-                label="4 Y"
-              /> */}
             </div>
             <Card.Title as="h4" className="estimated-apr">
               <span>

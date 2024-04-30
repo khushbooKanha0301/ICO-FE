@@ -9,12 +9,14 @@ import jwtAxios from "../service/jwtAxios";
 import axios from "axios";
 import apiConfigs from "../service/config";
 
+// this component is used for token sale graph 
 export const ThisMonthSale = (props) => {
   const [prevTransaction, SetPreviousTransaction] = useState([]);
   const [transactionMainData, setTransactionMainData] = useState([]);
   const [isIncreased, setIsIncreased] = useState(false);
   const [percentage, setPercentage] = useState(0);
   const userDetailsAll = useSelector(userGetFullDetails);
+
   useEffect(() => {
     const tarnsArray1 = props?.transactions.map((trans) => trans.value);
     const tarnsArray2 = prevTransaction.map((trans) => trans.value);
@@ -47,6 +49,7 @@ export const ThisMonthSale = (props) => {
       const percentage = (tarnsArray1Sum / tarnsArray2Sum) * 100;
     }
   }, [props?.transactions, prevTransaction]);
+  
   const acAddress = useSelector(userDetails);
   const colors = isIncreased ? ["#7FFC8D"] : ["#FF3F3F"];
   const options = {
@@ -144,18 +147,18 @@ export const ThisMonthSale = (props) => {
         .subtract(4, "months")
         .endOf("month");
 
-      const from_date = startOfPreviousToPreviousThreeMonths
+      from_date = startOfPreviousToPreviousThreeMonths
         .startOf("day")
         .format("YYYY-MM-DDTHH:mm:ssZ");
 
-      const to_date = endOfPreviousToPreviousMonth
+      to_date = endOfPreviousToPreviousMonth
         .endOf("day")
         .format("YYYY-MM-DDTHH:mm:ssZ");
     } else if (filter === "last6Months") {
       const startOfPreviousSixMonths = moment()
         .subtract(12, "months")
         .startOf("month");
-      const endOfPreviousMonth = moment().subtract(6, "month").endOf("month");
+      const endOfPreviousMonth = moment().subtract(7, "month").endOf("month");
       from_date = startOfPreviousSixMonths
         .startOf("day")
         .format("YYYY-MM-DDTHH:mm:ssZ");
@@ -167,6 +170,20 @@ export const ThisMonthSale = (props) => {
         .startOf("day")
         .format("YYYY-MM-DDTHH:mm:ssZ");
       to_date = endOfPreviousYear.endOf("day").format("YYYY-MM-DDTHH:mm:ssZ");
+    } else if (filter === "thisMonthDate") {
+      const startOfThisMonth = moment().subtract(1, "month").startOf("month");
+      const endOfThisMonth = moment().subtract(1, "month").endOf("month");
+      from_date = startOfThisMonth
+        .startOf("day")
+        .format("YYYY-MM-DDTHH:mm:ssZ");
+      to_date = endOfThisMonth.endOf("day").format("YYYY-MM-DDTHH:mm:ssZ");
+    } else if (filter === "thisYearDate") {
+      const startOfThisYear = moment().subtract(1, "year").startOf("year");
+      const endOfThisYear = moment().subtract(1, "year").endOf("year");
+      from_date = startOfThisYear
+        .startOf("day")
+        .format("YYYY-MM-DDTHH:mm:ssZ");
+      to_date = endOfThisYear.endOf("day").format("YYYY-MM-DDTHH:mm:ssZ");
     }
     if (
       acAddress?.authToken &&
@@ -199,6 +216,7 @@ export const ThisMonthSale = (props) => {
       transactionData(props?.filterValue);
     }
   }, [props?.filterValue, acAddress?.authToken,userDetailsAll?.is_2FA_login_verified]);
+
   return (
     <>
       <div className="d-inline-flex position-relative align-items-end">

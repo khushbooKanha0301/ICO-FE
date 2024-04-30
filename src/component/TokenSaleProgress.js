@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux";
 import { formattedNumber } from "../utils";
 
+//this component is used for progress bar
 export const TokenSaleProgress = () => {
   const MAX = 14000000;
   const { balanceMid } = useSelector((state) => state?.currenyReducer);

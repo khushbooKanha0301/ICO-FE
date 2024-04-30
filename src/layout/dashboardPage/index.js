@@ -211,6 +211,7 @@ export const DashboardPage = () => {
                   {transactions?.map((transaction) => (
                       <tr key={transaction._id}>
                         <td>
+                          <div style={{display: "flex" , alignItems: "center"}}>
                           {transaction?.status == "paid" && (
                             <CheckCircleIcon width="16" height="16" />
                           )}
@@ -224,6 +225,7 @@ export const DashboardPage = () => {
                             <ExclamationIcon width="16" height="16" />
                           )}
                           {formattedNumber(transaction?.token_cryptoAmount)}
+                          </div>
                         </td>
                         <td>
                           <p className="text-white mb-1">

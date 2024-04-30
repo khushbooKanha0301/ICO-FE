@@ -25,14 +25,12 @@ export const PersonalData = () => {
   const [city, setCity] = useState("");
   const [dob, setDob] = useState("");
   const [location, setLocation] = useState("US");
- console.log("location ", location);
   const [nationality, setNationality] = useState("United States");
   const [countryCallingCode, setCountryCallingCode] = useState("");
   const userDetailsAll = useSelector(userGetFullDetails);
   const [isMobile, setIsMobile] = useState(false);
  
   const [imageUrlSet, setImageUrl] = useState("https://flagcdn.com/h40/us.png");
- console.log("imageUrlSet ", imageUrlSet);
   const [imageSearchUrlSet, setImageSearchUrl] = useState(
     "https://flagcdn.com/h40/us.png"
   );
@@ -43,8 +41,7 @@ export const PersonalData = () => {
     iso: "US",
     cca3: "USA",
   });
-  console.log("-----", selectedOption)
-
+ 
   const [searchText, setSearchText] = useState(
     `${selectedOption?.country} (${selectedOption?.code})`
   );
@@ -80,7 +77,7 @@ export const PersonalData = () => {
 
   useEffect(() => {
     let user = userDetailsAll;
- console.log("user ", user);
+
     if (user) {
       setFname(user?.fname ? user?.fname : "");
       setLname(user?.lname ? user?.lname : "");
@@ -354,82 +351,6 @@ export const PersonalData = () => {
                   </>
                 )}
               </div>
-              {/* <div className={`d-flex items-center phone-number-dropdown justify-between relative`} >
-                {!isMobile && (
-                  <>
-                    <Form.Control
-                      placeholder={countryCallingCode}
-                      name="phone"
-                      type="text"
-                      value={phone}
-                      onChange={(e) => {
-                        onChange(e);
-                      }}
-                      maxLength="10"
-                    />
-                    {selectedOption?.code ? (
-                      <img
-                        src={imageUrlSet}
-                        alt="Flag"
-                        className="circle-data"
-                      />
-                    ) : (
-                      "No Flag"
-                    )}
-                    <SelectOptionDropdown
-                      imageUrlSet={imageUrlSet}
-                      setImageUrl={setImageUrl}
-                      selectedOption={selectedOption}
-                      setSelectedOption={setSelectedOption}
-                      setCountryCallingCode={setCountryCallingCode}
-                      countryCallingCode={countryCallingCode}
-                      setSearchText={setSearchText}
-                      searchText={searchText}
-                      setImageSearchUrl={setImageSearchUrl}
-                      imageSearchUrlSet={imageSearchUrlSet}
-                    />
-                  </>
-                )}
-                {isMobile && (
-                  <>
-                    <Form.Control
-                      placeholder={countryCallingCode}
-                      name="phone"
-                      type="text"
-                      value={phone}
-                      onChange={(e) => {
-                        onChange(e);
-                      }}
-                      maxLength="10"
-                      className="md:w-auto w-full"
-                    />
-                    <div className="text-center relative mobile-setting-dropdown flex items-center">
-                      {selectedOption?.code ? (
-                        <img
-                          src={imageUrlSet}
-                          alt="Flag"
-                          className="circle-data"
-                        />
-                      ) : (
-                        "No Flag"
-                      )}
-                      <SelectOptionDropdown
-                        imageUrlSet={imageUrlSet}
-                        setImageUrl={setImageUrl}
-                        selectedOption={selectedOption}
-                        setSelectedOption={setSelectedOption}
-                        setCountryCallingCode={setCountryCallingCode}
-                        countryCallingCode={countryCallingCode}
-                        setSearchText={setSearchText}
-                        searchText={searchText}
-                        setImageSearchUrl={setImageSearchUrl}
-                        imageSearchUrlSet={imageSearchUrlSet}
-                        
-                      />
-                    </div>
-                  </>
-                )}
-              </div> */}
             </Form.Group>
           </Col>
         </Row>
@@ -442,7 +363,6 @@ export const PersonalData = () => {
                 onChange={(date) => setDob(date)}
                 className="form-control"
                 placeholderText="DD/MM/YYYY"
-                //dateFormat="dd MMMM yyyy"
                 name="dob"
                 maxDate={new Date()}
                 customInput={<DatepickerCustomInput />}

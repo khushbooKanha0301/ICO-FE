@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Form, Dropdown, FormControl } from "react-bootstrap";
 import Search from "../content/images/search.svg";
 import listData from "../component/countryData";
+import Sheet from "react-modal-sheet";
 
+//This component is used for Phone number dropdown for desktop and mobile view
 const SelectOptionDropdown = (props) => {
   const {
     setImageUrl,
@@ -122,31 +124,20 @@ const SelectOptionDropdown = (props) => {
                 <img src={Search} alt="" className="search-icon" />
               </div>
               <div className="filter-option">
-              {filteredOptions.map((data, key) => (
+                {filteredOptions.map((data, key) => (
                   <div
-                    className="yourself-option"
-                    onChange={() => handleCheckboxChange(data)}
+                    key={`${data.code}_${data.country}`}
+                    className={`yourself-option form-check`}
+                    onClick={() => handleCheckboxChange(data)}
                   >
-                    <Form.Check
-                      key={`${data.code}_${data.country}`}
-                      type="checkbox"
-                      id={`checkbox-${data.code}`}
-                      label={
-                        <div>
-                          <img
-                            src={phoneCountryData(data.code)}
-                            alt="Flag"
-                            className="rectangle-data"
-                          />
-                          {data.country} ({data.code})
-                        </div>
-                      }
-                      style={{
-                        width: " 100%",
-                        display: " flex",
-                        alignItems: "center",
-                      }}
-                    />
+                    <label className="form-check-label">
+                      <img
+                        src={phoneCountryData(data.code)}
+                        alt="Flag"
+                        className="rectangle-data"
+                      />
+                      {data.country} ({data.code})
+                    </label>
                     <div
                       className={`form-check-input check-input ${
                         JSON.stringify(selectedOption) === JSON.stringify(data)
@@ -186,98 +177,92 @@ const SelectOptionDropdown = (props) => {
             className={!openDr ? "mobile-setting-dropdown-overlay" : ""}
             onClick={handleDrawerOverlay}
           ></div>
-          <div
-            id="drawer-swipe"
-            className={`fixed  z-40 w-full overflow-y-auto bg-white  rounded-t-lg dark:bg-gray-800 transition-transform bottom-0 left-0 right-0 ${
-              openDr ? "translate-y-full" : ""
-            } bottom-[60px]`}
-            tabindex="-1"
-            aria-labelledby="drawer-swipe-label"
-          >
-            <div className="drawer-swipe-wrapper">
-              <div className="drawer-swiper" onClick={handleDrawerOverlay} />
-              <div className="dropdown-menu-inner">
-                {searchText && imageSearchUrlSet ? (
-                  <img
-                    src={imageSearchUrlSet}
-                    alt="Flag"
-                    className="rectangle-data"
-                  />
-                ) : null}
-
-                <FormControl
-                  type="text"
-                  placeholder="Search..."
-                  className="mr-3 mb-2"
-                  value={searchText}
-                  onChange={handleSearchChange}
-                />
-                <img src={Search} alt="" className="search-icon" />
-              </div>
-              <div className="filter-option">
-                {filteredOptions.map((data, key) => (
+          <Sheet isOpen={!openDr} onClose={() => handleDrawerOverlay(false)}>
+            <Sheet.Container className="phone-number-dropdown">
+              <Sheet.Header />
+              <Sheet.Content>
+                <div className="drawer-swipe-wrapper">
                   <div
-                    className="yourself-option" onChange={() => handleCheckboxChangeOnMobile(data)}
-                  >
-                    <Form.Check
-                      key={`${data.code}_${data.country}`}
-                      type="checkbox"
-                      id={`checkbox-${data.code}`}
-                      label={
-                        <div>
+                    className="drawer-swiper"
+                    onClick={handleDrawerOverlay}
+                  />
+                  <div className="dropdown-menu-inner">
+                    {searchText && imageSearchUrlSet ? (
+                      <img
+                        src={imageSearchUrlSet}
+                        alt="Flag"
+                        className="rectangle-data"
+                      />
+                    ) : null}
+
+                    <FormControl
+                      type="text"
+                      placeholder="Search..."
+                      className="mr-3 mb-2"
+                      value={searchText}
+                      onChange={handleSearchChange}
+                    />
+                    <img src={Search} alt="" className="search-icon" />
+                  </div>
+                  <div className="filter-option">
+                    {filteredOptions.map((data, key) => (
+                      <div
+                        key={`${data.code}_${data.country}`}
+                        className={`yourself-option form-check`}
+                        onClick={() => handleCheckboxChangeOnMobile(data)}
+                      >
+                        <label className="form-check-label">
                           <img
                             src={phoneCountryData(data.code)}
                             alt="Flag"
                             className="rectangle-data"
                           />
                           {data.country} ({data.code})
-                        </div>
-                      }
-                      style={{
-                        width: " 100%",
-                        display: " flex",
-                        alignItems: "center",
-                      }}
-                    />
-
-                    <div
-                      className={`form-check-input check-input ${
-                        JSON.stringify(selectedOption) === JSON.stringify(data)
-                          ? "selected"
-                          : ""
-                      }`}
-                    />
+                        </label>
+                        <div
+                          className={`form-check-input check-input ${
+                            JSON.stringify(selectedOption) ===
+                            JSON.stringify(data)
+                              ? "selected"
+                              : ""
+                          }`}
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <div className="edit-btn flex justify-center">
-                {selectedOption ? (
-                  <>
+                  <div className="edit-btn flex justify-center">
+                    {selectedOption ? (
+                      <>
+                        <button
+                          type="button"
+                          class="btn btn-primary mx-1"
+                          onClick={() =>
+                            handlePhoneNumberMobile(selectedOption)
+                          }
+                        >
+                          Save
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button type="button" class="btn btn-primary mx-1">
+                          Save
+                        </button>
+                      </>
+                    )}
                     <button
                       type="button"
-                      class="btn btn-primary mx-1"
-                      onClick={() => handlePhoneNumberMobile(selectedOption)}
+                      class="btn mx-1 bg-gray text-white"
+                      onClick={handleDrawerOverlay}
                     >
-                      Save
+                      Cancel
                     </button>
-                  </>
-                ) : (
-                  <>
-                    <button type="button" class="btn btn-primary mx-1">
-                      Save
-                    </button>
-                  </>
-                )}
-                <button
-                  type="button"
-                  class="btn mx-1 bg-gray text-white"
-                  onClick={handleDrawerOverlay}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
+                  </div>
+                </div>
+              </Sheet.Content>
+            </Sheet.Container>
+            <Sheet.Backdrop />
+          </Sheet>
         </>
       )}
     </div>
@@ -285,4 +270,3 @@ const SelectOptionDropdown = (props) => {
 };
 
 export default SelectOptionDropdown;
-

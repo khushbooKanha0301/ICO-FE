@@ -9,6 +9,8 @@ import {
   getTransactionByOrderId,
   setOrderId,
 } from "../store/slices/currencySlice";
+
+// this component is used for payment process to buy token 
 export const PaymentProcess = (props) => {
   const selectedCrypto = props?.selectedCrypto;
   const amount = props?.amount;
@@ -91,21 +93,8 @@ export const PaymentProcess = (props) => {
       dispatch(notificationFail("Please Select Pay with crypto currency."));
     }
   };
-  // const handlePaymentOption = (e) => {
-  //   setPaymentOption(e?.target?.value);
-  // };
-
-  // const handleTermsChange = (event) => {
-  //   setIsTermsSelected(event.target.checked);
-  //   if (event.target.checked === true && paymentOption === "cryptoCurrency") {
-  //     setIsLoading(false);
-  //   } else {
-  //     setIsLoading(true);
-  //   }
-  // };
 
   const handleTermsChange = (event) => {
-    
     setIsTermsSelected(event);
     if (event === true && paymentOption === "cryptoCurrency") {
       setIsLoading(false);
@@ -162,29 +151,13 @@ export const PaymentProcess = (props) => {
                 <Row>
                   <Form.Group
                     controlId="paymentOption"
-                    //onChange={(e) => handlePaymentOption(e)}
                   >
                     <Row>
                       <Col md="6">
-                        {/* <Form.Check
-                          className="payment-option"
-                          value={"bankTransfer"}
-                          onClick={() => checkOptions("bankTransfer")}
-                          label={
-                            <>
-                              <div className="radio-option">Option 1</div>
-                              <div className="radio-label">Bank Transfer</div>
-                            </>
-                          }
-                          name="radiooption"
-                          type="radio"
-                          id="radiooption1"
-                        /> */}
-
+                        
                         <div
                           className="payment-option form-check"
                           onClick={() => checkOptions("bankTransfer")}
-                          // onChange={(e) => handlePaymentOption(e)}
                         >
                           <div
                             className={`form-check-input ${
@@ -200,21 +173,6 @@ export const PaymentProcess = (props) => {
                         </div>
                       </Col>
                       <Col md="6">
-                        {/* <Form.Check
-                          className="payment-option"
-                          value={"payPal"}
-                          label={
-                            <>
-                              <div className="radio-option">Option 2</div>
-                              <div className="radio-label">Pay with PayPal</div>
-                            </>
-                          }
-                          name="radiooption"
-                          type="radio"
-                          id="radiooption2"
-                          onClick={() => checkOptions("payPal")}
-                        /> */}
-
                         <div
                           className="payment-option form-check"
                           onClick={() => checkOptions("payPal")}
@@ -233,23 +191,6 @@ export const PaymentProcess = (props) => {
                         </div>
                       </Col>
                       <Col md="12">
-                        {/* <Form.Check
-                          className="payment-option"
-                          value={"cryptoCurrency"}
-                          label={
-                            <>
-                              <div className="radio-option">Option 3</div>
-                              <div className="radio-label">
-                                Pay with Crypto Currency
-                              </div>
-                            </>
-                          }
-                          name="radiooption"
-                          type="radio"
-                          id="radiooption3"
-                          onClick={() => checkOptions("cryptoCurrency")}
-                        /> */}
-
                         <div
                           className="payment-option form-check"
                           onClick={() => checkOptions("cryptoCurrency")}
@@ -277,15 +218,6 @@ export const PaymentProcess = (props) => {
                 <p className="mt-2 mb-4">
                   * Payment gateway may charge you a processing fees.
                 </p>
-                {/* <Form.Check
-                  className="agree-checkbox"
-                  label="I hereby agree to the token purchase agreement and token sale term."
-                  name="agree"
-                  type="checkbox"
-                  id="agree"
-                  onChange={handleTermsChange}
-                /> */}
-
                 <div
                   className="agree-checkbox form-check"
                   onClick={() => handleTermsChange(true)}

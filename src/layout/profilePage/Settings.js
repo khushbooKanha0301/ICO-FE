@@ -41,17 +41,6 @@ export const Settings = () => {
         />
         <label class="form-check-label">Alert me by email in case of unusual activity in my account</label>
       </div>
-
-      {/* <Form.Check
-        type="switch"
-        id="save-switch"
-        label="Save my activities log"
-      /> */}
-      {/* <Form.Check
-        type="switch"
-        label="Alert me by email in case of unusual activity in my account"
-        id="alert-switch"
-      /> */}
        <div class="edit-btn ">
           <button
             type="button"

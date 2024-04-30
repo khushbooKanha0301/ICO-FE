@@ -2,6 +2,8 @@ import React from "react";
 import classnames from "classnames";
 import { usePagination, DOTS } from "./usePagination";
 import { Pagination } from "react-bootstrap";
+
+// this component is used for paggination applied in every table 
 const PaginationComponent = (props) => {
   const {
     onPageChange,

@@ -4,8 +4,9 @@ import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { userDetails, userGetFullDetails } from "../store/slices/AuthSlice";
 import { hideAddress } from "../utils";
-import { LoginIcon, LogoutIcon, SettingIcon, UserIcon } from "./SVGIcon";
+import {  LogoutIcon, SettingIcon, UserIcon } from "./SVGIcon";
 
+// Header component definations 
 export const Header = (props) => {
   const { signOut, clickHandler, clickModalHandler } = props;
   const [position, setPosition] = useState(window.pageYOffset);

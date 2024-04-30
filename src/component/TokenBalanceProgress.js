@@ -1,15 +1,10 @@
 import { useDispatch, useSelector } from "react-redux";
 import { userDetails, userGetFullDetails } from "../store/slices/AuthSlice";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Col, Row } from "react-bootstrap";
-import {
-  getTokenCount,
-  getTotalMid,
-  resetRaisedMid,
-  resetTokenData,
-} from "../store/slices/currencySlice";
 import { formattedNumber } from "../utils";
 
+//this component is used for token balance progess bar
 export const TokenBalanceProgress = () => {
   const dispatch = useDispatch();
   const MAX = 14000000;

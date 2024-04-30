@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import apiConfigs from "../service/config";
 import axios from "axios";
 
+//this component is used for Token graph(StatisticsChart) for desktop view
 export const StatisticsChart = (props) => {
   const colors = ["#ffffff"];
   const filter = props?.filterValue;
@@ -73,7 +74,16 @@ export const StatisticsChart = (props) => {
         .startOf("day")
         .format("YYYY-MM-DDTHH:mm:ssZ");
       to_date = endOfPreviousYear.endOf("day").format("YYYY-MM-DDTHH:mm:ssZ");
+    } else if (filter === "thisMonthDate") {
+      // Calculate start and end dates of the current month
+      from_date = today.startOf("month").format("YYYY-MM-DDT00:00:00+05:30");
+      to_date = today.endOf("month").format("YYYY-MM-DDT23:59:59+05:30");
+    } else if (filter === "thisYearDate") {
+      // Calculate start and end dates of the current year
+      from_date = today.startOf("year").format("YYYY-MM-DDT00:00:00+05:30");
+      to_date = today.endOf("year").format("YYYY-MM-DDT23:59:59+05:30");
     }
+
     if (
       acAddress?.authToken &&
       userDetailsAll?.is_2FA_login_verified === true && (acAddress?.account == userDetailsAll.wallet_address)
@@ -122,12 +132,13 @@ export const StatisticsChart = (props) => {
         if (
           filter === "last3Months" ||
           filter === "last6Months" ||
-          filter === "lastYear"
+          filter === "lastYear" ||
+          filter === "thisYearDate"
         ) {
           label = moment(val.label, "YYYY-MM").format("MMM");
         } else if (filter === "lastWeek" || filter === "thisWeekDate") {
           label = moment(val.label, "YYYY-MM-DD").format("ddd");
-        } else if (filter === "lastMonth") {
+        } else if (filter === "lastMonth" || filter === "thisMonthDate") {
           label = moment(val.label, "YYYY-MM-DD").format("D");
         }
         if (val.value > 0) {
@@ -138,6 +149,7 @@ export const StatisticsChart = (props) => {
       });
     }
   }, [transactionsAll]);
+
   const options = {
     chart: {
       type: "column",
@@ -147,7 +159,8 @@ export const StatisticsChart = (props) => {
     },
     colors: colors,
     xAxis: {
-      categories: categoryLabel !== [] && categoryLabel,
+      //categories: categoryLabel !== [] && categoryLabel,
+      categories: categoryLabel.length !== 0 && categoryLabel,
       labels: {
         style: {
           fontWeight: 500,
@@ -222,13 +235,17 @@ export const StatisticsChart = (props) => {
     series: [
       {
         showInLegend: false,
-        data: categoryValue !== [] ? categoryValue : [],
+        //data: categoryValue !== [] ? categoryValue : [],
+        data: categoryValue.length !== 0 ? categoryValue : [],
+
       },
       {
         type: "line",
         color: "transperant",
         showInLegend: false,
-        data: categoryValue !== [] ? categoryValue : [],
+        // data: categoryValue !== [] ? categoryValue : [],
+        data: categoryValue.length !== 0 ? categoryValue : [],
+
       },
     ],
     responsive: {

@@ -25,6 +25,7 @@ import * as flatted from "flatted";
 import SelectLocationDropdown from "./SelectLocationDropdown";
 import SelectLocationKYCDropdown from "./SelectKYCDropdown";
 
+//KYC verification model with functionality
 export const KYCVerification = (props) => {
   const [isMobile, setIsMobile] = useState(false);
   const { setkycsubmitted, ...rest } = props;
@@ -374,6 +375,10 @@ export const KYCVerification = (props) => {
       dispatch(userGetData(userGetData.userid)).unwrap();
     }
     fetchKYCData(userDetailsAll);
+    setImageLocationUrl("https://flagcdn.com/h40/us.png");
+    setImageCountryUrl("https://flagcdn.com/h40/us.png");
+    setCountry("US")
+    setLocation("US")
     setMname(null);
     setResAddress(null);
     setPostalCode(null);
@@ -493,7 +498,7 @@ export const KYCVerification = (props) => {
                         disabled
                       />
 
-                      <div className="text-center relative mobile-setting-dropdown flex items-center">
+                      <div className="text-center relative mobile-setting-dropdown kyc-mobile-popup flex items-center">
                         {nationality ? (
                           <img
                             src={imageUrlLocationSet}
@@ -683,10 +688,10 @@ export const KYCVerification = (props) => {
                         disabled
                       />
 
-                      <div className="text-center relative mobile-setting-dropdown flex items-center">
+                      <div className="text-center relative mobile-setting-dropdown kyc-mobile-popup flex items-center">
                         {nationality ? (
                           <img
-                            src={imageUrlLocationSet}
+                            src={imageUrlCountrySet}
                             alt="Flag"
                             className="circle-data"
                           />

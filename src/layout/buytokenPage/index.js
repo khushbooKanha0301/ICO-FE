@@ -473,6 +473,7 @@ export const BuyTokenPage = () => {
           </Row>
         </Col>
       </Row>
+      {/* this is payment process component for buy token  */}
       <PaymentProcess
         show={modalShow}
         onHide={() => setModalShow(false)}

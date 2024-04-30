@@ -2,6 +2,7 @@ import React from "react";
 import { Button, Modal, Table } from "react-bootstrap";
 import { formattedNumber, getDateFormate, getDateFormateString } from "../utils";
 
+//this component is used for transaction details 
 export const TransactionDetails = (props) => {
   let orderContent = "";
   if(props?.stateTransactions?.tran_id != undefined)

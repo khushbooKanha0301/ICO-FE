@@ -1,4 +1,4 @@
-const listData = [
+  const listData = [
     { country: "Afghanistan", code: "+93", iso: "AF", cca3: "AFG" },
     { country: "Albania", code: "+355", iso: "AL", cca3: "ALB" },
     { country: "Algeria", code: "+213", iso: "DZ", cca3: "ALG" },

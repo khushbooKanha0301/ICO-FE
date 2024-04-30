@@ -23,25 +23,8 @@ export const AccountStatus = () => {
   }, [acAddress?.userid]);
   const [modalShow, setModalShow] = useState(false);
   const [kycSubmitted,setKYCSubmitted]= useState(false);
-  // const modalToggle = () => setModalShow(!modalShow);
   const modalToggle = async () => {
     setModalShow(!modalShow);
-    // await jwtAxios
-    //   .get(`/users/getuser`)
-    //   .then((response) => {
-    //     if (
-    //       (response.data?.User?.kyc_completed === true &&
-    //         response.data?.User?.is_verified === 2) ||
-    //       response.data?.User?.kyc_completed === false
-    //     ) {
-    //       setModalShow(!modalShow);
-    //     } else {
-    //       dispatch(notificationFail("KYC already Submitted"));
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     dispatch(notificationFail("Something went wrong with get user"));
-    //   });
   };
   const userDetailsAll = useSelector(userGetFullDetails);
   return (
@@ -126,6 +109,7 @@ export const AccountStatus = () => {
           )}
         </Card>
       </Col>
+      {/* here we have call kyc verification popup */}
       <KYCVerification
         show={
           ((userDetailsAll?.kyc_completed === true &&

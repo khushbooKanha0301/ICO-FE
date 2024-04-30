@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Form, Dropdown, FormControl } from "react-bootstrap";
 import Search from "../content/images/search.svg";
 import listData from "../component/countryData";
+import Sheet from "react-modal-sheet";
 
+//This component is used for kyc country dropdown for desktop and mobile view
 const SelectLocationKYCDropdown = (props) => {
   const {
     setSelectedLocationOption,
@@ -128,29 +130,18 @@ const SelectLocationKYCDropdown = (props) => {
               <div className="filter-option">
                 {showCountryOptions.map((data, key) => (
                   <div
-                    className="yourself-option"
-                    onChange={() => handleCheckboxLocationChange(data)}
+                    key={`${data.country}`}
+                    className={`yourself-option form-check`}
+                    onClick={() => handleCheckboxLocationChange(data)}
                   >
-                    <Form.Check
-                      key={`${data.country}`}
-                      type="checkbox"
-                      id={`checkbox-${data.iso}`}
-                      label={
-                        <div>
-                          <img
-                            src={phoneCountryData(data.code)}
-                            alt="Flag"
-                            className="rectangle-data"
-                          />
-                          {data.country}
-                        </div>
-                      }
-                      style={{
-                        width: " 100%",
-                        display: " flex",
-                        alignItems: "center",
-                      }}
-                    />
+                    <label className="form-check-label">
+                      <img
+                        src={phoneCountryData(data.code)}
+                        alt="Flag"
+                        className="rectangle-data"
+                      />
+                      {data.country}
+                    </label>
                     <div
                       className={`form-check-input check-input ${
                         JSON.stringify(selectedLocationOption) ===
@@ -191,102 +182,97 @@ const SelectLocationKYCDropdown = (props) => {
             className={!openDr ? "mobile-setting-dropdown-overlay" : ""}
             onClick={handleDrawerOverlay}
           ></div>
-          <div
-            id="drawer-swipe"
-            className={`fixed  z-40 w-full overflow-y-auto bg-white  rounded-t-lg dark:bg-gray-800 transition-transform bottom-0 left-0 right-0 ${
-              openDr ? "translate-y-full" : ""
-            } bottom-[60px]`}
-            tabindex="-1"
-            aria-labelledby="drawer-swipe-label"
-          >
-            <div className="drawer-swipe-wrapper">
-              <div className="drawer-swiper" onClick={handleDrawerOverlay} />
-              <div className="dropdown-menu-inner">
-                {searchLocationText && imageLocationSearchUrlSet ? (
-                  <img
-                    src={imageLocationSearchUrlSet}
-                    alt="Flag"
-                    className="rectangle-data"
-                  />
-                ) : null}
-                <FormControl
-                  type="text"
-                  placeholder="Search..."
-                  className="mr-3 mb-2"
-                  value={searchLocationText}
-                  onChange={handleSearchLocationChange}
-                />
-                <img src={Search} alt="" className="search-icon" />
-              </div>
-              <div className="filter-option">
-                {showCountryOptions.map((data, key) => (
-                  <>
+          <Sheet isOpen={!openDr} onClose={() => handleDrawerOverlay(false)}>
+            <Sheet.Container className="phone-number-dropdown">
+              <Sheet.Header />
+              <Sheet.Content>
+                <div tabindex="-1" aria-labelledby="drawer-swipe-label">
+                  <div className="drawer-swipe-wrapper">
                     <div
-                      className="yourself-option"
-                      onChange={() => handleCheckboxLocationChangeOnMobile(data)}
-                    >
-                      <Form.Check
-                        key={`${data.country}`}
-                        type="checkbox"
-                        id={`checkbox-${data.iso}`}
-                        label={
-                          <div>
+                      className="drawer-swiper"
+                      onClick={handleDrawerOverlay}
+                    />
+                    <div className="dropdown-menu-inner">
+                      {searchLocationText && imageLocationSearchUrlSet ? (
+                        <img
+                          src={imageLocationSearchUrlSet}
+                          alt="Flag"
+                          className="rectangle-data"
+                        />
+                      ) : null}
+                      <FormControl
+                        type="text"
+                        placeholder="Search..."
+                        className="mr-3 mb-2"
+                        value={searchLocationText}
+                        onChange={handleSearchLocationChange}
+                      />
+                      <img src={Search} alt="" className="search-icon" />
+                    </div>
+                    <div className="filter-option">
+                      {showCountryOptions.map((data, key) => (
+                        <div
+                          key={`${data.country}`}
+                          className={`yourself-option form-check`}
+                          onClick={() =>
+                            handleCheckboxLocationChangeOnMobile(data)
+                          }
+                        >
+                          <label className="form-check-label">
                             <img
                               src={phoneCountryData(data.code)}
                               alt="Flag"
                               className="rectangle-data"
                             />
                             {data.country}
-                          </div>
-                        }
-                        style={{
-                          width: " 100%",
-                          display: " flex",
-                          alignItems: "center",
-                        }}
-                      />
-                      <div
-                        className={`form-check-input check-input ${
-                          JSON.stringify(selectedLocationOption) ===
-                          JSON.stringify(data)
-                            ? "selected"
-                            : ""
-                        }`}
-                      />
+                          </label>
+                          <div
+                            className={`form-check-input check-input ${
+                              JSON.stringify(selectedLocationOption) ===
+                              JSON.stringify(data)
+                                ? "selected"
+                                : ""
+                            }`}
+                          />
+                        </div>
+                      ))}
                     </div>
-                  </>
-                ))}
-              </div>
-              <div className="edit-btn flex justify-center">
-                {selectedLocationOption ? (
-                  <>
-                    <button
-                      type="button"
-                      class="btn btn-primary mx-1"
-                      onClick={() =>
-                        handlePhoneNumberLocationMobile(selectedLocationOption)
-                      }
-                    >
-                      Save
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button type="button" class="btn btn-primary mx-1">
-                      Save
-                    </button>
-                  </>
-                )}
-                <button
-                  type="button"
-                  class="btn mx-1 bg-gray text-white"
-                  onClick={handleDrawerOverlay}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
+                    <div className="edit-btn flex justify-center">
+                      {selectedLocationOption ? (
+                        <>
+                          <button
+                            type="button"
+                            class="btn btn-primary mx-1"
+                            onClick={() =>
+                              handlePhoneNumberLocationMobile(
+                                selectedLocationOption
+                              )
+                            }
+                          >
+                            Save
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button type="button" class="btn btn-primary mx-1">
+                            Save
+                          </button>
+                        </>
+                      )}
+                      <button
+                        type="button"
+                        class="btn mx-1 bg-gray text-white"
+                        onClick={handleDrawerOverlay}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Sheet.Content>
+            </Sheet.Container>
+            <Sheet.Backdrop />
+          </Sheet>
         </>
       )}
     </div>
