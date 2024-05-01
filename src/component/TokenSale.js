@@ -55,6 +55,7 @@ export const TokenSale = () => {
   const [showOptions, setShowOptions] = useState(categories);
   const [category, setCategory] = useState("This Week");
   const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     const checkMobile = () => {
       const mobileMatch = window.matchMedia("(max-width: 767px)");
@@ -74,6 +75,7 @@ export const TokenSale = () => {
     setCategory(option.label);
     setFilterValue(option.value);
     setFilterLabel(option.label);
+    setShowDropdown(false);
   };
 
   const handleCheckboxChangeOnMobile = (option) => {
@@ -87,12 +89,15 @@ export const TokenSale = () => {
     setCategory(option.label);
     setShowDropdown(false);
   };
+
   const setTotalTokenValue = (value) => {
     setTotalToken(value);
   };
+
   const setLineGraphData = (value) => {
     setLineToken(value);
   };
+  
   const setTransactionData = (value) => {
     setTransactions(value);
   };
@@ -107,7 +112,6 @@ export const TokenSale = () => {
           >
             {!isMobile && (
               <>
-                {/* <Form.Control type="text" value={category} disabled /> */}
                 <div
                   className="form-control"
                   onClick={() => setShowDropdown(!showDropdown)}
@@ -155,7 +159,6 @@ export const TokenSale = () => {
             )}
             {isMobile && (
               <>
-                {/* <Form.Control type="text" value={category} disabled/> */}
                 <div
                   className="form-control"
                   onClick={() => setShowDropdown(!showDropdown)}

@@ -2880,7 +2880,7 @@ body {
   }
 
   img.circle-data {
-    margin-left: 21px;
+    margin-left: 0px;
     margin-right: 0px;
   }
 
@@ -4274,13 +4274,13 @@ img.rectangle-data {
 }
 
 .mobile-setting-dropdown {
-  width: 250px;
+  width: 120px;
 }
 
 .personalDataLocation {
   overflow: hidden;
   white-space: nowrap;
-  width: 58px;
+  width: 40px;
 }
 
 
@@ -4479,7 +4479,7 @@ img.rectangle-data {
 
 .kyc-mobile-popup {
   display: flex;
-  width: 125px;
+  width: 107px;
   align-items: center;
 
   svg {

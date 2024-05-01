@@ -20,7 +20,7 @@ const SelectOptionDropdown = (props) => {
   const [isMobile, setIsMobile] = useState(false);
   const [searchTextOrigin, setSearchTextOrigin] = useState(null);
 
-  const [openDr, setOpenDr] = useState(true);
+  const [openDr, setOpenDr] = useState(false);
   const [filteredOptions, setFilteredOptions] = useState(listData);
 
   useEffect(() => {
@@ -61,6 +61,7 @@ const SelectOptionDropdown = (props) => {
     setImageSearchUrl(imageUrl);
     setSearchText(`${option.country} (${option.code})`);
     setSearchTextOrigin(option);
+    setOpenDr(false);
   };
 
   const handleCheckboxChangeOnMobile = (option) => {
@@ -76,7 +77,7 @@ const SelectOptionDropdown = (props) => {
     setCountryCallingCode(option.code);
     const imageUrl = phoneCountryData(option.code);
     setImageUrl(imageUrl);
-    setOpenDr(true);
+    setOpenDr(false);
   };
 
   const phoneCountryData = (code) => {
@@ -84,12 +85,8 @@ const SelectOptionDropdown = (props) => {
     return `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`;
   };
 
-  const handleDrawer = () => {
-    setOpenDr(!openDr);
-  };
-
   const handleDrawerOverlay = () => {
-    setOpenDr(true);
+    setOpenDr(false);
   };
 
   return (
@@ -98,14 +95,18 @@ const SelectOptionDropdown = (props) => {
     >
       {!isMobile && (
         <>
-          <Dropdown className="account-setting-dropdown">
+          <Dropdown
+            className="account-setting-dropdown"
+            show={openDr}
+            onToggle={(isOpen) => setOpenDr(isOpen)}
+          >
             <Dropdown.Toggle>
               {listData.find((item) => item?.code === countryCallingCode)?.cca3}
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
                 <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
               </svg>
             </Dropdown.Toggle>
-            <Dropdown.Menu className="dropdownMenu">
+            <Dropdown.Menu className="dropdownMenu" show={openDr}>
               <div className="dropdown-menu-inner">
                 {searchText && imageSearchUrlSet ? (
                   <img
@@ -164,7 +165,7 @@ const SelectOptionDropdown = (props) => {
             data-drawer-edge="true"
             data-drawer-edge-offset="bottom-[60px]"
             aria-controls="drawer-swipe"
-            onClick={handleDrawer}
+            onClick={() => setOpenDr(true)}
           >
             <p className="text-white mb-0 personalDataLocation">
               {listData.find((item) => item?.code === countryCallingCode)?.cca3}
@@ -174,10 +175,10 @@ const SelectOptionDropdown = (props) => {
             </svg>
           </button>
           <div
-            className={!openDr ? "mobile-setting-dropdown-overlay" : ""}
+            className={openDr ? "mobile-setting-dropdown-overlay" : ""}
             onClick={handleDrawerOverlay}
           ></div>
-          <Sheet isOpen={!openDr} onClose={() => handleDrawerOverlay(false)}>
+          <Sheet isOpen={openDr} onClose={() => setOpenDr(false)}>
             <Sheet.Container className="phone-number-dropdown">
               <Sheet.Header />
               <Sheet.Content>
