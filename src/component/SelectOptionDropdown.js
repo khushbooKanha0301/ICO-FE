@@ -54,6 +54,7 @@ const SelectOptionDropdown = (props) => {
     }
   };
   const handleCheckboxChange = (option) => {
+    setFilteredOptions(listData)
     setSelectedOption(option);
     setCountryCallingCode(option.code);
     const imageUrl = phoneCountryData(option.code);

@@ -57,6 +57,7 @@ const SelectLocationDropdown = (props) => {
   };
 
   const handleCheckboxLocationChange = (option) => {
+    setFilteredLocationOptions(listData)
     setSelectedLocationOption(option);
     setCountry(option.iso);
     setNationality(option?.country);
