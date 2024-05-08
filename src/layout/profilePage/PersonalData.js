@@ -115,38 +115,38 @@ export const PersonalData = () => {
     }
   }, [userDetailsAll]);
 
-  useEffect(() => {
-    let user = userDetailsAll;
-    if (user) {
-      setFname(user?.fname ? user?.fname : "");
-      setLname(user?.lname ? user?.lname : "");
-      setPhone(user?.phone ? user?.phone : "");
-      setEmail(user?.email ? user?.email : "");
-      setCity(user?.city ? user?.city : "");
-      setDob(user?.dob ? moment(user?.dob, "DD/MM/YYYY").toDate() : "");
-      setLocation(user?.location ? user?.location : "US");
-    }
+  // useEffect(() => {
+  //   let user = userDetailsAll;
+  //   if (user) {
+  //     setFname(user?.fname ? user?.fname : "");
+  //     setLname(user?.lname ? user?.lname : "");
+  //     setPhone(user?.phone ? user?.phone : "");
+  //     setEmail(user?.email ? user?.email : "");
+  //     setCity(user?.city ? user?.city : "");
+  //     setDob(user?.dob ? moment(user?.dob, "DD/MM/YYYY").toDate() : "");
+  //     setLocation(user?.location ? user?.location : "US");
+  //   }
 
-    if (user?.location) {
-      setLocation(user?.location);
-      const result = listData.find((item) => item?.iso === user?.location);
-      setSelectedLocationOption(result);
-      setImageLocationUrl(
-        `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`
-      );
-      setImageLocationSearchUrl(
-        `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`
-      );
-      setSearchLocationText(result?.country);
-    }
+  //   if (user?.location) {
+  //     setLocation(user?.location);
+  //     const result = listData.find((item) => item?.iso === user?.location);
+  //     setSelectedLocationOption(result);
+  //     setImageLocationUrl(
+  //       `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`
+  //     );
+  //     setImageLocationSearchUrl(
+  //       `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`
+  //     );
+  //     setSearchLocationText(result?.country);
+  //   }
 
 
-    if (user?.phoneCountry) {
-      setCountryCallingCode(user?.phoneCountry);
-    } else {
-      setCountryCallingCode(" +1");
-    }
-  }, []);
+  //   if (user?.phoneCountry) {
+  //     setCountryCallingCode(user?.phoneCountry);
+  //   } else {
+  //     setCountryCallingCode(" +1");
+  //   }
+  // }, []);
 
   const onChange = (e) => {
     if (e.target.name === "fname") {

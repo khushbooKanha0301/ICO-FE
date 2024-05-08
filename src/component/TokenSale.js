@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Card, Form, FormControl, Dropdown } from "react-bootstrap";
+import { Card, Dropdown } from "react-bootstrap";
 import StatisticsChart from "./StatisticsChart";
 import ThisMonthSale from "./ThisMonthSale";
-import Search from "../content/images/search.svg";
 import Sheet from "react-modal-sheet";
 
 //this component is used for token sale dropdown

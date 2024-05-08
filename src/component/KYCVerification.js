@@ -84,6 +84,7 @@ export const KYCVerification = (props) => {
   const [searchLocationText, setSearchLocationText] = useState(
     `${selectedLocationOption?.country}`
   );
+  console.log("----------", searchLocationText)
 
   const [searchCountryText, setSearchCountryText] = useState(
     `${selectedCountryOption?.country}`
@@ -375,10 +376,8 @@ export const KYCVerification = (props) => {
       dispatch(userGetData(userGetData.userid)).unwrap();
     }
     fetchKYCData(userDetailsAll);
-    setImageLocationUrl("https://flagcdn.com/h40/us.png");
-    setImageCountryUrl("https://flagcdn.com/h40/us.png");
-    setCountry("US")
-    setLocation("US")
+    setCountry("US");
+    setLocation("US");
     setMname(null);
     setResAddress(null);
     setPostalCode(null);
@@ -386,8 +385,28 @@ export const KYCVerification = (props) => {
     setPassportUrl(null);
     setUserPhotoUrl(null);
     setCheckboxState([]);
+    setSearchLocationText("United States")
+    setSearchCountryText("United States")
+    setImageLocationUrl("https://flagcdn.com/h40/us.png");
+    setImageCountryUrl("https://flagcdn.com/h40/us.png");
+    setImageLocationSearchUrl("https://flagcdn.com/h40/us.png")
+    setImageCountrySearchUrl("https://flagcdn.com/h40/us.png")
+    setSelectedLocationOption({
+      country: "United States",
+      code: " +1",
+      iso: "US",
+      cca3: "USA",
+    })
+    setSelectedCountryOption({
+      country: "United States",
+      code: " +1",
+      iso: "US",
+      cca3: "USA",
+    })
     props.onHide();
     setStep(1);
+   
+    
   };
 
   return (
