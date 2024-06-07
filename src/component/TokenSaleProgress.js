@@ -3,9 +3,9 @@ import { formattedNumber } from "../utils";
 
 //this component is used for progress bar
 export const TokenSaleProgress = () => {
-  const MAX = 14000000;
-  const { balanceMid } = useSelector((state) => state?.currenyReducer);
-
+  const MAX = 25000000;
+  const {  sales } = useSelector((state) => state?.currenyReducer);
+  const balanceMid =  sales && sales?.user_purchase_token ? sales?.user_purchase_token  : 0;
   const getBackgroundSize = () => {
     return {
       backgroundSize: `${(balanceMid * 100) / MAX}% 100%`,
@@ -40,11 +40,11 @@ export const TokenSaleProgress = () => {
       <div className="soft-cap">
         <div className="soft-cap-left">
           Soft cap
-          <br />0
+          <br />10M
         </div>
         <div className="soft-cap-right">
-          Soft cap
-          <br />0
+          Hard cap
+          <br />15M
         </div>
       </div>
     </div>

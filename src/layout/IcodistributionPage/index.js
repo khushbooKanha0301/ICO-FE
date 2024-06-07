@@ -22,7 +22,6 @@ import { TwitterShareButton, FacebookShareButton } from "react-share";
 import {
   getTokenCount,
   getTotalMid,
-  resetRaisedMid,
   resetTokenData,
 } from "../../store/slices/currencySlice";
 
@@ -32,11 +31,9 @@ export const IcoDistributionPage = () => {
   const target = useRef(null);
   const acAddress = useSelector(userDetails);
   const dispatch = useDispatch();
-  const referralLink = "https://ico.middn.com?ref=" + acAddress?.account;
+  const referralLink = "https://ico.middn.com?ref=" + acAddress?.userid;
   const referralContent = `Hello 
-this is my referral link for ICO, you can use this link
-
-`;
+  this is my referral link for ICO, you can use this link`;
 
   useEffect(() => {
     let authToken = acAddress.authToken ? acAddress.authToken : null;
@@ -44,7 +41,6 @@ this is my referral link for ICO, you can use this link
       dispatch(getTotalMid()).unwrap();
       dispatch(getTokenCount()).unwrap();
     } else {
-      dispatch(resetRaisedMid());
       dispatch(resetTokenData());
     }
   }, [dispatch, acAddress.authToken]);

@@ -14,7 +14,6 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   getTokenCount,
   getTotalMid,
-  resetRaisedMid,
   resetTokenData,
 } from "../../store/slices/currencySlice";
 import { userDetails } from "../../store/slices/AuthSlice";
@@ -33,10 +32,13 @@ export const DashboardPage = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const referrance = queryParams.get("ref");
+
+  const { sales } = useSelector((state) => state?.currenyReducer);
   
   useEffect(() => {
     const getDashboardData = async () => {
       await dispatch(getTotalMid()).unwrap();
+
       let authToken = acAddress.authToken ? acAddress.authToken : null;
       if (
         authToken &&
@@ -45,8 +47,8 @@ export const DashboardPage = () => {
       ) {
         dispatch(getTokenCount()).unwrap();
         dispatch(userGetData(acAddress.userid)).unwrap();
-      } else {
-        dispatch(resetRaisedMid());
+      } 
+      else {
         dispatch(resetTokenData());
       }
     };
@@ -82,15 +84,6 @@ export const DashboardPage = () => {
       }
     };
     gettransaction();
-
-    // const queryParams = new URLSearchParams(location.search);
-    // const referrance = queryParams.get("ref");
-    // if (referrance) {
-    //   if (!acAddress.authToken) {
-    //     window.localStorage.setItem("referred_by", referrance);
-    //   }
-    //   navigate("/");
-    // }
   }, [acAddress?.authToken, userDetailsAll?.is_2FA_login_verified]);
 
   const handleDownload = () => {
@@ -136,7 +129,7 @@ export const DashboardPage = () => {
               <Row>
                 <Col lg="3">
                   <h4>Ico Coin</h4>
-                  <div className="icoin">1 Usd= 0.49 Mid</div>
+                  <div className="icoin">1 Usd= {sales && sales?.amount ? sales?.amount : 0} Mid</div>
                   <p>1 IDR = 0,0067 USD</p>
                   <Button variant="primary" onClick={buytokenLink}>
                     Buy Token Now
@@ -214,15 +207,6 @@ export const DashboardPage = () => {
                           <div style={{display: "flex" , alignItems: "center"}}>
                           {transaction?.status == "paid" && (
                             <CheckCircleIcon width="16" height="16" />
-                          )}
-                          {(transaction?.status == "canceled" ||
-                            transaction?.status == "expired" ||
-                            transaction?.status == "invalid") && (
-                            <CloseIcon width="16" height="16" />
-                          )}
-                          {(transaction?.status == "new" ||
-                            transaction?.status == "pending") && (
-                            <ExclamationIcon width="16" height="16" />
                           )}
                           {formattedNumber(transaction?.token_cryptoAmount)}
                           </div>

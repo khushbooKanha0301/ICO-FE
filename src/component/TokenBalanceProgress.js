@@ -2,15 +2,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { userDetails, userGetFullDetails } from "../store/slices/AuthSlice";
 import React from "react";
 import { Col, Row } from "react-bootstrap";
-import { formattedNumber } from "../utils";
 
 //this component is used for token balance progess bar
 export const TokenBalanceProgress = () => {
   const dispatch = useDispatch();
-  const MAX = 14000000;
-  const { raisedMid, tokenData } = useSelector(
-    (state) => state?.currenyReducer
-  );
+  const { tokenData } = useSelector((state) => state?.currenyReducer);
   const userData = useSelector(userDetails);
   const userDetailsAll = useSelector(userGetFullDetails);
   let authToken = userData.authToken ? userData.authToken : null;
@@ -24,10 +20,10 @@ export const TokenBalanceProgress = () => {
           <div className="token-amount">
             {authToken &&
             userDetailsAll?.is_2FA_login_verified === true &&
-            raisedMid !== null
-              ? parseFloat(formattedNumber(MAX - raisedMid)).toLocaleString()
+            tokenData &&
+            tokenData?.totalUserCount
+              ? tokenData?.totalUserCount
               : 0}
-             
             <span>MID</span>
           </div>
         </div>

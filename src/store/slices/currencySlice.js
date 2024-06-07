@@ -10,12 +10,13 @@ const initialState = {
   gbpCurrency: "",
   usdCurrency: "",
   cryptoAmount: 0,
-  raisedMid: null,
   balanceMid: 0,
   tokenData: {
     gbpCount: 0,
     eurCount: 0,
     audCount: 0,
+    usdCount: 0,
+    totalUserCount: 0
   },
   orderId: null,
   orderData: {},
@@ -93,23 +94,6 @@ export const getUSDCurrency = createAsyncThunk(
   }
 );
 
-export const getCryptoCurrency = createAsyncThunk(
-  "getCryptoCurrency",
-  async (action, { dispatch }) => {
-    try {
-      const response = await jwtAxios
-        .get(`users/getCryptoCurrencyDetails`)
-        .then((response) => response.json())
-        .then((data) => {
-          return data;
-        });
-      return response;
-    } catch (error) {
-      return error.message;
-    }
-  }
-);
-
 export const convertToCrypto = createAsyncThunk(
   "convertToCrypto",
   async (action, { dispatch }) => {
@@ -172,14 +156,30 @@ export const getTransactionByOrderId = createAsyncThunk(
   }
 );
 
+export const checkCurrentSale = createAsyncThunk(
+  "checkCurrentSale",
+  async (action, { dispatch }) => {
+    try {
+      const res = await jwtAxios
+        .get(`transactions/checkCurrentSale`)
+        .then((response) => {
+          return response?.data?.sales;
+        });
+      return res;
+    } catch (error) {
+      dispatch(notificationFail(error?.response?.data?.message));
+    }
+  }
+);
+
 const currencySlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    resetRaisedMid: (state, { payload }) => ({
-      ...state,
-      raisedMid: null,
-    }),
+    // resetRaisedMid: (state, { payload }) => ({
+    //   ...state,
+    //   raisedMid: null,
+    // }),
     resetTokenData: (state, { payload }) => ({
       ...state,
       tokenData: { gbpCount: 0, eurCount: 0, audCount: 0 },
@@ -243,9 +243,15 @@ const currencySlice = createSlice({
           return;
         }
         state.orderData = action.payload;
+      })
+      .addCase(checkCurrentSale.fulfilled, (state, action) => {
+        if (!action?.payload) {
+          return;
+        }
+        state.sales = action.payload;
       });
   },
 });
-export const { resetRaisedMid, resetTokenData, resetCryptoAmount, setOrderId } =
+export const { resetTokenData, resetCryptoAmount, setOrderId } =
   currencySlice.actions;
 export default currencySlice.reducer;

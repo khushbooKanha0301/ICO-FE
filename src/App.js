@@ -21,6 +21,7 @@ import {
   userGetData,
   userGetFullDetails,
 } from "./store/slices/AuthSlice";
+import { checkCurrentSale} from "./store/slices/currencySlice";
 import { database, firebaseMessages } from "./config";
 import { onValue, ref } from "firebase/database";
 
@@ -64,6 +65,7 @@ export const App = () => {
     if (acAddress?.userid) {
       dispatch(userGetData(acAddress.userid)).unwrap();
       dispatch(getCountryDetails());
+      dispatch(checkCurrentSale());
       var childKey = firebaseMessages.ICO_USERS + "/" + acAddress?.userid;
       const setReciverReadCountNode = ref(database, childKey);
       onValue(setReciverReadCountNode, (snapshot) => {

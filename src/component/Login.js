@@ -1,10 +1,12 @@
-import { useWeb3React } from "@web3-react/core";
-import Fortmatic from "fortmatic";
 import React, { useEffect, useState } from "react";
 import { Button, Col, Form, Modal, Row } from "react-bootstrap";
+import { useWeb3React } from "@web3-react/core";
+import { connectors as web3Connectors } from "../connectors";
+import Fortmatic from "fortmatic";
+import Web3 from "web3";
+import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import Web3 from "web3";
 import apiConfigs from "../service/config";
 import { checkAuth, logoutAuth, userDetails } from "../store/slices/AuthSlice";
 import {
@@ -12,7 +14,6 @@ import {
   notificationSuccess,
 } from "../store/slices/notificationSlice";
 import { useAccount, useConnect, useDisconnect, useSignMessage } from "wagmi";
-import { connectors as web3Connectors } from "../connectors";
 
 // this component is used for login model with functionality 
 export const LoginView = (props) => {
@@ -24,9 +25,9 @@ export const LoginView = (props) => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const referrance = queryParams.get("ref");
-
+ 
   const userData = useSelector(userDetails);
-  const { library, chainId, account, activate, deactivate } = useWeb3React();
+  const { library,  account, activate, deactivate } = useWeb3React();
   const { ethereum } = window;
   const { loading } = useSelector((state) => state?.loderReducer);
   
@@ -157,31 +158,6 @@ export const LoginView = (props) => {
   }, []);
 
   useEffect(() => {
-    const checkIfWalletIsConnected = async () => {
-      try {
-        const accounts = await ethereum.request({ method: "eth_accounts" });
-        if (accounts !== 0) {
-          let account = accounts[0]
-            ? accounts[0]
-            : userData.address
-            ? userData.address
-            : null;
-          if (account) setAccountAddress(account);
-        }
-      } catch (error) {}
-    };
-    let authToken = userData.authToken ? userData.authToken : null;
-    if (authToken) {
-      checkIfWalletIsConnected();
-    }
-  }, [ethereum, userData.authToken, userData.address]);
-
-  
-  useEffect(() => {
-    handleaccountaddress(accountAddress);
-  }, [accountAddress]);
-
-  useEffect(() => {
     const checkMetaAcc = async () => {
       if (userData.account && userData.account != "Connect Wallet") {
         let storageProvider = window.localStorage.getItem("provider");
@@ -207,40 +183,81 @@ export const LoginView = (props) => {
           }
         }
 
+        if (storageProvider == "coinbaseWallet") {
+          await activateInjectedProvider("coinbaseWallet");
+          setProvider("coinbaseWallet");
+        }
+
         if (
           //!metaAccounts ||
           metaAccounts &&
           metaAccounts[0] != userData.account.toLowerCase()
         ) {
           await disconnect();
-          props.setTwoFAModal(false);
+          settwofamodal(false);
           dispatch(notificationSuccess("User logout successfully !"));
         }
       }
 
       if (userData.account && userData.account == "Connect Wallet" && account) {
+       
         let checkAuthParams = {
           account: account,
           library: library,
           checkValue: checkValue,
           deactivate: deactivate,
           hideLoginModal: props.onHide,
-          refrence_by: referrance
         };
 
         settwofamodal(false);
         props.onHide();
-        let response = await dispatch(checkAuth(checkAuthParams)).unwrap();
-        if(referrance && response?.loginCheck == "success"){
-          dispatch(notificationSuccess("user login successfully"));
-          navigate("/")
-        } else if(response?.loginCheck == "success") {
-          dispatch(notificationSuccess("user login successfully"));
-        }
+        dispatch(checkAuth(checkAuthParams)).unwrap();
       }
     };
     checkMetaAcc();
   }, [account]);
+
+  const activateInjectedProvider = async (providerName) => {
+    if (!ethereum?.providers) {
+      return undefined;
+    }
+    let provider;
+    switch (providerName) {
+      case "coinbaseWallet":
+        provider = ethereum.providers.find(
+          ({ isCoinbaseWallet }) => isCoinbaseWallet
+        );
+        provider.disableReloadOnDisconnect();
+        break;
+      case "injected":
+        provider = ethereum.providers.find(({ isMetaMask }) => isMetaMask);
+        break;
+    }
+  };
+
+  useEffect(() => {
+    const checkIfWalletIsConnected = async () => {
+      try {
+        const accounts = await ethereum.request({ method: "eth_accounts" });
+        if (accounts !== 0) {
+          let account = accounts[0]
+            ? accounts[0]
+            : userData.address
+            ? userData.address
+            : null;
+          if (account) setAccountAddress(account);
+        }
+      } catch (error) {}
+    };
+    let authToken = userData.authToken ? userData.authToken : null;
+    if (authToken) {
+      checkIfWalletIsConnected();
+    }
+  }, [ethereum, userData.authToken, userData.address]);
+
+  useEffect(() => {
+    handleaccountaddress(accountAddress);
+  }, [accountAddress]);
 
   useEffect(() => {
     if (props.issign === true) {
@@ -320,6 +337,7 @@ export const LoginView = (props) => {
 
   useEffect(() => {
     const fetchData = async () => {
+    //console.log("fetchData ");
       if (data) {
         try {
           let checkAuthParams = {
@@ -330,6 +348,7 @@ export const LoginView = (props) => {
           };
           props.onHide();
         let response = await dispatch(checkAuth(checkAuthParams)).unwrap();
+        //console.log("response ", response);
         if(referrance && response?.loginCheck == "success"){
           dispatch(notificationSuccess("user login successfully"));
           navigate("/")
@@ -358,9 +377,10 @@ export const LoginView = (props) => {
     }
   }, [error]);
 
+  
   useEffect(() => {
     if (address) {
-      if (userData?.account === "Connect Wallet" && account) {
+      if (userData?.account === "Connect Wallet") {
         getWalletConnect();
       } else {
         if (userData?.account != address) {
@@ -372,35 +392,15 @@ export const LoginView = (props) => {
     }
   }, [address, userData?.account]);
 
-  const activateInjectedProvider = async (providerName) => {
-    if (!ethereum?.providers) {
-      return undefined;
-    }
-    let provider;
-    switch (providerName) {
-      case "coinbaseWallet":
-        provider = ethereum.providers.find(
-          ({ isCoinbaseWallet }) => isCoinbaseWallet
-        );
-        provider.disableReloadOnDisconnect();
-        break;
-      case "injected":
-        provider = ethereum.providers.find(({ isMetaMask }) => isMetaMask);
-        break;
-    }
-
-    // if (provider) {
-    //   ethereum.setSelectedProvider(provider);
-    // }
-  };
 
   const submitHandler = async (event) => {
     event.preventDefault();
-    if (!!account) {
-      disconnect();
-    }
     if (!checkValue) {
       dispatch(notificationFail("Please select wallet"));
+      return false;
+    }
+    if (!!account) {
+      disconnect();
     }
     switch (checkValue) {
       case "wallet_connect":

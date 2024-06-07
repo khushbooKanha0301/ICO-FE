@@ -2,53 +2,56 @@ import { debounce } from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import PaymentProcess from "../../component/PaymentProcess";
+import jwtAxios from "../../service/jwtAxios";
+import axios from "axios";
 import TokenSaleProgress from "../../component/TokenSaleProgress";
+import Web3 from "web3";
+import { networks } from "../../store/networks";
+import { ethers } from "ethers";
 import {
   convertToCrypto,
-  getGBPCurrency,
-  getAUDCurrency,
-  getUSDCurrency,
-  getEURCurrency,
   resetCryptoAmount,
   getTotalMid,
   getTokenCount,
-  resetRaisedMid,
   resetTokenData,
+  setOrderId,
 } from "../../store/slices/currencySlice";
-import { notificationFail } from "../../store/slices/notificationSlice";
+import {
+  notificationFail,
+  notificationSuccess,
+} from "../../store/slices/notificationSlice";
 import TokenBalanceProgress from "../../component/TokenBalanceProgress";
-import { formattedNumber } from "../../utils";
-import { useLocation } from "react-router-dom";
-import { userDetails } from "../../store/slices/AuthSlice";
+import { userDetails, userGetFullDetails } from "../../store/slices/AuthSlice";
 import LoginView from "../../component/Login";
+import PaymentProcess from "../../component/PaymentProcess";
+
+const recipientAddress = "0xf52543f63073140b3DB0393904DB07e3bb07484D";
+const ETHERSCAN_API_KEY = process.env.REACT_APP_ETHERSCAN_API_KEY;
+const BSCSCAN_API_KEY = process.env.REACT_APP_BSCSCAN_API_KEY;
+const FANTOM_API_KEY = process.env.REACT_APP_FANTOM_API_KEY;
+const POLOGON_API_KEY = process.env.REACT_APP_POLYGON_API_KEY;
 
 export const BuyTokenPage = () => {
-  const location = useLocation();
-  const [modalShow, setModalShow] = useState(false);
+  const dispatch = useDispatch();
+  const web3 = new Web3(Web3.givenProvider);
+  const acAddress = useSelector(userDetails);
+  const userDetailsAll = useSelector(userGetFullDetails);
   const [successModal, setSuccessModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
-  const [selectedCrypto, setSelectedCrypto] = useState("");
-  const acAddress = useSelector(userDetails);
-  const dispatch = useDispatch();
-  const [amount, setAmount] = useState(0);
-  const {
-    eurCurrency,
-    audCurrency,
-    gbpCurrency,
-    usdCurrency,
-    cryptoAmount,
-    raisedMid,
-    balanceMid,
-  } = useSelector((state) => state?.currenyReducer);
+  const [selectedNetwork, setSelectedNetwork] = useState("");
+
+  const [selectedNetworkETH, setSelectedNetworkETH] = useState(null);
+  const [selectedNetworkBNB, setSelectedNetworkBNB] = useState(null);
+  const [selectedNetworkMATIC, setSelectedNetworksMATIC] = useState(null);
+  const [selectedNetworkFTM, setSelectedNetworkFTM] = useState(null);
   const [readyForPayment, setReadyForPayment] = useState(true);
   const [modalLoginShow, setLoginModalShow] = useState(false);
-  const modalLoginToggle = () => setLoginModalShow(!modalLoginShow);
+  const [amount, setAmount] = useState(0);
   const [isSign, setIsSign] = useState(null);
-  const MAX_MID = 14000000;
-  const remainingBalance =
-    balanceMid !== null ? formattedNumber(MAX_MID - balanceMid) : 0;
 
+  const { cryptoAmount, sales } = useSelector((state) => state?.currenyReducer);
+
+  const modalLoginToggle = () => setLoginModalShow(!modalLoginShow);
   const handleAccountAddress = () => {
     setIsSign(false);
   };
@@ -59,7 +62,6 @@ export const BuyTokenPage = () => {
       dispatch(getTotalMid()).unwrap();
       dispatch(getTokenCount()).unwrap();
     } else {
-      dispatch(resetRaisedMid());
       dispatch(resetTokenData());
     }
   }, [dispatch, acAddress.authToken]);
@@ -67,74 +69,297 @@ export const BuyTokenPage = () => {
   useEffect(() => {
     const authToken = acAddress.authToken ? acAddress.authToken : null;
     if (authToken) {
-      if (cryptoAmount && cryptoAmount?.amount > remainingBalance) {
+      if (cryptoAmount && cryptoAmount?.amount > sales?.remaining_token) {
         setReadyForPayment(true);
         dispatch(notificationFail("Please Enter Correct Amount"));
       }
     }
-  }, [cryptoAmount, remainingBalance, acAddress.authToken]);
+  }, [cryptoAmount, sales, acAddress.authToken]);
 
-  const modalToggle = () => {
-    const authToken = acAddress.authToken ? acAddress.authToken : null;
-    if (authToken) {
-      if (selectedCrypto && Number(amount)) {
-        if (cryptoAmount && cryptoAmount?.amount > remainingBalance) {
-          setReadyForPayment(true);
-          dispatch(notificationFail("Please Enter Correct Amount"));
-          return false;
-        } else {
-          setReadyForPayment(false);
-          setModalShow(!modalShow);
-        }
-      } else {
-        if (selectedCrypto && !Number(amount)) {
-          setReadyForPayment(true);
-          dispatch(notificationFail("Please Select Crypto Amount"));
-        } else if (!selectedCrypto && Number(amount)) {
-          dispatch(notificationFail("Please Select Crypto Currency"));
-        } else {
-          setReadyForPayment(true);
-          dispatch(
-            notificationFail("Please Select Crypto Currency and Crypto Amount")
-          );
-        }
+  async function switchNetwork(network) {
+    const networkData = networks[network];
+
+    if (!networkData) {
+      dispatch(notificationFail("Network not recognized"));
+      return;
+    }
+
+    try {
+      const currentChainId = await window.ethereum.request({
+        method: "eth_chainId",
+      });
+
+      if (currentChainId === networkData.chainId) {
+        return;
       }
-    } else {
-      setReadyForPayment(false);
+
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: networkData.chainId }],
+      });
+    } catch (switchError) {
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: networkData.chainId,
+                chainName: networkData.chainName,
+                rpcUrls: networkData.rpcUrls,
+                nativeCurrency: networkData.nativeCurrency,
+                blockExplorerUrls: networkData.blockExplorerUrls,
+              },
+            ],
+          });
+
+          // Chain added successfully, attempt switch again
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: networkData.chainId }],
+          });
+        } catch (addError) {
+          dispatch(
+            notificationFail("Failed to add network. Please add it manually.")
+          );
+          throw addError; // Propagate error to stop further execution
+        }
+      } else if (switchError.code === -32002) {
+        dispatch(
+          notificationFail(
+            "Network switch request already pending. Please confirm the request in MetaMask."
+          )
+        );
+        throw switchError; // Propagate error to stop further execution
+      } else {
+        dispatch(
+          notificationFail("Failed to switch network. Please try again later.")
+        );
+        throw switchError; // Propagate error to stop further execution
+      }
+    }
+  }
+
+  async function getUSDTContract(network) {
+    const networksData = networks[network];
+    const usdtAddress = networksData.usdtAddress;
+    const usdtAbi = [
+      {
+        constant: true,
+        inputs: [
+          {
+            name: "_owner",
+            type: "address",
+          },
+        ],
+        name: "balanceOf",
+        outputs: [
+          {
+            name: "",
+            type: "uint256",
+          },
+        ],
+        payable: false,
+        stateMutability: "view",
+        type: "function",
+      },
+      {
+        constant: false,
+        inputs: [
+          {
+            name: "_to",
+            type: "address",
+          },
+          {
+            name: "_value",
+            type: "uint256",
+          },
+        ],
+        name: "transfer",
+        outputs: [
+          {
+            name: "",
+            type: "bool",
+          },
+        ],
+        payable: false,
+        stateMutability: "nonpayable",
+        type: "function",
+      },
+    ];
+    const contract = new web3.eth.Contract(usdtAbi, usdtAddress);
+    return contract;
+  }
+
+  const modalToggle = async () => {
+    const authToken = acAddress?.authToken || null;
+    if (!authToken) {
       setLoginModalShow(true);
+      return;
+    }
+
+    if (!userDetailsAll?.kyc_completed) {
+      dispatch(notificationFail("Please complete KYC to Buy Token"));
+      setReadyForPayment(false);
+      return;
+    }
+
+    if (!selectedNetwork || !Number(amount)) {
+      if (selectedNetwork && !Number(amount)) {
+        setReadyForPayment(true);
+        dispatch(notificationFail("Please Select Crypto Amount"));
+      } else if (!selectedNetwork && Number(amount)) {
+        dispatch(notificationFail("Please Select Network"));
+      } else {
+        setReadyForPayment(true);
+        dispatch(notificationFail("Please Select Network and Crypto Amount"));
+      }
+      return;
+    }
+
+    if (
+      cryptoAmount &&
+      cryptoAmount.amount > 0 &&
+      sales &&
+      sales.remaining_token > 0 &&
+      cryptoAmount.amount > sales.remaining_token
+    ) {
+      setReadyForPayment(true);
+      dispatch(notificationFail("Please Enter Correct Amount"));
+      return;
+    }
+
+    setReadyForPayment(false);
+
+    if (!sales) {
+      dispatch(notificationFail("There is No Sale for these Specific Dates"));
+      return;
+    }
+
+    try {
+      const data = {
+        amount: amount,
+        crypto_currency: "USD",
+        wallet_address: userDetailsAll?.wallet_address,
+        cryptoAmount: cryptoAmount.amount,
+      };
+
+      const res = await jwtAxios.post(`/transactions/verifyToken`, data);
+      if (res.data?.status !== "success" || !acAddress?.account) {
+        dispatch(notificationFail(res?.data?.message));
+        return;
+      }
+
+      try {
+        await switchNetwork(selectedNetwork);
+      } catch (error) {
+        return;
+      }
+
+      let amountToSend;
+      const contractInstance = await getUSDTContract(selectedNetwork);
+
+      if (selectedNetwork == "BNB") {
+        amountToSend = web3.utils.toWei(amount.toString(), "ether");
+      } else {
+        amountToSend = ethers.utils.parseUnits(amount.toString(), 6); // Convert amount to USDT units (6 decimals)
+      }
+
+      const transaction = await contractInstance.methods.transfer(
+        recipientAddress,
+        amountToSend
+      );
+      
+      const tx = {
+        from: acAddress?.account,
+        to: recipientAddress,
+        data: transaction.encodeABI(),
+      };
+      const response = await web3.eth.sendTransaction(tx);
+      const usertxHash = response.transactionHash;
+
+      const transactionData = {
+        user_wallet_address: userDetailsAll?.wallet_address,
+        receiver_wallet_address: recipientAddress,
+        amount: amount,
+        crypto_currency: "USD",
+        cryptoAmount: cryptoAmount.amount,
+        transactionHash: usertxHash,
+        gasUsed: response.gasUsed,
+        effectiveGasPrice: response.effectiveGasPrice,
+        cumulativeGasUsed: response.cumulativeGasUsed,
+        blockNumber: response.blockNumber,
+        blockHash: response.blockHash,
+      };
+
+      await jwtAxios.post(`/transactions/createOrder`, transactionData);
+
+      try {
+        const receiverData = await web3.eth.getTransaction(usertxHash);
+        const transactionUpdateData = {
+          user_wallet_address: userDetailsAll?.wallet_address,
+        };
+
+        if (
+          usertxHash === receiverData.hash &&
+          recipientAddress === receiverData.to
+        ) {
+          transactionUpdateData.transactionHash = receiverData.hash;
+          transactionUpdateData.status = "paid";
+        } else {
+          transactionUpdateData.transactionHash = usertxHash;
+          transactionUpdateData.status = "failed";
+        }
+
+        const updateResponse = await jwtAxios.put(
+          `/transactions/updateOrder`,
+          transactionUpdateData
+        );
+
+        if (updateResponse?.data.message === "success") {
+          dispatch(setOrderId(usertxHash));
+          setSuccessModal(true);
+          dispatch(notificationSuccess("Transaction Successful"));
+        } else {
+          dispatch(setOrderId(usertxHash));
+          setCancelModal(true);
+          dispatch(notificationFail("Transaction failed!!"));
+        }
+      } catch (error) {
+        dispatch(notificationFail("Error fetching transactions"));
+      }
+    } catch (error) {
+      dispatch(
+        notificationFail(
+          "An error occurred during the transaction. Please try again."
+        )
+      );
     }
   };
 
-  useEffect(() => {
-    dispatch(getEURCurrency());
-    dispatch(getAUDCurrency());
-    dispatch(getGBPCurrency());
-    dispatch(getUSDCurrency());
-    dispatch(resetCryptoAmount());
-  }, []);
+  const handleSelectedCrypto = (e) => {
+    setSelectedNetwork(e);
+  };
 
   const handleChangeAmount = (e) => {
     const value = e.target.value.replace(/\D/g, "");
-    if (selectedCrypto) {
-      setAmount(value);
+    setAmount(value);
+    const usdAmount = value;
+    const data = {
+      usdAmount: usdAmount,
+      cryptoSymbol: "USD",
+    };
+    onChangeAmount(data);
 
-      const usdAmount = value;
-      const data = {
-        usdAmount: usdAmount,
-        cryptoSymbol: selectedCrypto,
-      };
-      onChangeAmount(data);
-
-      if (value) {
-        if (value > 0) {
-          setReadyForPayment(false);
-        } else {
-          setReadyForPayment(true);
-          dispatch(notificationFail("Please Enter Correct Amount"));
-        }
+    if (value) {
+      if (value > 0) {
+        setReadyForPayment(false);
       } else {
         setReadyForPayment(true);
+        dispatch(notificationFail("Please Enter Correct Amount"));
       }
+    } else {
+      setReadyForPayment(true);
     }
   };
 
@@ -146,105 +371,136 @@ export const BuyTokenPage = () => {
   );
 
   const handledAmountFocus = () => {
-    if (!selectedCrypto) {
+    if (!selectedNetwork) {
       setReadyForPayment(true);
-      dispatch(notificationFail("Please Select Crypto Currency"));
+      dispatch(notificationFail("Please Select Network"));
     }
   };
-
-  const handleSelectedCrypto = (e) => {
-    setSelectedCrypto(e);
-    const data = {
-      usdAmount: amount,
-      cryptoSymbol: e,
-    };
-    dispatch(convertToCrypto(data));
-  };
-
-  function handleChildMessage(event) {
-    if (event.data === "updateURL") {
-      setSuccessModal(true);
-      dispatch(resetCryptoAmount());
-      setAmount(0);
-      setSelectedCrypto("");
-      dispatch(getTotalMid()).unwrap();
-      dispatch(getTokenCount()).unwrap();
-    }
-    if (event.data === "cancleURL") {
-      setCancelModal(true);
-      dispatch(resetCryptoAmount());
-      setAmount(0);
-      setSelectedCrypto("");
-    }
-  }
 
   useEffect(() => {
-    window.addEventListener("message", handleChildMessage, false);
-    if (location.search?.includes("success=true")) {
-      window.close();
-      if (window.opener) {
-        window.opener.postMessage("updateURL", "*");
-      }
-    }
-    if (location.search?.includes("success=false")) {
-      window.close();
-      if (window.opener) {
-        window.opener.postMessage("cancleURL", "*");
-      }
-    }
-  }, [location]);
+    dispatch(resetCryptoAmount());
+  }, []);
 
   const closeModal = () => {
     setSuccessModal(false);
     setCancelModal(false);
   };
 
-  const handleOptionClick = (crypto) => {
-    setSelectedCrypto(crypto === selectedCrypto ? null : crypto);
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [responseFTM, responseETH, responseBNB, responseMATIC] =
+          await Promise.all([
+            axios.get("https://api.ftmscan.com/api", {
+              params: {
+                module: "gastracker",
+                action: "gasoracle",
+                apikey: FANTOM_API_KEY,
+              },
+            }),
+            axios.get("https://api.etherscan.io/api", {
+              params: {
+                module: "gastracker",
+                action: "gasoracle",
+                apikey: ETHERSCAN_API_KEY,
+              },
+            }),
+            axios.get("https://api.bscscan.com/api", {
+              params: {
+                module: "gastracker",
+                action: "gasoracle",
+                apikey: BSCSCAN_API_KEY,
+              },
+            }),
+            axios.get("https://api.polygonscan.com/api", {
+              params: {
+                module: "gastracker",
+                action: "gasoracle",
+                apikey: POLOGON_API_KEY,
+              },
+            }),
+          ]);
+
+        if (
+          responseFTM.data &&
+          responseFTM.data.result &&
+          responseFTM.data.result.ProposeGasPrice
+        ) {
+          setSelectedNetworkFTM(responseFTM.data.result.ProposeGasPrice);
+        }
+
+        if (
+          responseETH.data &&
+          responseETH.data.result &&
+          responseETH.data.result.ProposeGasPrice
+        ) {
+          setSelectedNetworkETH(responseETH.data.result.ProposeGasPrice);
+        }
+        if (
+          responseBNB.data &&
+          responseBNB.data.result &&
+          responseBNB.data.result.ProposeGasPrice
+        ) {
+          setSelectedNetworkBNB(responseBNB.data.result.ProposeGasPrice);
+        }
+        if (
+          responseMATIC.data &&
+          responseMATIC.data.result &&
+          responseMATIC.data.result.ProposeGasPrice
+        ) {
+          setSelectedNetworksMATIC(responseMATIC.data.result.ProposeGasPrice);
+        }
+      } catch (error) {
+        console.error("Error fetching gas price:", error);
+      }
+    };
+
+    fetchData();
+    setInterval(fetchData, 50000);
+    // Clean up function to clear interval when component unmounts
+    //return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="buy-token-view">
       <Row>
         <Col xl="8">
           <Card body className="cards-dark choose-currency">
-            <Card.Title as="h4">
-              Choose currency and calculate token price
-            </Card.Title>
+            <Card.Title as="h4">Choose Network</Card.Title>
             <Card.Text>
               You can buy our token using the below currency choices to become
               part of our project.
             </Card.Text>
             <Row>
               <>
-                <Form.Group controlId="selectedCrypto">
+                <Form.Group controlId="selectedNetwork">
                   <Row>
                     <Col md="6">
                       <div
                         className="form-check"
-                        onClick={() => handleSelectedCrypto("USD")}
+                        onClick={() => handleSelectedCrypto("ETH")}
                       >
                         <div
                           className={`form-check-input ${
-                            selectedCrypto === "USD" ? "checked" : ""
+                            selectedNetwork === "ETH" ? "checked" : ""
                           }`}
                         />
                         <label class="form-check-label">
                           <>
-                            <div className="radio-label">USD</div>
+                            <div className="radio-label">Ethereum</div>
                             <div className="currency-info">
                               <div className="currency-type">
                                 <span className="currency-flag">
                                   <img
                                     className="currency-flag"
-                                    src={require("../../content/images/usd-icon-resized.png")}
-                                    alt="Bitcoin"
+                                    src={require("../../content/images/tether-usdt.png")}
+                                    alt="ETH"
                                   />
                                 </span>
-                                USD
+                                USDT
                               </div>
                               <div className="currency-amount">
-                                {usdCurrency} USD
+                                fees: {selectedNetworkETH}
                               </div>
                             </div>
                           </>
@@ -254,29 +510,30 @@ export const BuyTokenPage = () => {
                     <Col md="6">
                       <div
                         className="form-check"
-                        onClick={() => handleSelectedCrypto("GBP")}
+                        onClick={() => handleSelectedCrypto("FTM")}
                       >
                         <div
                           className={`form-check-input ${
-                            selectedCrypto === "GBP" ? "checked" : ""
+                            selectedNetwork === "FTM" ? "checked" : ""
                           }`}
                         />
                         <label class="form-check-label">
                           <>
-                            <div className="radio-label">GBP</div>
+                            <div className="radio-label">Fantom</div>
                             <div className="currency-info">
                               <div className="currency-type">
                                 <span className="currency-flag">
                                   <img
                                     className="currency-flag"
-                                    src={require("../../content/images/gbp-icon-resized.png")}
-                                    alt="Bitcoin"
+                                    src={require("../../content/images/tether-usdt.png")}
+                                    alt="fantam"
                                   />
                                 </span>
-                                GBP
+                                USDT
                               </div>
                               <div className="currency-amount">
-                                {gbpCurrency} USD
+                                {/* {gbpCurrency} USD */}
+                                fees: {selectedNetworkFTM}
                               </div>
                             </div>
                           </>
@@ -286,29 +543,29 @@ export const BuyTokenPage = () => {
                     <Col md="6">
                       <div
                         className="form-check"
-                        onClick={() => handleSelectedCrypto("EUR")}
+                        onClick={() => handleSelectedCrypto("MATIC")}
                       >
                         <div
                           className={`form-check-input ${
-                            selectedCrypto === "EUR" ? "checked" : ""
+                            selectedNetwork === "MATIC" ? "checked" : ""
                           }`}
                         />
                         <label class="form-check-label">
                           <>
-                            <div className="radio-label">EUR</div>
+                            <div className="radio-label">MATIC</div>
                             <div className="currency-info">
                               <div className="currency-type">
                                 <span className="currency-flag">
                                   <img
                                     className="currency-flag"
-                                    src={require("../../content/images/eur-icon.png")}
-                                    alt="Bitcoin"
+                                    src={require("../../content/images/tether-usdt.png")}
+                                    alt="trx"
                                   />
                                 </span>
-                                EUR
+                                USDT
                               </div>
                               <div className="currency-amount">
-                                {eurCurrency} USD
+                                fees: {selectedNetworkMATIC}
                               </div>
                             </div>
                           </>
@@ -318,29 +575,31 @@ export const BuyTokenPage = () => {
                     <Col md="6">
                       <div
                         className="form-check"
-                        onClick={() => handleSelectedCrypto("AUD")}
+                        onClick={() => handleSelectedCrypto("BNB")}
                       >
                         <div
                           className={`form-check-input ${
-                            selectedCrypto === "AUD" ? "checked" : ""
+                            selectedNetwork === "BNB" ? "checked" : ""
                           }`}
                         />
                         <label class="form-check-label">
                           <>
-                            <div className="radio-label">AUD</div>
+                            <div className="radio-label">
+                              Binance Smart Chain
+                            </div>
                             <div className="currency-info">
                               <div className="currency-type">
                                 <span className="currency-flag">
                                   <img
                                     className="currency-flag"
-                                    src={require("../../content/images/aud-icon.png")}
-                                    alt="Bitcoin"
+                                    src={require("../../content/images/tether-usdt.png")}
+                                    alt="bnb"
                                   />
                                 </span>
-                                AUD
+                                USDT
                               </div>
                               <div className="currency-amount">
-                                {audCurrency} USD
+                                fees: {selectedNetworkBNB}
                               </div>
                             </div>
                           </>
@@ -374,10 +633,9 @@ export const BuyTokenPage = () => {
                             onChange={(e) => handleChangeAmount(e)}
                             onFocus={handledAmountFocus}
                             value={amount}
-                            // disabled={!selectedCrypto}
                           />
                         </div>
-                        <div className="currency-amount">{selectedCrypto}</div>
+                        <div className="currency-amount">USDT</div>
                       </div>
                     </>
                   </label>
@@ -388,25 +646,16 @@ export const BuyTokenPage = () => {
                   <label class="form-check-label">
                     <>
                       <div className="radio-label">Rate</div>
-                      {!cryptoAmount?.amount ? (
-                        <>
-                          <div className="currency-info">
-                            <div className="currency-type">0</div>
-                            <div className="currency-amount">MID</div>
+                      <>
+                        <div className="currency-info">
+                          <div className="currency-type">
+                            {cryptoAmount && cryptoAmount?.amount
+                              ? cryptoAmount?.amount
+                              : 0}
                           </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="currency-info">
-                            <div className="currency-type">
-                              {cryptoAmount?.amount
-                                ? cryptoAmount?.amount
-                                : "0"}
-                            </div>
-                            <div className="currency-amount">MID</div>
-                          </div>
-                        </>
-                      )}
+                          <div className="currency-amount">MID</div>
+                        </div>
+                      </>
                     </>
                   </label>
                 </div>
@@ -429,7 +678,7 @@ export const BuyTokenPage = () => {
               </div>
               <div className="d-flex justify-content-between align-items-center border-top">
                 <div className="payment-label fw-bold">
-                  Total {selectedCrypto}
+                  Total {selectedNetwork}
                 </div>
                 <div className="payment-amount">{amount}</div>
               </div>
@@ -475,11 +724,6 @@ export const BuyTokenPage = () => {
       </Row>
       {/* this is payment process component for buy token  */}
       <PaymentProcess
-        show={modalShow}
-        onHide={() => setModalShow(false)}
-        selectedCrypto={selectedCrypto}
-        amount={amount}
-        cryptoAmount={cryptoAmount?.amount}
         successModal={successModal}
         cancelModal={cancelModal}
         closeModal={closeModal}

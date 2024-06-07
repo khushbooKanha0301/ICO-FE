@@ -73,38 +73,6 @@ export const TransactionPage = () => {
     gettransaction();
   }, [currentPage, typeFilter, statusFilter, acAddress.authToken]);
 
-  function handleChildMessage(event) {
-    if (event.data === "updateURL" || event.data === "cancleURL") {
-      gettransaction();
-      window.removeEventListener("message", handleChildMessage, false);
-    }
-  }
-
-  const payOrder = (payment_url) => {
-    window.addEventListener("message", handleChildMessage, false);
-    const width = 500;
-    const height = 500;
-    const left = window.screen.width / 2 - width / 2;
-    const top = window.screen.height / 2 - height / 2;
-    window.open(
-      payment_url,
-      "Payment",
-      `width=${width},height=${height},left=${left},top=${top}`
-    );
-  };
-
-  // const handleFilterTypeChange = (event) => {
-  //   console.log("event ", event);
-  //   if (event.target.checked) {
-  //     setTypeFilter((prevValues) => [...prevValues, event.target.value]);
-  //   } else {
-  //     setTypeFilter((prevValues) =>
-  //       prevValues.filter((v) => v !== event.target.value)
-  //     );
-  //   }
-  //   setCurrentPage(1);
-  // };
-
   const handleFilterTypeChange = (filterType) => {
     setTypeFilter((prevValues) => {
       if (prevValues.includes(filterType)) {
@@ -173,19 +141,6 @@ export const TransactionPage = () => {
 
           <Dropdown.Divider />
           <div className="dropdown-title">STATUS</div>
-         
-          <div
-            className="form-check"
-            onClick={() => handleFilterStatusChange("new")}
-          >
-            <div
-              className={`form-check-input ${
-                statusFilter.includes("new") ? "checked" : ""
-              }`}
-            />
-            <label class="form-check-label">New</label>
-          </div>
-
           <div
             className="form-check"
             onClick={() => handleFilterStatusChange("pending")}
@@ -240,18 +195,15 @@ export const TransactionPage = () => {
                   {transaction?.status == "paid" && (
                     <CheckCircleIcon width="32" height="33" />
                   )}
-                  {(transaction?.status == "canceled" ||
-                    transaction?.status == "expired" ||
-                    transaction?.status == "invalid") && (
+                  {transaction?.status == "failed" && (
                     <CloseIcon width="32" height="33" />
                   )}
-                  {(transaction?.status == "new" ||
-                    transaction?.status == "pending") && (
+                  {transaction?.status == "pending" && (
                     <ExclamationIcon width="30" height="29" />
                   )}
                 </div>
                 <div>
-                  <p className="text-white mb-1">{transaction?.tran_id}</p>
+                  <p className="text-white mb-1">{transaction?._id}</p>
                   <p>
                     {getDateFormate(
                       transaction?.created_at,
@@ -286,7 +238,7 @@ export const TransactionPage = () => {
               </div>
               <div className="transaction-from">
                 <p className="text-white mb-1">
-                  {hideAddress(transaction?.wallet_address, 5)}
+                  {hideAddress(transaction?.user_wallet_address, 5)}
                 </p>
                 <p>
                   {getDateFormate(
@@ -315,20 +267,8 @@ export const TransactionPage = () => {
                       </ButtonGroup>
                     </>
                   )}
-                  {(transaction?.status == "new" ||
-                    transaction?.status == "pending") && (
-                    <>
-                      <Button
-                        variant="outline-info"
-                        onClick={() => payOrder(transaction?.payment_url)}
-                      >
-                        Pay
-                      </Button>
-                    </>
-                  )}
-                  {(transaction?.status == "canceled" ||
-                    transaction?.status == "invalid" ||
-                    transaction?.status == "expired") && (
+
+                  {(transaction?.status == "failed") && (
                     <ButtonGroup aria-label="Transaction Action">
                       <Button
                         variant="secondary"

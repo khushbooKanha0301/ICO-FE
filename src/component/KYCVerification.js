@@ -84,8 +84,7 @@ export const KYCVerification = (props) => {
   const [searchLocationText, setSearchLocationText] = useState(
     `${selectedLocationOption?.country}`
   );
-  console.log("----------", searchLocationText)
-
+  
   const [searchCountryText, setSearchCountryText] = useState(
     `${selectedCountryOption?.country}`
   );

@@ -1,17 +1,15 @@
 import React from "react";
 import { Button, Modal, Table } from "react-bootstrap";
-import { formattedNumber, getDateFormate, getDateFormateString } from "../utils";
+import { formattedNumber, getDateFormate } from "../utils";
 
 //this component is used for transaction details 
 export const TransactionDetails = (props) => {
   let orderContent = "";
-  if(props?.stateTransactions?.tran_id != undefined)
+  if(props?.stateTransactions?.transactionHash != undefined)
   {
-    orderContent = ( props?.stateTransactions?.status === "canceled" ||
-    props?.stateTransactions?.status === "expired" ||
-    props?.stateTransactions?.status === "invalid") ? (
+    orderContent = ( props?.stateTransactions?.status === "failed") ? (
       <p>
-        The order no. {props?.stateTransactions?.tran_id} was placed on
+        The order no. {props?.stateTransactions?.transactionHash} was placed on
         {" " + getDateFormate(props?.stateTransactions?.created_at,"MMM DD, YYYY HH:mm:ss")}.
       </p>
     ) : (
@@ -21,7 +19,7 @@ export const TransactionDetails = (props) => {
           Payment).
         </p>
         <p>
-          The order no. {props?.stateTransactions?.tran_id} was placed on
+          The order no. {props?.stateTransactions?.transactionHash} was placed on
           {" " + getDateFormate(props?.stateTransactions?.created_at,"MMM DD, YYYY HH:mm:ss")}
           .
         </p>
@@ -31,6 +29,7 @@ export const TransactionDetails = (props) => {
   {
     orderContent = (<p>This order is placed by referral link</p>)
   }
+  
   return (
     <Modal
       {...props}
@@ -44,20 +43,6 @@ export const TransactionDetails = (props) => {
       <Modal.Header closeButton className="transaction-header">
       <Modal.Title>
           Transaction Details
-          {(props?.stateTransactions?.status === "canceled" ||
-            props?.stateTransactions?.status === "expired" || 
-            props?.stateTransactions?.status === "invalid") && (
-              <Button variant="outline-danger">
-                {props?.stateTransactions?.status.charAt(0).toUpperCase() +
-                  props?.stateTransactions?.status.slice(1)}
-              </Button>
-            )}
-          {props?.stateTransactions?.status === "new" && (
-            <Button variant="outline-info">
-              {props?.stateTransactions?.status.charAt(0).toUpperCase() +
-                props?.stateTransactions?.status.slice(1)}
-            </Button>
-          )}
           {props?.stateTransactions?.status === "paid" && (
             <Button variant="outline-success">
               {props?.stateTransactions?.status.charAt(0).toUpperCase() +
@@ -100,11 +85,6 @@ export const TransactionDetails = (props) => {
             </tbody>
           </Table>
         </div>
-        {(props?.stateTransactions?.status === "rejected" || props?.stateTransactions?.status === "canceled") && (
-          <p className="text-danger mb-0">
-            You have canceled this transaction.
-          </p>
-        )} 
         {props?.stateTransactions?.status === "paid" && (
           <p className="text-success mb-0">
             Transaction has been approved at{" "}
