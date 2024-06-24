@@ -1,21 +1,36 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
-import { userDetails, userGetFullDetails } from "./store/slices/AuthSlice";
-import DashboardComponent from "./layout/DashboardComponent";
+import { userDetails , userGetData} from "./store/slices/AuthSlice";
 
-const AuthRoute = ({ setModalShow,children }) => {
+const AuthRoute = ({ children }) => {
+  const dispatch = useDispatch();
   const userData = useSelector(userDetails);
-  const userAllDetails = useSelector(userGetFullDetails);
+  const [getUser, setGetUser] = useState(null);
   const authed = userData.authToken;
-    if(!authed || userAllDetails?.is_2FA_login_verified === false)
-    {
-      return <Navigate to={"/"} />;
-    }
-    if(authed && (userAllDetails &&  (userAllDetails?.is_2FA_login_verified === true || userAllDetails?.is_2FA_login_verified === undefined)))
-    {
-      return children;
-    }
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const user = await dispatch(userGetData()).unwrap();
+        setGetUser(user);
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+        setGetUser(null); // Handle error case
+      }
+    };
+    fetchUserDetails();
+  }, []);
+
+  if (!authed || (getUser && getUser.is_2FA_verified === false)) {
+    return <Navigate to={"/"} />;
+  }
+
+  if (authed && (!getUser || getUser.is_2FA_verified === true || getUser.is_2FA_verified === undefined)) {
+    return children;
+  }
+
+  return null;
 };
 
 export default AuthRoute;

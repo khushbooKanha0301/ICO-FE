@@ -278,7 +278,6 @@ export const KYCVerification = (props) => {
             setISKYCSubmitted(true);
             setkycsubmitted(true);
             setError(false);
-            // dispatch(userGetData(userGetData.userid));
             setStep(step + 1);
             dispatch(notificationSuccess("KYC verification is submitted"));
           }
@@ -651,7 +650,7 @@ export const KYCVerification = (props) => {
             <>
               <Form.Group className="form-group mb-4">
                 <Form.Label>Country/Region of Issue</Form.Label>
-                <div className="d-flex items-center phone-number-dropdown justify-between phone-number-dropdown-kyc ">
+                <div className="d-flex items-center location-dropdown justify-between phone-number-dropdown-kyc ">
                   {!isMobile && (
                     <>
                       <Form.Control

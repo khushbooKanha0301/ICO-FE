@@ -182,10 +182,19 @@ export const userGetData = createAsyncThunk(
     dispatch(setLoading(true));
     try {
       let user = {};
+      let is_2FA_verified = false;
+      let kyc_verify = 0;
+      let kyc_status = false;
+      let is_2FA_enable = false;
+      
       let imageUrl = "";
       await jwtAxios
         .get(`/users/getuser`)
         .then((response) => {
+          is_2FA_verified = response.headers['2fa'] === 'true'; 
+          kyc_verify = parseInt(response.headers['kyc_verify']) || 0;
+          kyc_status = response.headers['kyc_status'] === 'true';
+          is_2FA_enable = response.headers['2fa_enable'] === 'true';
           user = response.data.User;
           imageUrl = response.data.imageUrl;
         })
@@ -193,7 +202,7 @@ export const userGetData = createAsyncThunk(
           dispatch(notificationFail("Something went wrong with get user"));
         });
       dispatch(setLoading(false));
-      return { ...user, imageUrl: imageUrl };
+      return { ...user, imageUrl: imageUrl , is_2FA_verified: is_2FA_verified, kyc_verify: kyc_verify, kyc_status: kyc_status, is_2FA_enable: is_2FA_enable};
     } catch (error) {
       dispatch(setLoading(false));
 

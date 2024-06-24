@@ -23,13 +23,16 @@ import {
   getTokenCount,
   getTotalMid,
   resetTokenData,
+  getAllSales,
 } from "../../store/slices/currencySlice";
+import { getDateFormate } from "../../utils";
 
 export const IcoDistributionPage = () => {
   const textAreaRef = useRef(null);
   const [show, setShow] = useState(false);
   const target = useRef(null);
   const acAddress = useSelector(userDetails);
+  const { allSales } = useSelector((state) => state?.currenyReducer);
   const dispatch = useDispatch();
   const referralLink = "https://ico.middn.com?ref=" + acAddress?.userid;
   const referralContent = `Hello 
@@ -40,6 +43,7 @@ export const IcoDistributionPage = () => {
     if (authToken) {
       dispatch(getTotalMid()).unwrap();
       dispatch(getTokenCount()).unwrap();
+      dispatch(getAllSales());
     } else {
       dispatch(resetTokenData());
     }
@@ -68,15 +72,26 @@ export const IcoDistributionPage = () => {
               <Row className="g-0">
                 <Col md="6" lg="5">
                   <h5>
-                    Pre-Sale ICO<Badge bg="success">RUNNING</Badge>
+                    Pre-Sale ICO
+                    {/* <Badge bg="success">RUNNING</Badge> */}
                   </h5>
-                  <Card.Text>Start at Dec 02, 2018 - 11:00 AM</Card.Text>
-                  <Card.Text>End at Jan 15, 2019 - 11:00 AM</Card.Text>
+                  {/* <Card.Text>Start at Dec 02, 2018 - 11:00 AM</Card.Text> */}
+                  <Card.Text>Start at {getDateFormate(
+                    allSales[0]?.start_sale,
+                    "MMM DD, YYYY HH:mm:ss"
+                  )}</Card.Text>
+                  
+                  <Card.Text>
+                    End at {getDateFormate(
+                    allSales[0]?.end_sale,
+                    "MMM DD, YYYY HH:mm:ss"
+                  )}
+                  </Card.Text>
                 </Col>
                 <Col md="6" lg="4">
-                  <h5>0.00080 ETH</h5>
-                  <Card.Text>Min purchase - 0.35 ETH</Card.Text>
-                  <Card.Text>Token Distribute - 250,000</Card.Text>
+                  <h5>4.00 MID</h5>
+                  <Card.Text>Min purchase - 4.00 MID</Card.Text>
+                  <Card.Text>Token Distribute - {allSales[0]?.total_token}</Card.Text>
                 </Col>
                 <Col md="12" lg="auto" className="ms-auto">
                   <Button variant="outline-success">10 % Bonus</Button>
@@ -86,15 +101,26 @@ export const IcoDistributionPage = () => {
               <Row className="g-0">
                 <Col md="6" lg="5">
                   <h5>
-                    Main ICO Sale<Badge bg="secondary">RUNNING</Badge>
+                    Main ICO Sale
+                    {/* <Badge bg="secondary">RUNNING</Badge> */}
                   </h5>
-                  <Card.Text>Start at Dec 02, 2018 - 11:00 AM</Card.Text>
-                  <Card.Text>End at Jan 15, 2019 - 11:00 AM</Card.Text>
+                  <Card.Text>
+                  Start at {getDateFormate(
+                    allSales[1]?.start_sale,
+                    "MMM DD, YYYY HH:mm:ss"
+                  )}
+                  </Card.Text>
+                  <Card.Text>
+                  End at {getDateFormate(
+                    allSales[1]?.end_sale,
+                    "MMM DD, YYYY HH:mm:ss"
+                  )}
+                  </Card.Text>
                 </Col>
                 <Col md="6" lg="4">
-                  <h5>0.00080 ETH</h5>
-                  <Card.Text>Min purchase - 0.35 ETH</Card.Text>
-                  <Card.Text>Token Distribute - 250,000</Card.Text>
+                  <h5>3.45 MID</h5>
+                  <Card.Text>Min purchase - 3.45 MID</Card.Text>
+                  <Card.Text>Token Distribute - {allSales[1]?.total_token}</Card.Text>
                 </Col>
               </Row>
             </div>

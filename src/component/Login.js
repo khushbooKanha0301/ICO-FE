@@ -17,7 +17,7 @@ import { useAccount, useConnect, useDisconnect, useSignMessage } from "wagmi";
 
 // this component is used for login model with functionality 
 export const LoginView = (props) => {
-  const { handleaccountaddress, settwofamodal } = props;
+  const { handleaccountaddress, settwofamodal , setGetUser} = props;
   const [checkValue, setCheckValue] = useState(null);
   const [accountAddress, setAccountAddress] = useState("");
   const dispatch = useDispatch();
@@ -273,6 +273,7 @@ export const LoginView = (props) => {
       disonnectWalletConnect();
     }
     dispatch(logoutAuth()).unwrap();
+    setGetUser([])
     deactivate();
     refreshState();
     navigate("/");
@@ -337,7 +338,6 @@ export const LoginView = (props) => {
 
   useEffect(() => {
     const fetchData = async () => {
-    //console.log("fetchData ");
       if (data) {
         try {
           let checkAuthParams = {
@@ -348,7 +348,7 @@ export const LoginView = (props) => {
           };
           props.onHide();
         let response = await dispatch(checkAuth(checkAuthParams)).unwrap();
-        //console.log("response ", response);
+        
         if(referrance && response?.loginCheck == "success"){
           dispatch(notificationSuccess("user login successfully"));
           navigate("/")
@@ -356,7 +356,6 @@ export const LoginView = (props) => {
           dispatch(notificationSuccess("user login successfully"));
         }
         } catch (error) {
-          // Handle errors if necessary
           console.error("Error fetching data:", error);
         }
       }

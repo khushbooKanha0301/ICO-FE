@@ -19,7 +19,6 @@ import {
   getCountryDetails,
   userDetails,
   userGetData,
-  userGetFullDetails,
 } from "./store/slices/AuthSlice";
 import { checkCurrentSale} from "./store/slices/currencySlice";
 import { database, firebaseMessages } from "./config";
@@ -33,10 +32,9 @@ export const App = () => {
   const modalToggle = () => setModalShow(!modalShow);
   const [isSign, setIsSign] = useState(null);
   const acAddress = useSelector(userDetails);
-  const userData = useSelector(userGetFullDetails);
   const [twoFAModal, setTwoFAModal] = useState(true);
   const [isResponsive, setIsResponsive] = useState(false);
-
+  const [getUser, setGetUser] = useState(null);
   const handleAccountAddress = (address) => {
     setIsSign(false);
   };
@@ -62,28 +60,40 @@ export const App = () => {
   };
 
   useEffect(() => {
-    if (acAddress?.userid) {
-      dispatch(userGetData(acAddress.userid)).unwrap();
-      dispatch(getCountryDetails());
-      dispatch(checkCurrentSale());
-      var childKey = firebaseMessages.ICO_USERS + "/" + acAddress?.userid;
-      const setReciverReadCountNode = ref(database, childKey);
-      onValue(setReciverReadCountNode, (snapshot) => {
-        if (snapshot && snapshot.val() && localStorage.getItem("token")) {
-          let findUser = snapshot.val();
-          if (findUser.is_active === false || findUser.is_delete === true) {
-            signOut();
-          }
+    const fetchData = async () => {
+      if (acAddress?.userid) {
+        try {
+          const user = await dispatch(userGetData(acAddress.userid)).unwrap();
+          setGetUser(user);
+          dispatch(getCountryDetails());
+          dispatch(checkCurrentSale());
+          var childKey = firebaseMessages.ICO_USERS + "/" + acAddress?.userid;
+          const setReciverReadCountNode = ref(database, childKey);
+          const unsubscribe = onValue(setReciverReadCountNode, (snapshot) => {
+            if (snapshot && snapshot.val() && localStorage.getItem("token")) {
+              let findUser = snapshot.val();
+              if (findUser.is_active === false || findUser.is_delete === true) {
+                signOut();
+              }
+            }
+          });
+
+          // Cleanup function to unsubscribe from Firebase listener
+          return () => unsubscribe();
+        } catch (error) {
+          console.error('Failed to fetch user data', error);
         }
-      });
-    }
-  }, [acAddress?.userid]);
+      }
+    };
+
+    fetchData();
+  }, [acAddress?.userid, dispatch]);
 
   useEffect(() => {
-    if (userData?.is_2FA_login_verified === false) {
+    if (getUser && getUser?.is_2FA_verified === false) {
       setTwoFAModal(true);
     }
-  }, [userData]);
+  }, [getUser]);
   
   return (
     <>
@@ -91,6 +101,7 @@ export const App = () => {
         <ToastContainer />
         <SnackBar />
         <Sidebar
+          getUser={getUser}
           clickHandler={sidebarToggle}
           setIsOpen={setIsOpen}
           setModalShow={setModalShow}
@@ -98,6 +109,7 @@ export const App = () => {
         />
         <div className="wrapper">
           <Header
+            getUser={getUser}
             clickHandler={sidebarToggle}
             clickModalHandler={modalToggle}
             signOut={signOut}
@@ -108,10 +120,10 @@ export const App = () => {
                 path="/"
                 element={
                   <>
-                    <DashboardComponent />
+                    <DashboardComponent getUser={getUser}/>
                     {twoFAModal === true &&
-                      userData?.is_2FA_login_verified === false && (
-                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} />
+                      getUser && getUser?.is_2FA_verified === false && (
+                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} getUser={getUser} setGetUser={setGetUser}/>
                       )}
                   </>
                 }
@@ -122,25 +134,20 @@ export const App = () => {
                   <>
                     <BuyTokenComponent />
                     {twoFAModal === true &&
-                      userData?.is_2FA_login_verified === false && (
-                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} />
+                      getUser && getUser?.is_2FA_verified === false && (
+                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} getUser={getUser} setGetUser={setGetUser}/>
                       )}
                   </>
-                  // <AuthRoute setModalShow={setModalShow}>
-                  // </AuthRoute>
                 }
               />
               <Route
                 path="/ico-distribution"
                 element={
-                  // <AuthRoute>
-
-                  // </AuthRoute>
                   <>
                     <IcoDistributionComponent />
                     {twoFAModal === true &&
-                      userData?.is_2FA_login_verified === false && (
-                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} />
+                      getUser && getUser?.is_2FA_verified === false && (
+                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} getUser={getUser} setGetUser={setGetUser}/>
                       )}
                   </>
                 }
@@ -148,13 +155,11 @@ export const App = () => {
               <Route
                 path="/staking"
                 element={
-                  // <AuthRoute>
-                  // </AuthRoute>
                   <>
                     <StakeScallopComponent />
                     {twoFAModal === true &&
-                      userData?.is_2FA_login_verified === false && (
-                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} />
+                      getUser && getUser?.is_2FA_verified === false && (
+                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} getUser={getUser} setGetUser={setGetUser}/>
                       )}
                   </>
                 }
@@ -185,6 +190,7 @@ export const App = () => {
         </div>
       </Container>
       <LoginView
+        setGetUser={setGetUser}
         show={modalShow}
         onHide={() => setModalShow(false)}
         handleaccountaddress={handleAccountAddress}

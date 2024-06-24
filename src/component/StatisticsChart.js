@@ -3,13 +3,14 @@ import Highcharts from "highcharts/highstock";
 import React, { useEffect, useState } from "react";
 import jwtAxios from "../service/jwtAxios";
 import moment from "moment";
-import { userDetails, userGetFullDetails } from "../store/slices/AuthSlice";
+import { userDetails } from "../store/slices/AuthSlice";
 import { useSelector } from "react-redux";
 import apiConfigs from "../service/config";
 import axios from "axios";
 
 //this component is used for Token graph(StatisticsChart) for desktop view
 export const StatisticsChart = (props) => {
+  const { getUser } = props;
   const colors = ["#ffffff"];
   const filter = props?.filterValue;
   const [transactionsAll, setTransactionData] = useState([]);
@@ -17,8 +18,7 @@ export const StatisticsChart = (props) => {
   const [categoryValue, setCategoryValue] = useState([]);
   const [yAxisPosition, setYAxisPosition] = useState(true);
   const acAddress = useSelector(userDetails);
-  const userDetailsAll = useSelector(userGetFullDetails);
-
+  
   const transactionData = async (filter) => {
     let from_date = null;
     let to_date = null;
@@ -85,8 +85,8 @@ export const StatisticsChart = (props) => {
     }
 
     if (
-      acAddress?.authToken &&
-      userDetailsAll?.is_2FA_login_verified === true && (acAddress?.account == userDetailsAll.wallet_address)
+      acAddress?.authToken && getUser &&
+      getUser?.is_2FA_verified === true && acAddress?.account
     ) {
       await jwtAxios
         .post(`/transactions/getSaleGrapthValues`, {
@@ -101,7 +101,7 @@ export const StatisticsChart = (props) => {
           props.setLineGraphData(response?.data?.totalToken);
         });
     } 
-    if(!acAddress?.authToken || (userDetailsAll && userDetailsAll?.is_2FA_login_verified === false)){
+    if(!acAddress?.authToken || (getUser && getUser?.is_2FA_verified === false)){
       await axios
         .post(`${apiConfigs.API_URL}auth/getSaleGrapthValues`, {
           option: filter,
@@ -120,7 +120,7 @@ export const StatisticsChart = (props) => {
     if (filter) {
       transactionData(filter);
     }
-  }, [filter, acAddress?.authToken, userDetailsAll?.is_2FA_login_verified]);
+  }, [filter, acAddress?.authToken, getUser?.is_2FA_verified]);
 
   useEffect(() => {
     if (transactionsAll) {

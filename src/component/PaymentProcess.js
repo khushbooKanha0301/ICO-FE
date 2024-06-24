@@ -1,17 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { Button, Modal, Row } from "react-bootstrap";
+import React, { useEffect } from "react";
+import { Button, Modal } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { notificationFail } from "../store/slices/notificationSlice";
-
-import { userGetFullDetails } from "../store/slices/AuthSlice";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   getTransactionByOrderId,
 } from "../store/slices/currencySlice";
 export const PaymentProcess = (props) => {
 
   let navigate = useNavigate();
-  const location = useLocation();
+ 
   const { orderId, orderData } = useSelector(
     (state) => state?.currenyReducer
   );
@@ -46,7 +43,7 @@ export const PaymentProcess = (props) => {
             Your Order no. {orderData?.transactionHash} has been placed successfully.
           </p>
           <p>
-            Please make your payment of 4.29 USD through bank to the below bank
+            Please make your payment of 4.29 USDT through bank to the below bank
             address. The token balance will appear in your account only after
             your transaction gets approved by our team.
           </p>

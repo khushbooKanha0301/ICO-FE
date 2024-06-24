@@ -96,12 +96,14 @@ const TwoFAvalidate = (props) => {
 
         await jwtAxios
           .post("users/validateTOTP", { token: otpValue })
-          .then((res) => {
+          .then(async (res) => {
             if (res.data.verified) {
               setInvalidAttempts("");
               setLastAttemptTime("");
-              dispatch(userGetData());
+              const user = await dispatch(userGetData()).unwrap();
+              props.setGetUser(user);
               navigate("/");
+              props.setTwoFAModal(false);
               dispatch(notificationSuccess("user login successfully"));
             } else {
               if (now - lastAttemptTime1 >= 5 * 60 * 1000) {
@@ -135,6 +137,7 @@ const TwoFAvalidate = (props) => {
       }
     }
   };
+  
 
   useEffect(() => {
     inputRefs.current[0].focus();
@@ -158,6 +161,7 @@ const TwoFAvalidate = (props) => {
   const logout = async () => {
     deactivate();
     await dispatch(logoutAuth()).unwrap();
+    props.setGetUser([]);
     navigate("/");
     props.setTwoFAModal(false);
   };

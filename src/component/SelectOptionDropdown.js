@@ -91,9 +91,7 @@ const SelectOptionDropdown = (props) => {
   };
 
   return (
-    <div
-      className={`d-flex items-center phone-number-dropdown justify-between relative`}
-    >
+    <>
       {!isMobile && (
         <>
           <Dropdown
@@ -267,7 +265,7 @@ const SelectOptionDropdown = (props) => {
           </Sheet>
         </>
       )}
-    </div>
+    </>
   );
 };
 

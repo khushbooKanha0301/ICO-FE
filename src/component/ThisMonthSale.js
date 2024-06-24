@@ -4,19 +4,19 @@ import React, { useEffect, useState } from "react";
 import { DownArrowIcon, UpArrowIcon } from "./SVGIcon";
 import moment from "moment";
 import { useSelector } from "react-redux";
-import { userDetails, userGetFullDetails } from "../store/slices/AuthSlice";
+import { userDetails } from "../store/slices/AuthSlice";
 import jwtAxios from "../service/jwtAxios";
 import axios from "axios";
 import apiConfigs from "../service/config";
 
 // this component is used for token sale graph 
 export const ThisMonthSale = (props) => {
+  const { getUser } = props;
   const [prevTransaction, SetPreviousTransaction] = useState([]);
   const [transactionMainData, setTransactionMainData] = useState([]);
   const [isIncreased, setIsIncreased] = useState(false);
   const [percentage, setPercentage] = useState(0);
-  const userDetailsAll = useSelector(userGetFullDetails);
-
+  
   useEffect(() => {
     const tarnsArray1 = props?.transactions.map((trans) => trans.value);
     const tarnsArray2 = prevTransaction.map((trans) => trans.value);
@@ -186,8 +186,8 @@ export const ThisMonthSale = (props) => {
       to_date = endOfThisYear.endOf("day").format("YYYY-MM-DDTHH:mm:ssZ");
     }
     if (
-      acAddress?.authToken &&
-      userDetailsAll?.is_2FA_login_verified === true
+      acAddress?.authToken && getUser &&
+      getUser?.is_2FA_verified === true
     ) {
       await jwtAxios
         .post(`/transactions/getLineGrapthValues`, {
@@ -199,7 +199,7 @@ export const ThisMonthSale = (props) => {
           SetPreviousTransaction(response?.data?.transactionData);
         });
     } 
-    if(!acAddress?.authToken || (userDetailsAll && userDetailsAll?.is_2FA_login_verified === false)){
+    if(!acAddress?.authToken || (getUser && getUser?.is_2FA_verified === false)){
       await axios
         .post(`${apiConfigs.API_URL}auth/getLineGrapthValues`, {
           option: filter,
@@ -215,7 +215,7 @@ export const ThisMonthSale = (props) => {
     if (props?.filterValue) {
       transactionData(props?.filterValue);
     }
-  }, [props?.filterValue, acAddress?.authToken,userDetailsAll?.is_2FA_login_verified]);
+  }, [props?.filterValue, acAddress?.authToken, getUser?.is_2FA_verified]);
 
   return (
     <>

@@ -5,30 +5,28 @@ import TwoFactorSetup from "../../component/TwoFactorSetup";
 import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2/src/sweetalert2.js";
 import {
-  userDetails,
-  userGetData,
-  userGetFullDetails,
+  userGetData
 } from "../../store/slices/AuthSlice";
 import jwtAxios from "../../service/jwtAxios";
 import { notificationFail, notificationSuccess } from "../../store/slices/notificationSlice";
 
 export const GoogleAuth = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const userData = useSelector(userGetFullDetails);
   const [is2FAEnabled, setIs2FAEnabled] = useState(null);
   const [secret, setSecret] = useState("");
   const [qrCodeUrl, setQRCodeUrl] = useState("");
   const dispatch = useDispatch();
-  const acAddress = useSelector(userDetails);
+  const [getUser, setGetUser] = useState(null);
+
   useEffect(() => {
-    if (userData) {
-      if (userData?.is_2FA_enabled === undefined) {
+    if (getUser) {
+      if (getUser?.is_2FA_enable === undefined) {
         setIs2FAEnabled(false);
       } else {
-        setIs2FAEnabled(userData?.is_2FA_enabled);
+        setIs2FAEnabled(getUser?.is_2FA_enable);
       }
     }
-  }, [userData?.is_2FA_enabled]);
+  }, [getUser?.is_2FA_enable]);
 
   const openModal = async () => {
       await jwtAxios
@@ -67,10 +65,11 @@ export const GoogleAuth = () => {
       if (result.isConfirmed) {
          await jwtAxios
            .get("/users/disable2FA")
-           .then((res) => {
+           .then(async (res) => {
              dispatch(notificationSuccess(res?.data?.message));
              setIs2FAEnabled(false);
-             dispatch(userGetData(userGetData.userid)).unwrap();
+             const user = await dispatch(userGetData(userGetData.userid)).unwrap();
+             setGetUser(user);     
            })
            .catch((err) => {
              if(typeof err == "string")
@@ -83,12 +82,11 @@ export const GoogleAuth = () => {
       }
     });
   };
+
   return (
     <Card body className="cards-dark two-fa">
       <Card.Title as="h2">2FA</Card.Title>
-      <div
-        className="ul-button-row"
-      >
+      <div className="ul-button-row">
         <ul className="mb-3">
           <li>
             <div className="two-fa-step">

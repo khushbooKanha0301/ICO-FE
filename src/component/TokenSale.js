@@ -5,7 +5,8 @@ import ThisMonthSale from "./ThisMonthSale";
 import Sheet from "react-modal-sheet";
 
 //this component is used for token sale dropdown
-export const TokenSale = () => {
+export const TokenSale = (props) => {
+  const { getUser } = props;
   const [showDropdown, setShowDropdown] = useState(false);
   const [totalToken, setTotalToken] = useState(0);
   const [filterValue, setFilterValue] = useState("thisWeekDate");
@@ -107,7 +108,7 @@ export const TokenSale = () => {
         <div className="d-flex justify-content-between align-items-center">
           <Card.Title as="h3">Token Sale Graph</Card.Title>
           <div
-            className={`statisticBox d-flex items-center phone-number-dropdown justify-between relative token-sales-filter`}
+            className={`statisticBox d-flex items-center token-graph-dropdown justify-between relative token-sales-filter`}
           >
             {!isMobile && (
               <>
@@ -265,6 +266,7 @@ export const TokenSale = () => {
             <div className="divider"></div>
             <div className="transaction-wrapper">
               <ThisMonthSale
+                getUser={getUser}
                 filterValue={filterValue}
                 lineToken={lineToken}
                 transactions={transactions}
@@ -274,6 +276,7 @@ export const TokenSale = () => {
           </div>
           <div className="transaction-chart">
             <StatisticsChart
+              getUser={getUser}
               filterValue={filterValue}
               setTransactionData={setTransactionData}
               setTotalTokenValue={setTotalTokenValue}

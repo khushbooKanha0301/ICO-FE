@@ -48,7 +48,7 @@ export const TransactionPage = () => {
 
   const gettransaction = async () => {
     if (currentPage) {
-      var bodyData = {
+      let bodyData = {
         typeFilter: typeFilter,
         statusFilter: statusFilter,
       };
@@ -85,13 +85,6 @@ export const TransactionPage = () => {
   };
 
   const handleFilterStatusChange = (event) => {
-    // if (event.target.checked) {
-    //   setStatusFilter((prevValues) => [...prevValues, event.target.value]);
-    // } else {
-    //   setStatusFilter((prevValues) =>
-    //     prevValues.filter((v) => v !== event.target.value)
-    //   );
-    // }
     setStatusFilter((prevValues) => {
       if (prevValues.includes(event)) {
         return prevValues.filter((f) => f !== event);
@@ -166,14 +159,14 @@ export const TransactionPage = () => {
 
            <div
             className="form-check"
-            onClick={() => handleFilterStatusChange("expired")}
+            onClick={() => handleFilterStatusChange("failed")}
           >
             <div
               className={`form-check-input ${
-                statusFilter.includes("expired") ? "checked" : ""
+                statusFilter.includes("failed") ? "checked" : ""
               }`}
             />
-            <label class="form-check-label">Expired</label>
+            <label class="form-check-label">Failed</label>
           </div>
 
         </DropdownButton>
@@ -182,9 +175,9 @@ export const TransactionPage = () => {
         <div className="flex-table">
           <div className="flex-table-header">
             <div className="transaction-tranx-no">Tranx No</div>
+            <div className="transaction-usd-amount">USDT Amount</div>
             <div className="transaction-token">Token</div>
-            <div className="transaction-amount">Amount</div>
-            <div className="transaction-usd-amount">USD Amount</div>
+            <div className="transaction-amount">Network</div>
             <div className="transaction-from">From</div>
             <div className="transaction-type">Type</div>
           </div>
@@ -212,20 +205,6 @@ export const TransactionPage = () => {
                   </p>
                 </div>
               </div>
-              <div className="transaction-token">
-                <p className="text-white mb-1">
-                  {transaction?.token_cryptoAmount <= 200
-                    ? formattedNumber(transaction?.token_cryptoAmount)
-                    : "+200"}
-                </p>
-                <p>Token</p>
-              </div>
-              <div className="transaction-amount">
-                <p className="text-white mb-1">
-                  {formattedNumber(transaction?.price_amount)}
-                </p>
-                <p>{transaction?.price_currency}</p>
-              </div>
               <div className="transaction-usd-amount">
                 <p className="text-white mb-1">
                   {formattedNumber(
@@ -235,6 +214,18 @@ export const TransactionPage = () => {
                   )}
                 </p>
                 <p>{transaction?.receive_currency}</p>
+              </div>
+              <div className="transaction-token">
+                <p className="text-white mb-1">
+                  {transaction?.token_cryptoAmount <= 200
+                    ? formattedNumber(transaction?.token_cryptoAmount)
+                    : "+200"}
+                </p>
+              </div>
+              <div className="transaction-amount">
+                <p className="text-white mb-1">
+                  {transaction?.network}
+                </p>
               </div>
               <div className="transaction-from">
                 <p className="text-white mb-1">
@@ -249,35 +240,31 @@ export const TransactionPage = () => {
               </div>
               <div className="transaction-type">
                 <div className="d-flex justify-content-between align-items-center">
-                  <Button variant="outline-success">
-                    {transaction.source
-                      ? transaction.source.charAt(0).toUpperCase() +
-                        transaction.source.slice(1)
-                      : "Purchase"}
-                  </Button>
                   {transaction?.status == "paid" && (
-                    <>
-                      <ButtonGroup aria-label="Transaction Action">
-                        <Button
-                          variant="secondary"
-                          onClick={() => modalToggle(transaction)}
-                        >
-                          <EyeIcon width="24" height="24" />
-                        </Button>
-                      </ButtonGroup>
-                    </>
+                    <Button variant="outline-success">
+                      Confirmed 
+                    </Button>
+                  )}
+                  {transaction?.status == "failed" && (
+                    <Button variant="outline-danger">
+                      Failed 
+                    </Button>                  
+                  )}
+                  {transaction?.status == "pending" && (
+                    <Button variant="outline-pending">
+                      UnConfirmed 
+                    </Button>
                   )}
 
-                  {(transaction?.status == "failed") && (
-                    <ButtonGroup aria-label="Transaction Action">
-                      <Button
-                        variant="secondary"
-                        onClick={() => modalToggle(transaction)}
-                      >
-                        <EyeIcon width="24" height="24" />
-                      </Button>
-                    </ButtonGroup>
-                  )}
+                  <ButtonGroup aria-label="Transaction Action">
+                    <Button
+                      variant="secondary"
+                      onClick={() => modalToggle(transaction)}
+                    >
+                      <EyeIcon width="24" height="24" />
+                    </Button>
+                  </ButtonGroup>
+                    
                 </div>
               </div>
             </div>

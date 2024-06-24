@@ -75,6 +75,10 @@ export const TransactionDetails = (props) => {
                 <td>0 Bonus</td>
               </tr>
               <tr>
+                <th>Network</th>
+                <td>{props?.stateTransactions?.network}</td>
+              </tr>
+              <tr>
                 <th>Total Token</th>
                 <td>{formattedNumber(props?.stateTransactions?.token_cryptoAmount)} Coin</td>
               </tr>

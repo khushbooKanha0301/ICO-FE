@@ -4,14 +4,14 @@ import { formattedNumber } from "../utils";
 //this component is used for progress bar
 export const TokenSaleProgress = () => {
   const MAX = 25000000;
-  const {  sales } = useSelector((state) => state?.currenyReducer);
-  const balanceMid =  sales && sales?.user_purchase_token ? sales?.user_purchase_token  : 0;
+  const { balanceMid } = useSelector((state) => state?.currenyReducer);
+  
   const getBackgroundSize = () => {
     return {
       backgroundSize: `${(balanceMid * 100) / MAX}% 100%`,
       zIndex: `${balanceMid > 88 ? 1 : 0}`,
-    };
-  };
+    }
+  }
 
   return (
     <div className="input-slider">
@@ -39,12 +39,12 @@ export const TokenSaleProgress = () => {
       </div>
       <div className="soft-cap">
         <div className="soft-cap-left">
-          Soft cap
-          <br />10M
+          <p style={{marginBottom: "0.3rem"}}>Soft cap</p>
+          10M
         </div>
         <div className="soft-cap-right">
-          Hard cap
-          <br />15M
+          <p style={{marginBottom: "0.3rem"}}>Hard cap</p>
+          15M
         </div>
       </div>
     </div>

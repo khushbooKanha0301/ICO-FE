@@ -9,7 +9,6 @@ import {
 } from "../../component/SVGIcon";
 import TokenSale from "../../component/TokenSale";
 import TokenSaleProgress from "../../component/TokenSaleProgress";
-import { userGetData, userGetFullDetails } from "../../store/slices/AuthSlice";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getTokenCount,
@@ -21,13 +20,12 @@ import { formattedNumber, getDateFormate, hideAddress } from "../../utils";
 import jwtAxios from "../../service/jwtAxios";
 import TokenBalanceProgress from "../../component/TokenBalanceProgress";
 
-export const DashboardPage = () => {
+export const DashboardPage = (props) => {
+  const { getUser } = props;
   const [transactions, setTransactions] = useState(null);
   const [transactionLoading, setTransactionLoading] = useState(false);
   const dispatch = useDispatch();
   const acAddress = useSelector(userDetails);
-  const userDetailsAll = useSelector(userGetFullDetails);
-
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -38,22 +36,19 @@ export const DashboardPage = () => {
   useEffect(() => {
     const getDashboardData = async () => {
       await dispatch(getTotalMid()).unwrap();
-
       let authToken = acAddress.authToken ? acAddress.authToken : null;
       if (
         authToken &&
-        userDetailsAll &&
-        userDetailsAll?.is_2FA_login_verified === true && (acAddress.account == userDetailsAll.wallet_address)
+        getUser && getUser?.is_2FA_verified === true && acAddress.account
       ) {
         dispatch(getTokenCount()).unwrap();
-        dispatch(userGetData(acAddress.userid)).unwrap();
       } 
       else {
         dispatch(resetTokenData());
       }
     };
     getDashboardData();
-  }, [dispatch, acAddress.authToken, userDetailsAll?.is_2FA_login_verified]);
+  }, [dispatch, acAddress.authToken, getUser]);
 
   const buytokenLink = () => {
     navigate("/buy-token");
@@ -66,8 +61,8 @@ export const DashboardPage = () => {
       if (
         acAddress &&
         acAddress?.authToken &&
-        userDetailsAll &&
-        userDetailsAll?.is_2FA_login_verified === true && (acAddress.account == userDetailsAll.wallet_address)
+        acAddress.account &&
+        getUser && getUser?.is_2FA_verified === true
         ) {
         await jwtAxios
           .post(`/transactions/getTransactions?page=1&pageSize=3`, {})
@@ -79,12 +74,12 @@ export const DashboardPage = () => {
             setTransactionLoading(false);
           });
       }
-      if(!acAddress?.authToken || (userDetailsAll && userDetailsAll.is_2FA_login_verified === false)){
+      if(!acAddress?.authToken || (getUser && getUser?.is_2FA_verified === false)){
         setTransactionLoading(false);
       }
     };
     gettransaction();
-  }, [acAddress?.authToken, userDetailsAll?.is_2FA_login_verified]);
+  }, [acAddress?.authToken, getUser]);
 
   const handleDownload = () => {
     const link = document.createElement("a");
@@ -94,13 +89,13 @@ export const DashboardPage = () => {
   };
 
   let addressLine = "";
-  if(acAddress.account === "Connect Wallet" && userDetailsAll === undefined)
+  if(acAddress.account === "Connect Wallet" && getUser === undefined)
   {
     addressLine = "Connect Wallet";
-  }else if(acAddress.account !== "Connect Wallet" && userDetailsAll === undefined)
+  }else if(acAddress.account !== "Connect Wallet" && getUser === undefined)
   {
     addressLine = "";
-  }else if(acAddress.account !== "Connect Wallet" && userDetailsAll?.is_2FA_login_verified !== false && (acAddress.account == userDetailsAll?.wallet_address))
+  }else if(acAddress.account !== "Connect Wallet" &&  getUser && getUser?.is_2FA_verified !== false && acAddress.account)
   {
     addressLine = hideAddress(acAddress?.account,5);
   }else{
@@ -120,7 +115,7 @@ export const DashboardPage = () => {
           <Col lg="4">
             <div className="top-green-card">
               <Card body className="green-card">
-                <TokenBalanceProgress />
+                <TokenBalanceProgress getUser={getUser}/>
               </Card>
             </div>
           </Col>
@@ -130,7 +125,7 @@ export const DashboardPage = () => {
                 <Col lg="3">
                   <h4>Ico Coin</h4>
                   <div className="icoin">1 Usd= {sales && sales?.amount ? sales?.amount : 0} Mid</div>
-                  <p>1 IDR = 0,0067 USD</p>
+                  <p>1 IDR = 0.0067 USDT</p>
                   <Button variant="primary" onClick={buytokenLink}>
                     Buy Token Now
                   </Button>
@@ -144,14 +139,22 @@ export const DashboardPage = () => {
                         <SimpleCheckIcon width="10" height="8" />
                       </span>
                     </Badge>
-                    {userDetailsAll?.is_verified === 0 &&
-                      userDetailsAll?.is_2FA_login_verified === true && (
+
+                    {getUser && getUser?.kyc_verify === 0 &&
+                    getUser?.kyc_status === true &&
+                    getUser?.is_2FA_verified === true && (
                         <Badge bg="info" className="kyc-status">
                           Submit KYC{" "}
                         </Badge>
-                      )}
-                    {userDetailsAll?.is_verified === 1 &&
-                      userDetailsAll?.is_2FA_login_verified === true && (
+                      )} 
+                    {(getUser && getUser?.kyc_verify === 0 &&
+                      getUser?.kyc_status === false) && (
+                      <Badge bg="info" className="kyc-status">
+                        Submit KYC{" "}
+                      </Badge>
+                    )}
+                    {getUser && getUser?.kyc_verify === 1 && getUser?.kyc_status === true &&
+                      getUser?.is_2FA_verified === true && (
                         <Badge bg="info" className="kyc-status">
                           KYC Verified{" "}
                           <span className="verify-status">
@@ -159,8 +162,8 @@ export const DashboardPage = () => {
                           </span>
                         </Badge>
                       )}
-                    {userDetailsAll?.is_verified === 2 &&
-                      userDetailsAll?.is_2FA_login_verified === true && (
+                    {getUser && getUser?.kyc_verify === 2 &&
+                      getUser?.is_2FA_verified === true && (
                         <Badge bg="danger" className="kyc-status">
                           KYC Rejected{" "}
                           <span className="verify-status">
@@ -219,12 +222,21 @@ export const DashboardPage = () => {
                         </td>
                         <td>{getDateFormate(transaction?.created_at)}</td>
                         <td style={{ textAlign: "right" }}>
-                          <Button variant="success">
-                            {transaction.source
-                              ? transaction.source.charAt(0).toUpperCase() +
-                                transaction.source.slice(1)
-                              : "Purchase"}
-                          </Button>
+                          {transaction?.status == "paid" && (
+                            <Button variant="outline-success">
+                              Confirmed 
+                            </Button>
+                          )}
+                          {transaction?.status == "failed" && (
+                            <Button variant="outline-danger">
+                              Failed 
+                            </Button>                  
+                          )}
+                          {transaction?.status == "pending" && (
+                            <Button variant="outline-pending">
+                              UnConfirmed 
+                            </Button>
+                          )}
                         </td>
                       </tr>
                   ))}
@@ -255,7 +267,7 @@ export const DashboardPage = () => {
       <div className="token-sale-graph">
         <Row>
           <Col lg="8">
-            <TokenSale />
+            <TokenSale getUser={getUser}/>
           </Col>
           <Col lg="4">
             <Card body className="cards-dark ico-coin">

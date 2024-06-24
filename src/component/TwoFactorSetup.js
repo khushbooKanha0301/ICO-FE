@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode.react";
 import { Button, Form, Modal } from "react-bootstrap";
 import jwtAxios from "../service/jwtAxios";
-import { userGetData, userGetFullDetails } from "../store/slices/AuthSlice";
+import { userGetData } from "../store/slices/AuthSlice";
 import {
   notificationFail,
   notificationSuccess,
@@ -33,7 +33,6 @@ const TwoFactorSetup = (props) => {
   const dispatch = useDispatch();
   const inputRefs = useRef([]);
   const [numIndex, setNumIndex] = useState("");
-  const userDetailsAll = useSelector(userGetFullDetails);
   const [lastAttemptTime, setLastAttemptTime] = useState("");
   const [invalidAttempts, setInvalidAttempts] = useState("");
   const [error, setError] = useState("");

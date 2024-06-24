@@ -5,94 +5,16 @@ import { notificationFail } from "./notificationSlice";
 import apiConfigs from "../../service/config";
 
 const initialState = {
-  eurCurrency: "",
-  audCurrency: "",
-  gbpCurrency: "",
-  usdCurrency: "",
   cryptoAmount: 0,
   balanceMid: 0,
   tokenData: {
-    gbpCount: 0,
-    eurCount: 0,
-    audCount: 0,
-    usdCount: 0,
-    totalUserCount: 0
-  },
+    totalUserCount: 0,
+    totalUsdtCount: 0
+  }, 
   orderId: null,
   orderData: {},
+  allSales: []
 };
-
-export const getEURCurrency = createAsyncThunk(
-  "getEURCurrency",
-  async (action, { dispatch }) => {
-    try {
-      const response = await fetch(
-        `https://api.coinbase.com/v2/prices/EUR-USD/spot`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          return data.data.amount;
-        });
-      return response;
-    } catch (error) {
-      return error.message;
-    }
-  }
-);
-
-export const getAUDCurrency = createAsyncThunk(
-  "getAUDCurrency",
-  async (action, { dispatch }) => {
-    try {
-      const response = await fetch(
-        `https://api.coinbase.com/v2/prices/AUD-USD/spot`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          return data.data.amount;
-        });
-      return response;
-    } catch (error) {
-      return error.message;
-    }
-  }
-);
-
-export const getGBPCurrency = createAsyncThunk(
-  "getGBPCurrency",
-  async (action, { dispatch }) => {
-    try {
-      const response = await fetch(
-        `https://api.coinbase.com/v2/prices/GBP-USD/spot`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          return data.data.amount;
-        });
-      return response;
-    } catch (error) {
-      return error.message;
-    }
-  }
-);
-
-export const getUSDCurrency = createAsyncThunk(
-  "getUSDCurrency",
-  async (action, { dispatch }) => {
-    try {
-      const response = await fetch(
-        `https://api.coinbase.com/v2/prices/USD-USD/spot`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          return data.data.amount;
-        });
-      return response;
-    } catch (error) {
-      return error.message;
-    }
-  }
-);
 
 export const convertToCrypto = createAsyncThunk(
   "convertToCrypto",
@@ -132,7 +54,7 @@ export const getTokenCount = createAsyncThunk(
       const res = await jwtAxios
         .get(`transactions/getTokenCount`, action)
         .then((response) => {
-          return response?.data?.tokenData;
+          return response?.data?.totalTokenCount;
         });
       return res;
     } catch (error) {
@@ -172,17 +94,29 @@ export const checkCurrentSale = createAsyncThunk(
   }
 );
 
+export const getAllSales = createAsyncThunk(
+  "getAllSales",
+  async (action, { dispatch }) => {
+    try {
+      const res = await jwtAxios
+        .get(`transactions/getAllSales`)
+        .then((response) => {
+          return response?.data?.sales;
+        });
+      return res;
+    } catch (error) {
+      dispatch(notificationFail(error?.response?.data?.message));
+    }
+  }
+);
+
 const currencySlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    // resetRaisedMid: (state, { payload }) => ({
-    //   ...state,
-    //   raisedMid: null,
-    // }),
     resetTokenData: (state, { payload }) => ({
       ...state,
-      tokenData: { gbpCount: 0, eurCount: 0, audCount: 0 },
+      tokenData: { totalUserCount: '0.00', totalUsdtCount: '0.00' },
     }),
     resetCryptoAmount: (state, { payload }) => ({
       ...state,
@@ -195,30 +129,6 @@ const currencySlice = createSlice({
   },
   extraReducers(builder) {
     builder
-      .addCase(getEURCurrency.fulfilled, (state, action) => {
-        if (!action?.payload) {
-          return;
-        }
-        state.eurCurrency = action.payload;
-      })
-      .addCase(getAUDCurrency.fulfilled, (state, action) => {
-        if (!action?.payload) {
-          return;
-        }
-        state.audCurrency = action.payload;
-      })
-      .addCase(getGBPCurrency.fulfilled, (state, action) => {
-        if (!action?.payload) {
-          return;
-        }
-        state.gbpCurrency = action.payload;
-      })
-      .addCase(getUSDCurrency.fulfilled, (state, action) => {
-        if (!action?.payload) {
-          return;
-        }
-        state.usdCurrency = action.payload;
-      })
       .addCase(convertToCrypto.fulfilled, (state, action) => {
         if (!action?.payload) {
           return;
@@ -229,14 +139,13 @@ const currencySlice = createSlice({
         if (action?.payload === undefined) {
           return;
         }
-        state.raisedMid = action.payload;
         state.balanceMid = action.payload;
       })
       .addCase(getTokenCount.fulfilled, (state, action) => {
         if (!action?.payload) {
           return;
         }
-        state.tokenData = action.payload;
+        state.tokenData  = action.payload;
       })
       .addCase(getTransactionByOrderId.fulfilled, (state, action) => {
         if (!action?.payload) {
@@ -249,6 +158,12 @@ const currencySlice = createSlice({
           return;
         }
         state.sales = action.payload;
+      })
+      .addCase(getAllSales.fulfilled, (state, action) => {
+        if (!action?.payload) {
+          return;
+        }
+        state.allSales = action.payload;
       });
   },
 });

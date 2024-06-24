@@ -1,10 +1,11 @@
 import React from 'react'
 import DashboardPage from './dashboardPage'
 
-function DashboardComponent() {
+function DashboardComponent(props) {
+  const { getUser } = props;
   return (
     <>
-      <DashboardPage />
+      <DashboardPage getUser={getUser}/>
     </>
   )
 }

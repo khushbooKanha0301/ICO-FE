@@ -101,7 +101,7 @@ export const PersonalData = () => {
       setSearchLocationText(result?.country);
     }
 
-     if (user?.phoneCountry) {
+    if (user?.phoneCountry) {
       setCountryCallingCode(user?.phoneCountry);
       const result = listData.find((item) => item?.code === user?.phoneCountry);
       setSelectedOption(result);
@@ -114,39 +114,6 @@ export const PersonalData = () => {
       setCountryCallingCode(" +1");
     }
   }, [userDetailsAll]);
-
-  // useEffect(() => {
-  //   let user = userDetailsAll;
-  //   if (user) {
-  //     setFname(user?.fname ? user?.fname : "");
-  //     setLname(user?.lname ? user?.lname : "");
-  //     setPhone(user?.phone ? user?.phone : "");
-  //     setEmail(user?.email ? user?.email : "");
-  //     setCity(user?.city ? user?.city : "");
-  //     setDob(user?.dob ? moment(user?.dob, "DD/MM/YYYY").toDate() : "");
-  //     setLocation(user?.location ? user?.location : "US");
-  //   }
-
-  //   if (user?.location) {
-  //     setLocation(user?.location);
-  //     const result = listData.find((item) => item?.iso === user?.location);
-  //     setSelectedLocationOption(result);
-  //     setImageLocationUrl(
-  //       `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`
-  //     );
-  //     setImageLocationSearchUrl(
-  //       `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`
-  //     );
-  //     setSearchLocationText(result?.country);
-  //   }
-
-
-  //   if (user?.phoneCountry) {
-  //     setCountryCallingCode(user?.phoneCountry);
-  //   } else {
-  //     setCountryCallingCode(" +1");
-  //   }
-  // }, []);
 
   const onChange = (e) => {
     if (e.target.name === "fname") {
@@ -376,7 +343,7 @@ export const PersonalData = () => {
           <Col md="6">
             <Form.Group className="form-group">
               <Form.Label>Location</Form.Label>
-              <div className="d-flex items-center phone-number-dropdown justify-between relative">
+              <div className="d-flex items-center location-dropdown justify-between relative">
                 {!isMobile && (
                   <>
                     <Form.Control

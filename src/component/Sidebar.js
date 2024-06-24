@@ -9,7 +9,7 @@ import {
   QuestionIcon,
   TradeHistoryIcon,
 } from "./SVGIcon";
-import { userDetails, userGetFullDetails } from "../store/slices/AuthSlice";
+import { userDetails } from "../store/slices/AuthSlice";
 import { useSelector } from "react-redux";
 
 //this component is used for sidebar view
@@ -17,7 +17,6 @@ export const Sidebar = (props) => {
   const location = useLocation();
   const [activeKey, setActiveKey] = useState();
   const acAddress = useSelector(userDetails);
-  const userData = useSelector(userGetFullDetails);
   const [twoFAFlow,setTwoFAFlow] = useState(true);
   const handleResizePage = () => {
     if (Highcharts.charts) {
@@ -40,10 +39,10 @@ export const Sidebar = (props) => {
   }, [location,props.isResponsive]);
 
   useEffect(() => {
-    if (userData?.is_2FA_login_verified === false) {
+    if (props.getUser?.is_2FA_verified === false) {
       setTwoFAFlow(false);
     }
-  },[userData?.is_2FA_login_verified])
+  },[props.getUser?.is_2FA_verified])
 
   return (
     <div className="sidebar">

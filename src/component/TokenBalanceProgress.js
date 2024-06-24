@@ -1,14 +1,14 @@
 import { useDispatch, useSelector } from "react-redux";
-import { userDetails, userGetFullDetails } from "../store/slices/AuthSlice";
+import { userDetails } from "../store/slices/AuthSlice";
 import React from "react";
 import { Col, Row } from "react-bootstrap";
 
 //this component is used for token balance progess bar
-export const TokenBalanceProgress = () => {
+export const TokenBalanceProgress = (props) => {
+  const { getUser } = props;
   const dispatch = useDispatch();
   const { tokenData } = useSelector((state) => state?.currenyReducer);
   const userData = useSelector(userDetails);
-  const userDetailsAll = useSelector(userGetFullDetails);
   let authToken = userData.authToken ? userData.authToken : null;
 
   return (
@@ -19,11 +19,12 @@ export const TokenBalanceProgress = () => {
           <div className="token-text">Token Balance</div>
           <div className="token-amount">
             {authToken &&
-            userDetailsAll?.is_2FA_login_verified === true &&
+            getUser &&
+            getUser?.is_2FA_verified === true &&
             tokenData &&
             tokenData?.totalUserCount
               ? tokenData?.totalUserCount
-              : 0}
+              : 0.00}
             <span>MID</span>
           </div>
         </div>
@@ -31,39 +32,15 @@ export const TokenBalanceProgress = () => {
       <h5>Your Contribution</h5>
       <Row>
         <Col>
-          <div className="contribution-amount">{tokenData?.gbpCount}</div>
+          <div className="contribution-amount">{tokenData && tokenData?.totalUsdtCount}</div>
           <div className="contribution-label">
             <img
               className="currency-flag"
-              src={require("../content/images/gbp-icon-resized.png")}
+              src={require("../content/images/usdt-icon.png")}
               alt="Bitcoin"
               style={{ width: "16px", height: "16px" }}
             />
-            GBP
-          </div>
-        </Col>
-        <Col>
-          <div className="contribution-amount">{tokenData?.eurCount}</div>
-          <div className="contribution-label">
-            <img
-              className="currency-flag"
-              src={require("../content/images/eur-icon.png")}
-              alt="Bitcoin"
-              style={{ width: "16px", height: "16px" }}
-            />
-            EUR
-          </div>
-        </Col>
-        <Col>
-          <div className="contribution-amount">{tokenData?.audCount}</div>
-          <div className="contribution-label">
-            <img
-              className="currency-flag"
-              src={require("../content/images/aud-icon.png")}
-              alt="Bitcoin"
-              style={{ width: "16px", height: "16px" }}
-            />
-            AUD
+            USDT
           </div>
         </Col>
       </Row>

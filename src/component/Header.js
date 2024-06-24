@@ -2,18 +2,16 @@ import React, { useEffect, useState } from "react";
 import { Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { userDetails, userGetFullDetails } from "../store/slices/AuthSlice";
+import { userDetails } from "../store/slices/AuthSlice";
 import { hideAddress } from "../utils";
 import {  LogoutIcon, SettingIcon, UserIcon } from "./SVGIcon";
 
 // Header component definations 
 export const Header = (props) => {
-  const { signOut, clickHandler, clickModalHandler } = props;
+  const { signOut, clickHandler, getUser } = props;
   const [position, setPosition] = useState(window.pageYOffset);
   const [visible, setVisible] = useState(true);
   const acAddress = useSelector(userDetails);
-  const userDetailsAll = useSelector(userGetFullDetails);
-
   useEffect(() => {
     const handleScroll = () => {
       let moving = window.pageYOffset;
@@ -28,13 +26,13 @@ export const Header = (props) => {
   });
 
   let addressLine = "";
-  if(acAddress.account === "Connect Wallet" && userDetailsAll === undefined)
+  if(acAddress.account === "Connect Wallet" && getUser === undefined)
   {
     addressLine = "Connect Wallet";
-  }else if(acAddress.account !== "Connect Wallet" && userDetailsAll === undefined)
+  }else if(acAddress.account !== "Connect Wallet" && getUser === undefined)
   {
     addressLine = "";
-  }else if(acAddress.account !== "Connect Wallet" && userDetailsAll?.is_2FA_login_verified !== false && (acAddress.account == userDetailsAll?.wallet_address))
+  }else if(acAddress.account !== "Connect Wallet" &&  getUser && getUser?.is_2FA_verified === true  && acAddress?.account)
   {
     addressLine = hideAddress(acAddress?.account,5);
   }else{
@@ -69,7 +67,7 @@ export const Header = (props) => {
         </Nav.Item>
         {acAddress &&
           acAddress?.authToken &&
-          userDetailsAll?.is_2FA_login_verified === true && (
+          getUser && getUser?.is_2FA_verified === true && (
             <NavDropdown
               as="li"
               title={

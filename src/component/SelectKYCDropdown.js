@@ -95,9 +95,7 @@ const SelectLocationKYCDropdown = (props) => {
   };
 
   return (
-    <div
-      className={`d-flex items-center phone-number-dropdown justify-between relative`}
-    >
+    <>
       {!isMobile && (
         <>
           <Dropdown className="account-setting-dropdown" 
@@ -275,7 +273,7 @@ const SelectLocationKYCDropdown = (props) => {
           </Sheet>
         </>
       )}
-    </div>
+    </>
   );
 };
 
