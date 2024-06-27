@@ -15,7 +15,11 @@ import {
 } from "../store/slices/notificationSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { userGetData, userGetFullDetails } from "../store/slices/AuthSlice";
+import {
+  userGetData,
+  userGetFullDetails,
+  userDetails,
+} from "../store/slices/AuthSlice";
 import moment from "moment";
 
 import jwtAxios from "../service/jwtAxios";
@@ -27,6 +31,7 @@ import SelectLocationKYCDropdown from "./SelectKYCDropdown";
 
 //KYC verification model with functionality
 export const KYCVerification = (props) => {
+  const acAddress = useSelector(userDetails);
   const [isMobile, setIsMobile] = useState(false);
   const { setkycsubmitted, ...rest } = props;
   const dispatch = useDispatch();
@@ -84,7 +89,7 @@ export const KYCVerification = (props) => {
   const [searchLocationText, setSearchLocationText] = useState(
     `${selectedLocationOption?.country}`
   );
-  
+
   const [searchCountryText, setSearchCountryText] = useState(
     `${selectedCountryOption?.country}`
   );
@@ -322,7 +327,7 @@ export const KYCVerification = (props) => {
       setNationality(user?.lname ? user.lname : null);
       setCity(user?.city ? user?.city : null);
       setWalletType(user?.wallet_type ? user?.wallet_type : null);
-      setWalletAddress(user?.wallet_address ? user?.wallet_address : null);
+      setWalletAddress(acAddress?.account ? acAddress?.account : null);
       setDob(user?.dob ? moment(user?.dob, "DD/MM/YYYY").toDate() : null);
     }
 
@@ -383,28 +388,26 @@ export const KYCVerification = (props) => {
     setPassportUrl(null);
     setUserPhotoUrl(null);
     setCheckboxState([]);
-    setSearchLocationText("United States")
-    setSearchCountryText("United States")
+    setSearchLocationText("United States");
+    setSearchCountryText("United States");
     setImageLocationUrl("https://flagcdn.com/h40/us.png");
     setImageCountryUrl("https://flagcdn.com/h40/us.png");
-    setImageLocationSearchUrl("https://flagcdn.com/h40/us.png")
-    setImageCountrySearchUrl("https://flagcdn.com/h40/us.png")
+    setImageLocationSearchUrl("https://flagcdn.com/h40/us.png");
+    setImageCountrySearchUrl("https://flagcdn.com/h40/us.png");
     setSelectedLocationOption({
       country: "United States",
       code: " +1",
       iso: "US",
       cca3: "USA",
-    })
+    });
     setSelectedCountryOption({
       country: "United States",
       code: " +1",
       iso: "US",
       cca3: "USA",
-    })
+    });
     props.onHide();
     setStep(1);
-   
-    
   };
 
   return (

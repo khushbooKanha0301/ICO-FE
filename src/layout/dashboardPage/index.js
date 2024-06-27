@@ -32,7 +32,7 @@ export const DashboardPage = (props) => {
   const referrance = queryParams.get("ref");
 
   const { sales } = useSelector((state) => state?.currenyReducer);
-  
+
   useEffect(() => {
     const getDashboardData = async () => {
       await dispatch(getTotalMid()).unwrap();
@@ -89,13 +89,13 @@ export const DashboardPage = (props) => {
   };
 
   let addressLine = "";
-  if(acAddress.account === "Connect Wallet" && getUser === undefined)
+  if(acAddress.account === "Connect Wallet" && getUser === undefined )
   {
     addressLine = "Connect Wallet";
-  }else if(acAddress.account !== "Connect Wallet" && getUser === undefined)
+  }else if(acAddress.account !== "Connect Wallet" && getUser && getUser?.is_2FA_verified === false)
   {
-    addressLine = "";
-  }else if(acAddress.account !== "Connect Wallet" &&  getUser && getUser?.is_2FA_verified !== false && acAddress.account)
+    addressLine = "Connect Wallet";
+  }else if(acAddress.account !== "Connect Wallet" &&  getUser && getUser?.is_2FA_verified === true)
   {
     addressLine = hideAddress(acAddress?.account,5);
   }else{
@@ -172,9 +172,9 @@ export const DashboardPage = (props) => {
                         </Badge>
                       )}
                   </div>
-                  <h4 className="mb-3">Receiving Wallet</h4>
+                  <h4 className="mb-3">Receiving Wallet hello</h4>
                   <h4>
-                    {acAddress && addressLine != "" && (
+                    {acAddress && getUser  && addressLine != "" && (
                       <span>
                         {addressLine}
                       </span>
@@ -197,10 +197,11 @@ export const DashboardPage = (props) => {
               <Table responsive>
                 <thead>
                   <tr>
-                    <th width="110">Token</th>
-                    <th width="110">Amount</th>
-                    <th width="154">Date</th>
-                    <th width="97"></th>
+                    <th width="70">Token</th>
+                    <th width="90">Amount</th>
+                    <th width="150">Date</th>
+                    <th width="80">Type</th>
+                    <th width="100"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -211,7 +212,15 @@ export const DashboardPage = (props) => {
                           {transaction?.status == "paid" && (
                             <CheckCircleIcon width="16" height="16" />
                           )}
-                          {formattedNumber(transaction?.token_cryptoAmount)}
+                          {(transaction?.status == "failed") && (
+                            <CloseIcon width="16" height="16" />
+                          )}
+                           {(transaction?.status == "pending") && (
+                            <ExclamationIcon width="16" height="16" />
+                          )}
+                          {transaction?.is_sale ? transaction?.token_cryptoAmount <= 200
+                            ? formattedNumber(transaction?.token_cryptoAmount)
+                            : "+200" : "0.00" }
                           </div>
                         </td>
                         <td>
@@ -221,6 +230,7 @@ export const DashboardPage = (props) => {
                           </p>
                         </td>
                         <td>{getDateFormate(transaction?.created_at)}</td>
+                        <td> {transaction?.sale_type == "website" ? "Website": "Outside-Web"}</td>
                         <td style={{ textAlign: "right" }}>
                           {transaction?.status == "paid" && (
                             <Button variant="outline-success">

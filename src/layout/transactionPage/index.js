@@ -180,6 +180,7 @@ export const TransactionPage = () => {
             <div className="transaction-amount">Network</div>
             <div className="transaction-from">From</div>
             <div className="transaction-type">Type</div>
+            <div className="transaction-status">Status</div>
           </div>
           {transactions?.map((transaction) => (
             <div className="flex-table-body" key={transaction._id}>
@@ -217,9 +218,9 @@ export const TransactionPage = () => {
               </div>
               <div className="transaction-token">
                 <p className="text-white mb-1">
-                  {transaction?.token_cryptoAmount <= 200
+                   {transaction?.is_sale ? transaction?.token_cryptoAmount <= 200
                     ? formattedNumber(transaction?.token_cryptoAmount)
-                    : "+200"}
+                    : "+200" : "0.00" }
                 </p>
               </div>
               <div className="transaction-amount">
@@ -239,6 +240,11 @@ export const TransactionPage = () => {
                 </p>
               </div>
               <div className="transaction-type">
+                <div className="d-flex justify-content-between align-items-center">
+                  {transaction?.sale_type == "website" ? "Website": "Outside-Web"}
+                </div>
+              </div>
+              <div className="transaction-status">
                 <div className="d-flex justify-content-between align-items-center">
                   {transaction?.status == "paid" && (
                     <Button variant="outline-success">

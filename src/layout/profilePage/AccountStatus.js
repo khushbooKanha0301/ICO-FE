@@ -74,7 +74,7 @@ export const AccountStatus = () => {
           </div>
           <h4 className="mb-3">Receiving Wallet</h4>
           <h4>
-            {acAddress && <span>{hideAddress(acAddress?.account, 5)}</span>}{" "}
+            {acAddress && getUser && <span>{hideAddress(acAddress?.account, 5)}</span>}{" "}
             <Link to="#/">EDIT</Link>
           </h4>
         </Card>

@@ -389,11 +389,15 @@ body {
         display: flex;
         align-items: center;
       }
-
-      &.transaction-token,
-      &.transaction-amount,
       &.transaction-usd-amount {
         flex: 0 0 12%;
+      }
+
+      &.transaction-token{
+        flex: 0 0 8%;
+      }
+      &.transaction-amount{
+        flex: 0 0 9%;
       }
 
       &.transaction-from {
@@ -401,7 +405,10 @@ body {
       }
 
       &.transaction-type {
-        flex: 0 0 24%;
+        flex: 0 0 12%;
+      }
+      &.transaction-status {
+        flex: 0 0 19%;
       }
     }
 
@@ -443,7 +450,6 @@ body {
       line-height: 20px;
       color: $white;
       border-right: 1px solid #1d1f22;
-
       &:last-child {
         border-right: 0;
       }

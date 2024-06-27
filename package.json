@@ -1,6 +1,6 @@
 {
 	"name": "middn-app",
-	"version": "0.1.2",
+	"version": "0.1.4",
 	"private": true,
 	"dependencies": {
 		"@babel/compat-data": "7.19.4",

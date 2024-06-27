@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Modal } from "react-bootstrap";
+import { Button, Card } from "react-bootstrap";
 import googleAuth from "../../content/images/google-authenticator.png";
 import TwoFactorSetup from "../../component/TwoFactorSetup";
 import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2/src/sweetalert2.js";
-import {
-  userGetData
-} from "../../store/slices/AuthSlice";
+import { userDetails, userGetData } from "../../store/slices/AuthSlice";
 import jwtAxios from "../../service/jwtAxios";
-import { notificationFail, notificationSuccess } from "../../store/slices/notificationSlice";
+import {
+  notificationFail,
+  notificationSuccess,
+} from "../../store/slices/notificationSlice";
 
 export const GoogleAuth = () => {
+  const acAddress = useSelector(userDetails);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [is2FAEnabled, setIs2FAEnabled] = useState(null);
   const [secret, setSecret] = useState("");
@@ -19,17 +21,27 @@ export const GoogleAuth = () => {
   const [getUser, setGetUser] = useState(null);
 
   useEffect(() => {
-    if (getUser) {
-      if (getUser?.is_2FA_enable === undefined) {
-        setIs2FAEnabled(false);
-      } else {
-        setIs2FAEnabled(getUser?.is_2FA_enable);
+    const fetchUserData = async () => {
+      if (acAddress) {
+        try {
+          const user = await dispatch(userGetData(acAddress.userid)).unwrap();
+          setGetUser(user);
+          if (user?.is_2FA_enable === undefined) {
+            setIs2FAEnabled(false);
+          } else {
+            setIs2FAEnabled(user.is_2FA_enable);
+          }
+        } catch (error) {
+          console.error("Failed to fetch user data: ", error);
+        }
       }
-    }
-  }, [getUser?.is_2FA_enable]);
+    };
+
+    fetchUserData();
+  }, [acAddress, dispatch]);
 
   const openModal = async () => {
-      await jwtAxios
+    await jwtAxios
       .get("users/generate2FASecret")
       .then((res) => {
         setSecret(res.data.secret);
@@ -37,10 +49,9 @@ export const GoogleAuth = () => {
         setIsModalOpen(true);
       })
       .catch((err) => {
-        if(typeof err == "string")
-        {
+        if (typeof err == "string") {
           dispatch(notificationFail(err));
-        }else{
+        } else {
           dispatch(notificationFail(err?.response?.data?.message));
         }
       });
@@ -58,27 +69,26 @@ export const GoogleAuth = () => {
       confirmButtonColor: "red",
       cancelButtonColor: "#808080",
       confirmButtonText: "Disable",
-      customClass:{
-        popup:"suspend"
-      }
+      customClass: {
+        popup: "suspend",
+      },
     }).then(async (result) => {
       if (result.isConfirmed) {
-         await jwtAxios
-           .get("/users/disable2FA")
-           .then(async (res) => {
-             dispatch(notificationSuccess(res?.data?.message));
-             setIs2FAEnabled(false);
-             const user = await dispatch(userGetData(userGetData.userid)).unwrap();
-             setGetUser(user);     
-           })
-           .catch((err) => {
-             if(typeof err == "string")
-             {
-               dispatch(notificationFail(err));
-             }else{
-               dispatch(notificationFail(err?.response?.data?.message));
-             }
-           });
+        await jwtAxios
+          .get("/users/disable2FA")
+          .then(async (res) => {
+            dispatch(notificationSuccess(res?.data?.message));
+            setIs2FAEnabled(false);
+            const user = await dispatch(userGetData()).unwrap();
+            setGetUser(user);
+          })
+          .catch((err) => {
+            if (typeof err == "string") {
+              dispatch(notificationFail(err));
+            } else {
+              dispatch(notificationFail(err?.response?.data?.message));
+            }
+          });
       }
     });
   };
