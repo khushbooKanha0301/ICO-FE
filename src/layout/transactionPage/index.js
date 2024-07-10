@@ -218,7 +218,7 @@ export const TransactionPage = () => {
               </div>
               <div className="transaction-token">
                 <p className="text-white mb-1">
-                   {transaction?.is_sale ? transaction?.token_cryptoAmount <= 200
+                   {transaction?.is_sale && transaction.is_process ? transaction?.token_cryptoAmount <= 200
                     ? formattedNumber(transaction?.token_cryptoAmount)
                     : "+200" : "0.00" }
                 </p>
@@ -258,7 +258,7 @@ export const TransactionPage = () => {
                   )}
                   {transaction?.status == "pending" && (
                     <Button variant="outline-pending">
-                      UnConfirmed 
+                      Unconfirmed 
                     </Button>
                   )}
 

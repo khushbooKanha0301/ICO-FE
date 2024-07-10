@@ -172,7 +172,7 @@ export const DashboardPage = (props) => {
                         </Badge>
                       )}
                   </div>
-                  <h4 className="mb-3">Receiving Wallet hello</h4>
+                  <h4 className="mb-3">Receiving Wallet</h4>
                   <h4>
                     {acAddress && getUser  && addressLine != "" && (
                       <span>
@@ -218,7 +218,7 @@ export const DashboardPage = (props) => {
                            {(transaction?.status == "pending") && (
                             <ExclamationIcon width="16" height="16" />
                           )}
-                          {transaction?.is_sale ? transaction?.token_cryptoAmount <= 200
+                          {transaction?.is_sale && transaction?.is_process ? transaction?.token_cryptoAmount <= 200
                             ? formattedNumber(transaction?.token_cryptoAmount)
                             : "+200" : "0.00" }
                           </div>
@@ -244,7 +244,7 @@ export const DashboardPage = (props) => {
                           )}
                           {transaction?.status == "pending" && (
                             <Button variant="outline-pending">
-                              UnConfirmed 
+                              Unconfirmed 
                             </Button>
                           )}
                         </td>

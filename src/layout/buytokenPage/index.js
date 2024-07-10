@@ -15,6 +15,7 @@ import {
   getTokenCount,
   resetTokenData,
   setOrderId,
+  checkCurrentSale
 } from "../../store/slices/currencySlice";
 import {
   notificationFail,
@@ -58,6 +59,7 @@ export const BuyTokenPage = () => {
       let authToken = acAddress.authToken ? acAddress.authToken : null;
       if (authToken) {
         try {
+          dispatch(checkCurrentSale());
           const user = await dispatch(userGetData(acAddress.userid)).unwrap();
           setGetUser(user);
           await dispatch(getTotalMid()).unwrap();
@@ -468,7 +470,8 @@ export const BuyTokenPage = () => {
           setSelectedNetworksMATIC(responseMATIC.data.result.ProposeGasPrice);
         }
       } catch (error) {
-        dispatch(notificationFail("Error fetching gas price:", error));
+        console.log("Error fetching gas price:", error)
+        // dispatch(notificationFail("Error fetching gas price:", error));
       }
     };
 
