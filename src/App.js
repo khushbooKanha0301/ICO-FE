@@ -22,7 +22,15 @@ import {
 } from "./store/slices/AuthSlice";
 import { checkCurrentSale} from "./store/slices/currencySlice";
 import { database, firebaseMessages } from "./config";
-import { onValue, ref } from "firebase/database";
+import { onValue, ref, get , update} from "firebase/database";
+import {
+  notificationFail,
+  notificationSuccess,
+} from "./store/slices/notificationSlice";
+import moment from "moment";
+import jwtAxios from "./service/jwtAxios";
+import * as flatted from "flatted";
+let PageSize = 5;
 
 export const App = () => {
   const dispatch = useDispatch();
@@ -35,10 +43,21 @@ export const App = () => {
   const [twoFAModal, setTwoFAModal] = useState(true);
   const [isResponsive, setIsResponsive] = useState(false);
   const [getUser, setGetUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const handleAccountAddress = (address) => {
     setIsSign(false);
   };
-  
+  const [transactionLoading, setTransactionLoading] = useState(true);
+  const [transactions, setTransactions] = useState(null);
+  const [totalTransactionsCount, setTotalTransactionsCount] = useState(0);
+
+  const [typeFilter, setTypeFilter] = useState(
+    flatted.parse(flatted.stringify([]))
+  );
+  const [statusFilter, setStatusFilter] = useState(
+    flatted.parse(flatted.stringify([]))
+  );
+
   useEffect(() => {
     const handleResize = () => {
       // Check if the window width is below a specific breakpoint (e.g., 768px)
@@ -67,7 +86,7 @@ export const App = () => {
           setGetUser(user);
           dispatch(getCountryDetails());
           dispatch(checkCurrentSale());
-          var childKey = firebaseMessages.ICO_USERS + "/" + acAddress?.userid;
+          let childKey = firebaseMessages.ICO_USERS + "/" + acAddress?.userid;
           const setReciverReadCountNode = ref(database, childKey);
           const unsubscribe = onValue(setReciverReadCountNode, (snapshot) => {
             if (snapshot && snapshot.val() && localStorage.getItem("token")) {
@@ -94,7 +113,108 @@ export const App = () => {
       setTwoFAModal(true);
     }
   }, [getUser]);
-  
+
+  const gettransaction = async (typeFilter , statusFilter) => {
+    if (currentPage) {
+      let bodyData = {
+        typeFilter: typeFilter,
+        statusFilter: statusFilter,
+      };
+      await jwtAxios
+        .post(
+          `/transactions/getTransactions?page=${currentPage}&pageSize=${PageSize}`,
+          bodyData
+        )
+        .then((res) => {
+          setTransactionLoading(false);
+          setTransactions(res.data?.transactions);
+          setTotalTransactionsCount(res.data?.totalTransactionsCount);
+        })
+        .catch((err) => {
+          setTransactionLoading(false);
+          console.log(err);
+        });
+    }
+  };
+
+  useEffect(() => {
+    const userRef = ref(
+      database,
+      firebaseMessages?.ICO_TRANSACTIONS
+    );
+    const updateLastActive = () => {
+      get(userRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          const transactions = snapshot.val();
+          for (const [key, value] of Object.entries(transactions)) {
+            const dateMoment = moment.utc(value?.lastActive);
+            const currentMoment = moment.utc();
+            const differenceInMinutes = currentMoment.diff(dateMoment, 'minutes');
+
+            if(value.user_wallet_address ===  acAddress?.account){
+              if(differenceInMinutes < 1){
+                if (!value.is_pending  && !value.is_open) {
+                  dispatch(notificationFail(`Outside Transaction Pending`));
+                  gettransaction(typeFilter, statusFilter);
+                  const userUpdateRef = ref(
+                    database,
+                    firebaseMessages?.ICO_TRANSACTIONS  + "/" + key
+                  );
+                  update(userUpdateRef, {
+                    lastActive: Date.now(),
+                    is_pending: true
+                  });
+
+                }
+                if (value.is_pending && !value.is_open  && value.status == "paid") {
+                  dispatch(notificationSuccess(`Outside Transaction Successfull`));
+                  gettransaction(typeFilter, statusFilter);
+                  const userUpdateRef = ref(
+                    database,
+                    firebaseMessages?.ICO_TRANSACTIONS  + "/" + key
+                  );
+                  update(userUpdateRef, {
+                    lastActive: Date.now(),
+                    is_open: true
+                  });
+                }
+              }
+            }
+          }
+        } 
+      }).catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+    };
+
+    const interval = setInterval(function () {
+      updateLastActive()
+    }, 1000); // 5 seconds in milliseconds
+    
+    window.addEventListener("beforeunload", updateLastActive());
+    window.addEventListener("mousemove", updateLastActive());
+    window.addEventListener("keydown", updateLastActive());
+    window.addEventListener("scroll", updateLastActive());
+    window.addEventListener("click", updateLastActive());
+
+    // Clean up the listeners when the component unmounts or user logs out
+    return () => {
+      window.removeEventListener("beforeunload", updateLastActive());
+      window.removeEventListener("mousemove", updateLastActive());
+      window.removeEventListener("keydown", updateLastActive());
+      window.removeEventListener("scroll", updateLastActive());
+      window.removeEventListener("click", updateLastActive());
+
+      clearInterval(interval);
+    }
+  }, [acAddress?.userid]);
+
+  useEffect(() => {
+    if(acAddress.authToken){
+      gettransaction(typeFilter, statusFilter);
+    }
+  }, [currentPage, typeFilter, statusFilter, acAddress.authToken]);
+
   return (
     <>
       <Container fluid="xxl" className={`${isOpen ? "open-sidebar" : ""} p-0`}>
@@ -120,7 +240,8 @@ export const App = () => {
                 path="/"
                 element={
                   <>
-                    <DashboardComponent getUser={getUser}/>
+                    <DashboardComponent getUser={getUser} transactionLoading={transactionLoading} transactions={transactions} 
+                    setTransactionLoading={setTransactionLoading} setTransactions={setTransactions}/>
                     {twoFAModal === true &&
                       getUser && getUser?.is_2FA_verified === false && (
                         <TwoFAvalidate setTwoFAModal={setTwoFAModal} getUser={getUser} setGetUser={setGetUser}/>
@@ -169,7 +290,11 @@ export const App = () => {
                 element={
                   <>
                     <AuthRoute>
-                      <TransactionComponent />
+                      <TransactionComponent transactionLoading={transactionLoading} transactions={transactions} 
+                      totalTransactionsCount={totalTransactionsCount} gettransaction={gettransaction}
+                      setTypeFilter={setTypeFilter} setStatusFilter={setStatusFilter} typeFilter={typeFilter} 
+                      statusFilter={statusFilter} PageSize={PageSize}
+                      setCurrentPage={setCurrentPage} currentPage={currentPage}/>
                     </AuthRoute>
                   </>
                 }

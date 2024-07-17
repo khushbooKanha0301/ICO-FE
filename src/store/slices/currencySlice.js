@@ -99,7 +99,7 @@ export const getAllSales = createAsyncThunk(
   async (action, { dispatch }) => {
     try {
       const res = await jwtAxios
-        .get(`transactions/getAllSales`)
+        .get(`auth/getAllSales`)
         .then((response) => {
           return response?.data?.sales;
         });

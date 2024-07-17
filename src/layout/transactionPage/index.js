@@ -1,76 +1,38 @@
 import React, { useEffect, useMemo, useState } from "react";
 import PaginationComponent from "../../component/Pagination";
-import * as flatted from "flatted";
 import {
   Button,
   ButtonGroup,
   Dropdown,
   DropdownButton,
-  Form,
 } from "react-bootstrap";
 import {
   CheckCircleIcon,
   CloseIcon,
   ExclamationIcon,
   EyeIcon,
-  SettingIcon,
-  TrashIcon,
+  SettingIcon
 } from "../../component/SVGIcon";
 import TransactionDetails from "../../component/TransactionDetails";
-import jwtAxios from "../../service/jwtAxios";
 import { useSelector } from "react-redux";
 import { formattedNumber, getDateFormate, hideAddress } from "../../utils";
-import { useLocation } from "react-router-dom";
 import { userDetails } from "../../store/slices/AuthSlice";
-let PageSize = 5;
 
-export const TransactionPage = () => {
+export const TransactionPage = (props) => {
+  const {totalTransactionsCount , transactionLoading , transactions, gettransaction, setStatusFilter, setTypeFilter ,PageSize,  currentPage , setCurrentPage , statusFilter, typeFilter} = props
+ 
   const [modalShow, setModalShow] = useState(false);
-  const [transactions, setTransactions] = useState(null);
-  const [totalTransactionsCount, setTotalTransactionsCount] = useState(0);
   const [stateTransactions, setStateTransactions] = useState(null);
-  const [typeFilter, setTypeFilter] = useState(
-    flatted.parse(flatted.stringify([]))
-  );
-  const [statusFilter, setStatusFilter] = useState(
-    flatted.parse(flatted.stringify([]))
-  );
-  // const [statusFilter, setStatusFilter] = useState([]);
   const acAddress = useSelector(userDetails);
-  const location = useLocation();
-  const [transactionLoading, setTransactionLoading] = useState(true);
-
   const modalToggle = (transaction) => {
     setModalShow(!modalShow);
     setStateTransactions(transaction);
   };
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const gettransaction = async () => {
-    if (currentPage) {
-      let bodyData = {
-        typeFilter: typeFilter,
-        statusFilter: statusFilter,
-      };
-      await jwtAxios
-        .post(
-          `/transactions/getTransactions?page=${currentPage}&pageSize=${PageSize}`,
-          bodyData
-        )
-        .then((res) => {
-          setTransactionLoading(false);
-          setTransactions(res.data?.transactions);
-          setTotalTransactionsCount(res.data?.totalTransactionsCount);
-        })
-        .catch((err) => {
-          setTransactionLoading(false);
-          console.log(err);
-        });
-    }
-  };
-
+ 
   useEffect(() => {
-    gettransaction();
+    if(acAddress.authToken){
+      gettransaction(typeFilter, statusFilter);
+    }
   }, [currentPage, typeFilter, statusFilter, acAddress.authToken]);
 
   const handleFilterTypeChange = (filterType) => {

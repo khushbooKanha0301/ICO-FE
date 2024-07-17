@@ -17,13 +17,11 @@ import {
 } from "../../store/slices/currencySlice";
 import { userDetails } from "../../store/slices/AuthSlice";
 import { formattedNumber, getDateFormate, hideAddress } from "../../utils";
-import jwtAxios from "../../service/jwtAxios";
 import TokenBalanceProgress from "../../component/TokenBalanceProgress";
 
 export const DashboardPage = (props) => {
-  const { getUser } = props;
-  const [transactions, setTransactions] = useState(null);
-  const [transactionLoading, setTransactionLoading] = useState(false);
+  const { getUser , transactions , transactionLoading, setTransactionLoading, setTransactions} = props;
+  const [transactionList, setTransactionList] = useState(null);
   const dispatch = useDispatch();
   const acAddress = useSelector(userDetails);
   const navigate = useNavigate();
@@ -32,7 +30,7 @@ export const DashboardPage = (props) => {
   const referrance = queryParams.get("ref");
 
   const { sales } = useSelector((state) => state?.currenyReducer);
-
+ 
   useEffect(() => {
     const getDashboardData = async () => {
       await dispatch(getTotalMid()).unwrap();
@@ -57,28 +55,18 @@ export const DashboardPage = (props) => {
   useEffect(() => {
     setTransactions([]);
     setTransactionLoading(true);
-    const gettransaction = async () => {
-      if (
-        acAddress &&
-        acAddress?.authToken &&
-        acAddress.account &&
-        getUser && getUser?.is_2FA_verified === true
-        ) {
-        await jwtAxios
-          .post(`/transactions/getTransactions?page=1&pageSize=3`, {})
-          .then((res) => {
-            setTransactions(res.data?.transactions);
-            setTransactionLoading(false);
-          })
-          .catch((err) => {
-            setTransactionLoading(false);
-          });
+    if (
+      acAddress &&
+      acAddress?.authToken &&
+      acAddress.account &&
+      getUser && getUser?.is_2FA_verified === true
+      ) {
+        setTransactionList(transactions)
       }
       if(!acAddress?.authToken || (getUser && getUser?.is_2FA_verified === false)){
         setTransactionLoading(false);
       }
-    };
-    gettransaction();
+
   }, [acAddress?.authToken, getUser]);
 
   const handleDownload = () => {
@@ -205,52 +193,52 @@ export const DashboardPage = (props) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions?.map((transaction) => (
-                      <tr key={transaction._id}>
-                        <td>
-                          <div style={{display: "flex" , alignItems: "center"}}>
-                          {transaction?.status == "paid" && (
-                            <CheckCircleIcon width="16" height="16" />
-                          )}
-                          {(transaction?.status == "failed") && (
-                            <CloseIcon width="16" height="16" />
-                          )}
-                           {(transaction?.status == "pending") && (
-                            <ExclamationIcon width="16" height="16" />
-                          )}
-                          {transaction?.is_sale && transaction?.is_process ? transaction?.token_cryptoAmount <= 200
-                            ? formattedNumber(transaction?.token_cryptoAmount)
-                            : "+200" : "0.00" }
-                          </div>
-                        </td>
-                        <td>
-                          <p className="text-white mb-1">
-                            {formattedNumber(transaction?.price_amount)}{" "}
-                            {transaction?.price_currency}
-                          </p>
-                        </td>
-                        <td>{getDateFormate(transaction?.created_at)}</td>
-                        <td> {transaction?.sale_type == "website" ? "Website": "Outside-Web"}</td>
-                        <td style={{ textAlign: "right" }}>
-                          {transaction?.status == "paid" && (
-                            <Button variant="outline-success">
-                              Confirmed 
-                            </Button>
-                          )}
-                          {transaction?.status == "failed" && (
-                            <Button variant="outline-danger">
-                              Failed 
-                            </Button>                  
-                          )}
-                          {transaction?.status == "pending" && (
-                            <Button variant="outline-pending">
-                              Unconfirmed 
-                            </Button>
-                          )}
-                        </td>
-                      </tr>
+                  {transactionList?.map((transaction) => (
+                    <tr key={transaction._id}>
+                      <td>
+                        <div style={{display: "flex" , alignItems: "center"}}>
+                        {transaction?.status == "paid" && (
+                          <CheckCircleIcon width="16" height="16" />
+                        )}
+                        {(transaction?.status == "failed") && (
+                          <CloseIcon width="16" height="16" />
+                        )}
+                          {(transaction?.status == "pending") && (
+                          <ExclamationIcon width="16" height="16" />
+                        )}
+                        {transaction?.is_sale && transaction?.is_process ? transaction?.token_cryptoAmount <= 200
+                          ? formattedNumber(transaction?.token_cryptoAmount)
+                          : "+200" : "0.00" }
+                        </div>
+                      </td>
+                      <td>
+                        <p className="text-white mb-1">
+                          {formattedNumber(transaction?.price_amount)}{" "}
+                          {transaction?.price_currency}
+                        </p>
+                      </td>
+                      <td>{getDateFormate(transaction?.created_at)}</td>
+                      <td> {transaction?.sale_type == "website" ? "Website": "Outside-Web"}</td>
+                      <td style={{ textAlign: "right" }}>
+                        {transaction?.status == "paid" && (
+                          <Button variant="outline-success">
+                            Confirmed 
+                          </Button>
+                        )}
+                        {transaction?.status == "failed" && (
+                          <Button variant="outline-danger">
+                            Failed 
+                          </Button>                  
+                        )}
+                        {transaction?.status == "pending" && (
+                          <Button variant="outline-pending">
+                            Unconfirmed 
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
                   ))}
-                  {(transactions?.length === 0 && transactionLoading === false) && (
+                  {(transactionList?.length === 0 && transactionLoading === false) && (
                     <tr>
                       <td colSpan={4} style={{ paddingTop: "30px" }}>
                         <p

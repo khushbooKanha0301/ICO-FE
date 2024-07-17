@@ -39,11 +39,11 @@ export const IcoDistributionPage = () => {
   this is my referral link for ICO, you can use this link`;
 
   useEffect(() => {
+    dispatch(getAllSales());
     let authToken = acAddress.authToken ? acAddress.authToken : null;
     if (authToken) {
       dispatch(getTotalMid()).unwrap();
       dispatch(getTokenCount()).unwrap();
-      dispatch(getAllSales());
     } else {
       dispatch(resetTokenData());
     }
@@ -72,7 +72,7 @@ export const IcoDistributionPage = () => {
               <Row className="g-0">
                 <Col md="6" lg="5">
                   <h5>
-                    Pre-Sale ICO
+                    Pre Sale ICO
                     {/* <Badge bg="success">RUNNING</Badge> */}
                   </h5>
                   {/* <Card.Text>Start at Dec 02, 2018 - 11:00 AM</Card.Text> */}
@@ -101,7 +101,7 @@ export const IcoDistributionPage = () => {
               <Row className="g-0">
                 <Col md="6" lg="5">
                   <h5>
-                    Main ICO Sale
+                    Main Sale ICO
                     {/* <Badge bg="secondary">RUNNING</Badge> */}
                   </h5>
                   <Card.Text>
