@@ -153,7 +153,7 @@ export const App = () => {
 
             if(value.user_wallet_address ===  acAddress?.account){
               if(differenceInMinutes < 1){
-                if (!value.is_pending  && !value.is_open) {
+                if (!value.is_pending  && !value.is_open && value.status == "pending") {
                   dispatch(notificationFail(`Outside Transaction Pending`));
                   gettransaction(typeFilter, statusFilter);
                   const userUpdateRef = ref(
@@ -164,8 +164,20 @@ export const App = () => {
                     lastActive: Date.now(),
                     is_pending: true
                   });
-
                 }
+                if (!value.is_pending  && !value.is_open && value.status == "failed") {
+                  dispatch(notificationFail(`Outside Transaction Failed`));
+                  gettransaction(typeFilter, statusFilter);
+                  const userUpdateRef = ref(
+                    database,
+                    firebaseMessages?.ICO_TRANSACTIONS  + "/" + key
+                  );
+                  update(userUpdateRef, {
+                    lastActive: Date.now(),
+                    is_pending: true
+                  });
+                }
+
                 if (value.is_pending && !value.is_open  && value.status == "paid") {
                   dispatch(notificationSuccess(`Outside Transaction Successfull`));
                   gettransaction(typeFilter, statusFilter);

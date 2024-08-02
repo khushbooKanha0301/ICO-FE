@@ -95,42 +95,42 @@ const TwoFactorSetup = (props) => {
         }
 
         await jwtAxios
-          .post("users/validateTOTP", { token: otpValue })
-          .then((res) => {
-            props.setIs2FAEnabled(res.data.verified);
-            if (res.data.verified) {
-              props.onClose();
-              dispatch(userGetData(userGetData.userid)).unwrap();
-              dispatch(notificationSuccess("user login successfully"));
-            } else {
-              if (now - lastAttemptTime1 >= 5 * 60 * 1000) {
-                setInvalidAttempts(1);
-                setLastAttemptTime(now);
-              } else {
-                setInvalidAttempts(invalidAttempts1 + 1);
-              }
-              dispatch(notificationFail("Invalid Code"));
-              setOTPValue("");
-              inputRefs.current[0].focus();
-            }
-          })
-          .catch((err) => {
-            if(typeof err == "string")
-            {
-              dispatch(notificationFail(err));
-            }else if(err?.response?.data?.message){
-              dispatch(notificationFail(err?.response?.data?.message));
-            }else{
-              dispatch(notificationFail("Something Went Wrong"));
-            }
+        .post("users/validateTOTP", { token: otpValue })
+        .then((res) => {
+          props.setIs2FAEnabled(res.data.verified);
+          if (res.data.verified) {
+            props.onClose();
+            dispatch(userGetData(userGetData.userid)).unwrap();
+            dispatch(notificationSuccess("You've successfully enabled Google 2FA"));
+          } else {
             if (now - lastAttemptTime1 >= 5 * 60 * 1000) {
               setInvalidAttempts(1);
               setLastAttemptTime(now);
             } else {
               setInvalidAttempts(invalidAttempts1 + 1);
             }
+            dispatch(notificationFail("Invalid Code"));
             setOTPValue("");
-          });
+            inputRefs.current[0].focus();
+          }
+        })
+        .catch((err) => {
+          if(typeof err == "string")
+          {
+            dispatch(notificationFail(err));
+          }else if(err?.response?.data?.message){
+            dispatch(notificationFail(err?.response?.data?.message));
+          }else{
+            dispatch(notificationFail("Something Went Wrong"));
+          }
+          if (now - lastAttemptTime1 >= 5 * 60 * 1000) {
+            setInvalidAttempts(1);
+            setLastAttemptTime(now);
+          } else {
+            setInvalidAttempts(invalidAttempts1 + 1);
+          }
+          setOTPValue("");
+        });
       }
     }
   };

@@ -235,6 +235,7 @@ export const PersonalData = () => {
                 name="email"
                 value={email}
                 onChange={(e) => onChange(e)}
+                disabled={userDetailsAll?.email_verified ? true : false}
               />
             </Form.Group>
           </Col>

@@ -75,20 +75,20 @@ export const GoogleAuth = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         await jwtAxios
-          .get("/users/disable2FA")
-          .then(async (res) => {
-            dispatch(notificationSuccess(res?.data?.message));
-            setIs2FAEnabled(false);
-            const user = await dispatch(userGetData()).unwrap();
-            setGetUser(user);
-          })
-          .catch((err) => {
-            if (typeof err == "string") {
-              dispatch(notificationFail(err));
-            } else {
-              dispatch(notificationFail(err?.response?.data?.message));
-            }
-          });
+        .get("/users/disable2FA")
+        .then(async (res) => {
+          dispatch(notificationSuccess(res?.data?.message));
+          setIs2FAEnabled(false);
+          const user = await dispatch(userGetData()).unwrap();
+          setGetUser(user);
+        })
+        .catch((err) => {
+          if (typeof err == "string") {
+            dispatch(notificationFail(err));
+          } else {
+            dispatch(notificationFail(err?.response?.data?.message));
+          }
+        });
       }
     });
   };

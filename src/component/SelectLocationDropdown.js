@@ -16,7 +16,6 @@ const SelectLocationDropdown = (props) => {
     searchLocationText,
     setCountry,
     setNationality,
-
     country,
   } = props;
   const [isMobile, setIsMobile] = useState(false);

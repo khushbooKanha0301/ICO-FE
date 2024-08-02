@@ -15,7 +15,7 @@ import {
   getTokenCount,
   resetTokenData,
   setOrderId,
-  checkCurrentSale
+  checkCurrentSale,
 } from "../../store/slices/currencySlice";
 import {
   notificationFail,
@@ -26,7 +26,7 @@ import { userDetails, userGetData } from "../../store/slices/AuthSlice";
 import LoginView from "../../component/Login";
 import PaymentProcess from "../../component/PaymentProcess";
 import apiConfigs from "../../service/config";
-const RECEIVER_ADDRESS = apiConfigs.RECEIVER_ADDRESS
+const RECEIVER_ADDRESS = apiConfigs.RECEIVER_ADDRESS;
 const ETHERSCAN_API_KEY = process.env.REACT_APP_ETHERSCAN_API_KEY;
 const BSCSCAN_API_KEY = process.env.REACT_APP_BSCSCAN_API_KEY;
 const FANTOM_API_KEY = process.env.REACT_APP_FANTOM_API_KEY;
@@ -65,15 +65,16 @@ export const BuyTokenPage = () => {
           await dispatch(getTotalMid()).unwrap();
           await dispatch(getTokenCount()).unwrap();
         } catch (error) {
-          dispatch(notificationFail("Error fetching data:"));        }
+          dispatch(notificationFail("Error fetching data:"));
+        }
       } else {
         dispatch(resetTokenData());
       }
     };
-  
+
     fetchDataUser();
   }, [dispatch, acAddress.authToken, acAddress.userid]);
-  
+
   useEffect(() => {
     const authToken = acAddress.authToken ? acAddress.authToken : null;
     if (authToken) {
@@ -206,7 +207,7 @@ export const BuyTokenPage = () => {
       return;
     }
 
-    if (getUser && getUser?.kyc_status=== false) {
+    if (getUser && getUser?.kyc_status === false) {
       dispatch(notificationFail("Please complete KYC to Buy Token"));
       setReadyForPayment(false);
       return;
@@ -244,10 +245,7 @@ export const BuyTokenPage = () => {
       return;
     }
 
-    if (
-      getUser && getUser?.kyc_verify === 1 &&
-      getUser?.kyc_status === true 
-    ) {
+    if (getUser && getUser?.kyc_verify === 1 && getUser?.kyc_status === true) {
       try {
         const data = {
           amount: amount,
@@ -256,93 +254,120 @@ export const BuyTokenPage = () => {
         };
 
         await jwtAxios
-        .post(`/transactions/verifyToken`, data)
-        .then(async (res) => {
-          try {
-            await switchNetwork(selectedNetwork);
-          } catch (error) {
-            return;
-          }
-  
-          let amountToSend;
-          const contractInstance = await getUSDTContract(selectedNetwork);
-  
-          if (selectedNetwork == "BNB") {
-            amountToSend = web3.utils.toWei(amount.toString(), "ether");
-          } else {
-            amountToSend = ethers.utils.parseUnits(amount.toString(), 6); // Convert amount to USDT units (6 decimals)
-          }
-  
-          const transaction = await contractInstance.methods.transfer(
-            RECEIVER_ADDRESS,
-            amountToSend
-          );
-          const tx = {
-            from: acAddress?.account,
-            to: contractInstance.options.address,
-            data: transaction.encodeABI(),
-          };
-  
-          const response = await web3.eth.sendTransaction(tx);
-          const usertxHash = response.transactionHash;
-  
-          const transactionData = {
-            user_wallet_address: acAddress?.account,
-            receiver_wallet_address: RECEIVER_ADDRESS,
-            amount: amount,
-            network: selectedNetwork,
-            cryptoAmount: cryptoAmount.amount,
-            transactionHash: usertxHash,
-            gasUsed: response.gasUsed,
-            effectiveGasPrice: response.effectiveGasPrice,
-            cumulativeGasUsed: response.cumulativeGasUsed,
-            blockNumber: response.blockNumber,
-            blockHash: response.blockHash,
-          };
-  
-          await jwtAxios.post(`/transactions/createOrder`, transactionData);
-  
-          try {
-            const receiverData = await web3.eth.getTransaction(usertxHash);
-            const transactionUpdateData = {
-              transactionHash: usertxHash,
-            };
-  
-            if (usertxHash === receiverData.hash) {
-              transactionUpdateData.status = "paid";
-            } else {
-              transactionUpdateData.status = "failed";
+          .post(`/transactions/verifyToken`, data)
+          .then(async (res) => {
+            try {
+              await switchNetwork(selectedNetwork);
+            } catch (error) {
+              return;
             }
-  
-            const updateResponse = await jwtAxios.put(
-              `/transactions/updateOrder`,
-              transactionUpdateData
-            );
-  
-            if (updateResponse?.data.message === "success") {
-              dispatch(setOrderId(usertxHash));
-              setSuccessModal(true);
-              dispatch(notificationSuccess("Transaction Successful"));
-            } else {
-              dispatch(setOrderId(usertxHash));
-              setCancelModal(true);
-              dispatch(notificationFail("Transaction failed!!"));
-            }
-          } catch (error) {
-            dispatch(notificationFail("Error fetching transactions"));
-          }
-        })
-        .catch((err) => {
-          if(typeof err == "string")
-          {
-            dispatch(notificationFail(err));
-          }else if(err?.response?.data?.message){
-            dispatch(notificationFail(err?.response?.data?.message));
-          }else{
-            dispatch(notificationFail("An error occurred during the transaction. Please try again."));
-          }
-        });
 
+            let amountToSend;
+            const contractInstance = await getUSDTContract(selectedNetwork);
+
+            if (selectedNetwork == "BNB") {
+              amountToSend = web3.utils.toWei(amount.toString(), "ether");
+            } else {
+              amountToSend = ethers.utils.parseUnits(amount.toString(), 6); // Convert amount to USDT units (6 decimals)
+            }
+
+            const transaction = await contractInstance.methods.transfer(
+              RECEIVER_ADDRESS,
+              amountToSend
+            );
+            const tx = {
+              from: acAddress?.account,
+              to: contractInstance.options.address,
+              data: transaction.encodeABI(),
+            };
+
+            const response = await web3.eth.sendTransaction(tx);
+            console.log("response ", response);
+            let transactionData;
+            let usertxHash;
+            if (response.transactionHash) {
+              usertxHash = response.transactionHash;
+
+              transactionData = {
+                user_wallet_address: acAddress?.account,
+                receiver_wallet_address: RECEIVER_ADDRESS,
+                amount: amount,
+                status: "pending",
+                network: selectedNetwork,
+                cryptoAmount: cryptoAmount.amount,
+                transactionHash: usertxHash,
+                gasUsed: response.gasUsed,
+                effectiveGasPrice: response.effectiveGasPrice,
+                cumulativeGasUsed: response.cumulativeGasUsed,
+                blockNumber: response.blockNumber,
+                blockHash: response.blockHash,
+              };
+            } else {
+              if (response.receipt && !response.receipt.status) {
+                usertxHash = response.receipt.transactionHash;
+
+                transactionData = {
+                  user_wallet_address: acAddress?.account,
+                  receiver_wallet_address: RECEIVER_ADDRESS,
+                  amount: amount,
+                  status: "failed",
+                  network: selectedNetwork,
+                  cryptoAmount: cryptoAmount.amount,
+                  transactionHash: usertxHash,
+                  gasUsed: response.receipt.gasUsed,
+                  effectiveGasPrice: response.receipt.effectiveGasPrice,
+                  cumulativeGasUsed: response.receipt.cumulativeGasUsed,
+                  blockNumber: response.receipt.blockNumber,
+                  blockHash: response.receipt.blockHash,
+                };
+              }
+            }
+
+            await jwtAxios.post(`/transactions/createOrder`, transactionData);
+
+            try {
+              const receiverData = await web3.eth.getTransaction(usertxHash);
+              const transactionUpdateData = {
+                transactionHash: usertxHash,
+              };
+
+              if (usertxHash === receiverData.hash) {
+                transactionUpdateData.status = "paid";
+              } else {
+                transactionUpdateData.status = "failed";
+              }
+
+              const updateResponse = await jwtAxios.put(
+                `/transactions/updateOrder`,
+                transactionUpdateData
+              );
+
+              if (updateResponse?.data.message === "success") {
+                dispatch(setOrderId(usertxHash));
+                setSuccessModal(true);
+                dispatch(notificationSuccess("Transaction Successful"));
+              } else {
+                dispatch(setOrderId(usertxHash));
+                setCancelModal(true);
+                dispatch(notificationFail("Transaction failed!!"));
+              }
+            } catch (error) {
+              dispatch(notificationFail("Error fetching transactions"));
+            }
+          })
+          .catch((err) => {
+            if (typeof err == "string") {
+              dispatch(notificationFail(err));
+            } else if (err?.response?.data?.message) {
+              dispatch(notificationFail(err?.response?.data?.message));
+            } else {
+              dispatch(
+                notificationFail(
+                  "An error occurred during the transaction. Please try again."
+                )
+              );
+            }
+          });
       } catch (error) {
         dispatch(
           notificationFail(
@@ -470,7 +495,7 @@ export const BuyTokenPage = () => {
           setSelectedNetworksMATIC(responseMATIC.data.result.ProposeGasPrice);
         }
       } catch (error) {
-        console.log("Error fetching gas price:", error)
+        console.log("Error fetching gas price:", error);
         // dispatch(notificationFail("Error fetching gas price:", error));
       }
     };
@@ -725,7 +750,7 @@ export const BuyTokenPage = () => {
             <Col xl="12" lg="6">
               <div className="top-green-card">
                 <Card body className="green-card">
-                  <TokenBalanceProgress  getUser={getUser}/>
+                  <TokenBalanceProgress getUser={getUser} />
                 </Card>
               </div>
             </Col>
