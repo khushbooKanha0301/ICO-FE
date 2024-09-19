@@ -30,9 +30,13 @@ import {
 import moment from "moment";
 import jwtAxios from "./service/jwtAxios";
 import * as flatted from "flatted";
+import { useLocation } from 'react-router-dom';
+
 let PageSize = 5;
 
 export const App = () => {
+  // Inside your component
+  const location = useLocation();
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(true);
   const sidebarToggle = () => setIsOpen(!isOpen);
@@ -136,6 +140,26 @@ export const App = () => {
         });
     }
   };
+  useEffect(() => {
+    if(acAddress.authToken){
+      gettransaction(typeFilter, statusFilter);
+    }
+  }, [location, currentPage, typeFilter, statusFilter, acAddress.authToken]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        gettransaction(typeFilter, statusFilter);
+      }
+    };
+  
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+  
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [typeFilter, statusFilter, currentPage, acAddress.authToken]);
+
 
   useEffect(() => {
     const userRef = ref(
@@ -220,12 +244,6 @@ export const App = () => {
       clearInterval(interval);
     }
   }, [acAddress?.userid]);
-
-  useEffect(() => {
-    if(acAddress.authToken){
-      gettransaction(typeFilter, statusFilter);
-    }
-  }, [currentPage, typeFilter, statusFilter, acAddress.authToken]);
 
   return (
     <>

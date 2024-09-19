@@ -18,7 +18,7 @@ export const ThisMonthSale = (props) => {
   const [percentage, setPercentage] = useState(0);
   
   useEffect(() => {
-    const tarnsArray1 = props?.transactions.map((trans) => trans.value);
+    const tarnsArray1 = props?.transactions?.map((trans) => trans.value);
     const tarnsArray2 = prevTransaction.map((trans) => trans.value);
     setTransactionMainData(tarnsArray2.concat(tarnsArray1));
     const tarnsArray1Sum = tarnsArray1.reduce(

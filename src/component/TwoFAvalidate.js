@@ -91,6 +91,18 @@ const TwoFAvalidate = (props) => {
           setError("You can try again after 5 minutes");
           setOTPValue("");
           inputRefs.current[0].focus();
+          await jwtAxios
+          .post("users/LoginFailedEmail")
+          .catch((err) => {
+            if(typeof err == "string")
+            {
+              dispatch(notificationFail(err));
+            }else if(err?.response?.data?.message){
+              dispatch(notificationFail(err?.response?.data?.message));
+            }else{
+              dispatch(notificationFail("An error occurred during the transaction. Please try again."));
+            }
+          });
           return;
         }
 

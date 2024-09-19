@@ -128,7 +128,7 @@ const SelectLocationDropdown = (props) => {
                 <img src={Search} alt="" className="search-icon" />
               </div>
               <div className="filter-option">
-                {showCountryOptions.map((data, key) => (
+                {showCountryOptions?.map((data, key) => (
                   <div
                     key={`${data.country}`}
                     className={`yourself-option form-check`}
@@ -206,7 +206,7 @@ const SelectLocationDropdown = (props) => {
                     <img src={Search} alt="" className="search-icon" />
                   </div>
                   <div className="filter-option">
-                    {showCountryOptions.map((data, key) => (
+                    {showCountryOptions?.map((data, key) => (
                        <div
                        key={`${data.country}`}
                        className={`yourself-option form-check`}

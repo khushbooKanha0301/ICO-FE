@@ -389,14 +389,16 @@ body {
         display: flex;
         align-items: center;
       }
+
       &.transaction-usd-amount {
         flex: 0 0 12%;
       }
 
-      &.transaction-token{
+      &.transaction-token {
         flex: 0 0 8%;
       }
-      &.transaction-amount{
+
+      &.transaction-amount {
         flex: 0 0 9%;
       }
 
@@ -407,6 +409,7 @@ body {
       &.transaction-type {
         flex: 0 0 12%;
       }
+
       &.transaction-status {
         flex: 0 0 19%;
       }
@@ -450,6 +453,7 @@ body {
       line-height: 20px;
       color: $white;
       border-right: 1px solid #1d1f22;
+
       &:last-child {
         border-right: 0;
       }
@@ -1270,11 +1274,12 @@ body {
 
         .btn-outline-success,
         .btn-outline-pending,
-        .btn-outline-danger{
+        .btn-outline-danger {
           font-size: 11px;
           font-weight: 700;
           line-height: 20px;
         }
+
         .btn-outline-success {
           color: #99fc79;
           background: rgba(153, 252, 121, 0.3);
@@ -1283,14 +1288,14 @@ body {
           padding: 12.5px 12px;
           width: 100%;
           max-width: 100px;
-          
-      
+
+
           &:hover {
             background: #99fc79;
             color: #1e1f24;
           }
         }
-      
+
         .btn-outline-danger {
           background: rgba(253, 92, 109, 0.21);
           border: 1px solid #fd5c6d;
@@ -1299,13 +1304,14 @@ body {
           padding: 12.5px 12px;
           width: 100%;
           max-width: 100px;
+
           &:hover {
             background: #fd5c6d;
             color: $white;
           }
         }
-      
-      
+
+
         .btn-outline-pending {
           color: #F3BA2F;
           background: rgba(243, 186, 47, 0.3);
@@ -1314,14 +1320,14 @@ body {
           padding: 12.5px 12px;
           width: 100%;
           max-width: 100px;
-          
-      
+
+
           &:hover {
             background: #F3BA2F;
             color: $white;
           }
         }
-      
+
       }
     }
 
@@ -3051,7 +3057,8 @@ body {
       }
     }
   }
-  .location-dropdown{
+
+  .location-dropdown {
     .dropdown-menu-inner {
       .form-control {
         margin-bottom: 0px !important;
@@ -3060,6 +3067,7 @@ body {
       }
     }
   }
+
   .token-graph-dropdown {
     .dropdown-menu-inner {
       .form-control {
@@ -3974,6 +3982,7 @@ img.circle-data {
     right: 0px !important;
     top: 9px !important;
   }
+
   .location-dropdown svg {
     right: 0px !important;
     top: 9px !important;

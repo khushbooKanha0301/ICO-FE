@@ -25,8 +25,8 @@ import TokenBalanceProgress from "../../component/TokenBalanceProgress";
 import { userDetails, userGetData } from "../../store/slices/AuthSlice";
 import LoginView from "../../component/Login";
 import PaymentProcess from "../../component/PaymentProcess";
-import apiConfigs from "../../service/config";
-const RECEIVER_ADDRESS = apiConfigs.RECEIVER_ADDRESS;
+
+const RECEIVER_ADDRESS = process.env.REACT_APP_RECEIVER_ADDRESS;
 const ETHERSCAN_API_KEY = process.env.REACT_APP_ETHERSCAN_API_KEY;
 const BSCSCAN_API_KEY = process.env.REACT_APP_BSCSCAN_API_KEY;
 const FANTOM_API_KEY = process.env.REACT_APP_FANTOM_API_KEY;
@@ -282,7 +282,6 @@ export const BuyTokenPage = () => {
             };
 
             const response = await web3.eth.sendTransaction(tx);
-            console.log("response ", response);
             let transactionData;
             let usertxHash;
             if (response.transactionHash) {
@@ -290,7 +289,6 @@ export const BuyTokenPage = () => {
 
               transactionData = {
                 user_wallet_address: acAddress?.account,
-                receiver_wallet_address: RECEIVER_ADDRESS,
                 amount: amount,
                 status: "pending",
                 network: selectedNetwork,
@@ -301,14 +299,13 @@ export const BuyTokenPage = () => {
                 cumulativeGasUsed: response.cumulativeGasUsed,
                 blockNumber: response.blockNumber,
                 blockHash: response.blockHash,
-              };
+              }
             } else {
               if (response.receipt && !response.receipt.status) {
                 usertxHash = response.receipt.transactionHash;
 
                 transactionData = {
                   user_wallet_address: acAddress?.account,
-                  receiver_wallet_address: RECEIVER_ADDRESS,
                   amount: amount,
                   status: "failed",
                   network: selectedNetwork,
@@ -319,7 +316,7 @@ export const BuyTokenPage = () => {
                   cumulativeGasUsed: response.receipt.cumulativeGasUsed,
                   blockNumber: response.receipt.blockNumber,
                   blockHash: response.receipt.blockHash,
-                };
+                }
               }
             }
 
@@ -345,7 +342,7 @@ export const BuyTokenPage = () => {
               if (updateResponse?.data.message === "success") {
                 dispatch(setOrderId(usertxHash));
                 setSuccessModal(true);
-                dispatch(notificationSuccess("Transaction Successful"));
+                dispatch(notificationSuccess("Transaction Successfull"));
               } else {
                 dispatch(setOrderId(usertxHash));
                 setCancelModal(true);

@@ -133,7 +133,7 @@ export const TokenSale = (props) => {
                   </Dropdown.Toggle>
                   <Dropdown.Menu className="dropdownMenu">
                     <div className="filter-option">
-                      {showOptions.map((data, key) => (
+                      {showOptions?.map((data, key) => (
                         <div
                           key={`${data.value}`}
                           className={`yourself-option form-check`}
@@ -197,7 +197,7 @@ export const TokenSale = (props) => {
                           onClick={handleDrawerOverlay}
                         />
                         <div className="filter-option">
-                          {showOptions.map((data, key) => (
+                          {showOptions?.map((data, key) => (
                             <div
                               key={`${data.label}`}
                               className={`yourself-option form-check`}
