@@ -2,10 +2,10 @@ import React from 'react'
 import TransactionPage from './transactionPage'
 
 function TransactionComponent(props) {
-  const {totalTransactionsCount , transactionLoading , transactions , gettransaction, setTypeFilter, setStatusFilter, PageSize , currentPage , setCurrentPage , typeFilter, statusFilter} = props
+  const {totalTransactionsCount , transactionLoading , setTypeFilter, setStatusFilter, PageSize , currentPage , setCurrentPage , typeFilter, statusFilter} = props
   return (
     <>
-      <TransactionPage gettransaction={gettransaction} transactionLoading={transactionLoading} transactions={transactions} totalTransactionsCount={totalTransactionsCount} 
+      <TransactionPage transactionLoading={transactionLoading} totalTransactionsCount={totalTransactionsCount} 
       setStatusFilter={setStatusFilter} setTypeFilter={setTypeFilter} typeFilter={typeFilter} statusFilter={statusFilter}
       setCurrentPage={setCurrentPage} currentPage={currentPage} PageSize={PageSize}/>
     </>

@@ -18,9 +18,10 @@ import {
 import { userDetails } from "../../store/slices/AuthSlice";
 import { formattedNumber, getDateFormate, hideAddress } from "../../utils";
 import TokenBalanceProgress from "../../component/TokenBalanceProgress";
+import { getTransaction } from "../../store/slices/transactionSlice";
 
 export const DashboardPage = (props) => {
-  const { getUser , transactions , transactionLoading, setTransactionLoading, setTransactions} = props;
+  const { getUser, transactionLoading } = props;
   const [transactionList, setTransactionList] = useState(null);
   const dispatch = useDispatch();
   const acAddress = useSelector(userDetails);
@@ -30,18 +31,19 @@ export const DashboardPage = (props) => {
   const referrance = queryParams.get("ref");
 
   const { sales } = useSelector((state) => state?.currenyReducer);
- 
+
   useEffect(() => {
     const getDashboardData = async () => {
       await dispatch(getTotalMid()).unwrap();
       let authToken = acAddress.authToken ? acAddress.authToken : null;
       if (
         authToken &&
-        getUser && getUser?.is_2FA_verified === true && acAddress.account
+        getUser &&
+        getUser?.is_2FA_verified === true &&
+        acAddress.account
       ) {
         dispatch(getTokenCount()).unwrap();
-      } 
-      else {
+      } else {
         dispatch(resetTokenData());
       }
     };
@@ -53,20 +55,27 @@ export const DashboardPage = (props) => {
   };
 
   useEffect(() => {
-    setTransactions([]);
-    setTransactionLoading(true);
     if (
       acAddress &&
       acAddress?.authToken &&
       acAddress.account &&
-      getUser && getUser?.is_2FA_verified === true
-      ) {
-        setTransactionList(transactions)
-      }
-      if(!acAddress?.authToken || (getUser && getUser?.is_2FA_verified === false)){
-        setTransactionLoading(false);
-      }
-
+      getUser &&
+      getUser?.is_2FA_verified === true
+    ) {
+      dispatch(
+        getTransaction({
+          currentPage: 1,
+          pageSize: 3,
+          typeFilter: [],
+          statusFilter: [],
+        })
+      ) // Adjust the filters as needed
+        .unwrap()
+        .then((data) => {
+          console.log("data ", data);
+          setTransactionList(data.transactions);
+        });
+    }
   }, [acAddress?.authToken, getUser]);
 
   const handleDownload = () => {
@@ -77,22 +86,27 @@ export const DashboardPage = (props) => {
   };
 
   let addressLine = "";
-  if(acAddress.account === "Connect Wallet" && getUser === undefined )
-  {
+  if (acAddress.account === "Connect Wallet" && getUser === undefined) {
     addressLine = "Connect Wallet";
-  }else if(acAddress.account !== "Connect Wallet" && getUser && getUser?.is_2FA_verified === false)
-  {
+  } else if (
+    acAddress.account !== "Connect Wallet" &&
+    getUser &&
+    getUser?.is_2FA_verified === false
+  ) {
     addressLine = "Connect Wallet";
-  }else if(acAddress.account !== "Connect Wallet" &&  getUser && getUser?.is_2FA_verified === true)
-  {
-    addressLine = hideAddress(acAddress?.account,5);
-  }else{
+  } else if (
+    acAddress.account !== "Connect Wallet" &&
+    getUser &&
+    getUser?.is_2FA_verified === true
+  ) {
+    addressLine = hideAddress(acAddress?.account, 5);
+  } else {
     addressLine = "Connect Wallet";
   }
 
   useEffect(() => {
     if (acAddress?.account === referrance) {
-      navigate("/")
+      navigate("/");
     }
   }, [acAddress]);
 
@@ -103,7 +117,7 @@ export const DashboardPage = (props) => {
           <Col lg="4">
             <div className="top-green-card">
               <Card body className="green-card">
-                <TokenBalanceProgress getUser={getUser}/>
+                <TokenBalanceProgress getUser={getUser} />
               </Card>
             </div>
           </Col>
@@ -112,7 +126,9 @@ export const DashboardPage = (props) => {
               <Row>
                 <Col lg="3">
                   <h4>Ico Coin</h4>
-                  <div className="icoin">1 Usd= {sales && sales?.amount ? sales?.amount : 0} Mid</div>
+                  <div className="icoin">
+                    1 Usd= {sales && sales?.amount ? sales?.amount : 0} Mid
+                  </div>
                   <p>1 IDR = 0.0067 USDT</p>
                   <Button variant="primary" onClick={buytokenLink}>
                     Buy Token Now
@@ -128,20 +144,24 @@ export const DashboardPage = (props) => {
                       </span>
                     </Badge>
 
-                    {getUser && getUser?.kyc_verify === 0 &&
-                    getUser?.kyc_status === true &&
-                    getUser?.is_2FA_verified === true && (
+                    {getUser &&
+                      getUser?.kyc_verify === 0 &&
+                      getUser?.kyc_status === true &&
+                      getUser?.is_2FA_verified === true && (
                         <Badge bg="info" className="kyc-status">
                           Submit KYC{" "}
                         </Badge>
-                      )} 
-                    {(getUser && getUser?.kyc_verify === 0 &&
-                      getUser?.kyc_status === false) && (
-                      <Badge bg="info" className="kyc-status">
-                        Submit KYC{" "}
-                      </Badge>
-                    )}
-                    {getUser && getUser?.kyc_verify === 1 && getUser?.kyc_status === true &&
+                      )}
+                    {getUser &&
+                      getUser?.kyc_verify === 0 &&
+                      getUser?.kyc_status === false && (
+                        <Badge bg="info" className="kyc-status">
+                          Submit KYC{" "}
+                        </Badge>
+                      )}
+                    {getUser &&
+                      getUser?.kyc_verify === 1 &&
+                      getUser?.kyc_status === true &&
                       getUser?.is_2FA_verified === true && (
                         <Badge bg="info" className="kyc-status">
                           KYC Verified{" "}
@@ -150,7 +170,8 @@ export const DashboardPage = (props) => {
                           </span>
                         </Badge>
                       )}
-                    {getUser && getUser?.kyc_verify === 2 &&
+                    {getUser &&
+                      getUser?.kyc_verify === 2 &&
                       getUser?.is_2FA_verified === true && (
                         <Badge bg="danger" className="kyc-status">
                           KYC Rejected{" "}
@@ -162,10 +183,8 @@ export const DashboardPage = (props) => {
                   </div>
                   <h4 className="mb-3">Receiving Wallet</h4>
                   <h4>
-                    {acAddress && getUser  && addressLine != "" && (
-                      <span>
-                        {addressLine}
-                      </span>
+                    {acAddress && getUser && addressLine != "" && (
+                      <span>{addressLine}</span>
                     )}{" "}
                     <Link to="#/">EDIT</Link>
                   </h4>
@@ -193,52 +212,75 @@ export const DashboardPage = (props) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactionList?.map((transaction) => (
-                    <tr key={transaction._id}>
-                      <td>
-                        <div style={{display: "flex" , alignItems: "center"}}>
-                        {transaction?.status == "paid" && (
-                          <CheckCircleIcon width="16" height="16" />
-                        )}
-                        {(transaction?.status == "failed") && (
-                          <CloseIcon width="16" height="16" />
-                        )}
-                          {(transaction?.status == "pending") && (
-                          <ExclamationIcon width="16" height="16" />
-                        )}
-                        {transaction?.is_sale && transaction?.is_process ? transaction?.token_cryptoAmount <= 200
-                          ? formattedNumber(transaction?.token_cryptoAmount)
-                          : "+200" : "0.00" }
-                        </div>
-                      </td>
-                      <td>
-                        <p className="text-white mb-1">
-                          {formattedNumber(transaction?.price_amount)}{" "}
-                          {transaction?.price_currency}
-                        </p>
-                      </td>
-                      <td>{getDateFormate(transaction?.created_at)}</td>
-                      <td> {transaction?.sale_type == "website" ? "Website": "Outside-Web"}</td>
-                      <td style={{ textAlign: "right" }}>
-                        {transaction?.status == "paid" && (
-                          <Button variant="outline-success">
-                            Confirmed 
-                          </Button>
-                        )}
-                        {transaction?.status == "failed" && (
-                          <Button variant="outline-danger">
-                            Failed 
-                          </Button>                  
-                        )}
-                        {transaction?.status == "pending" && (
-                          <Button variant="outline-pending">
-                            Unconfirmed 
-                          </Button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                  {(transactionList?.length === 0 && transactionLoading === false) && (
+                  {acAddress?.authToken ? (
+                    transactionList?.length > 0 ? (
+                      transactionList?.map((transaction) => (
+                        <tr key={transaction._id}>
+                          <td>
+                            <div
+                              style={{ display: "flex", alignItems: "center" }}
+                            >
+                              {transaction?.status == "paid" && (
+                                <CheckCircleIcon width="16" height="16" />
+                              )}
+                              {transaction?.status == "failed" && (
+                                <CloseIcon width="16" height="16" />
+                              )}
+                              {transaction?.status == "pending" && (
+                                <ExclamationIcon width="16" height="16" />
+                              )}
+                              {transaction?.is_sale && transaction?.is_process
+                                ? transaction?.token_cryptoAmount <= 200
+                                  ? formattedNumber(
+                                      transaction?.token_cryptoAmount
+                                    )
+                                  : "+200"
+                                : "0.00"}
+                            </div>
+                          </td>
+                          <td>
+                            <p className="text-white mb-1">
+                              {formattedNumber(transaction?.price_amount)}{" "}
+                              {transaction?.price_currency}
+                            </p>
+                          </td>
+                          <td>{getDateFormate(transaction?.created_at)}</td>
+                          <td>
+                            {" "}
+                            {transaction?.sale_type == "website"
+                              ? "Website"
+                              : "Outside-Web"}
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            {transaction?.status == "paid" && (
+                              <Button variant="outline-success">
+                                Confirmed
+                              </Button>
+                            )}
+                            {transaction?.status == "failed" && (
+                              <Button variant="outline-danger">Failed</Button>
+                            )}
+                            {transaction?.status == "pending" && (
+                              <Button variant="outline-pending">
+                                Unconfirmed
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} style={{ paddingTop: "30px" }}>
+                          <p
+                            className="text-center"
+                            style={{ color: "rgba(255,255,255,0.2)" }}
+                          >
+                            No History Records
+                          </p>
+                        </td>
+                      </tr>
+                    )
+                  ) : (
                     <tr>
                       <td colSpan={4} style={{ paddingTop: "30px" }}>
                         <p
@@ -265,7 +307,7 @@ export const DashboardPage = (props) => {
       <div className="token-sale-graph">
         <Row>
           <Col lg="8">
-            <TokenSale getUser={getUser}/>
+            <TokenSale getUser={getUser} />
           </Col>
           <Col lg="4">
             <Card body className="cards-dark ico-coin">

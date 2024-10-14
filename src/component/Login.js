@@ -16,8 +16,15 @@ import {
 import { useAccount, useConnect, useDisconnect, useSignMessage } from "wagmi";
 
 // this component is used for login model with functionality 
-export const LoginView = (props) => {
-  const { handleaccountaddress, settwofamodal , setGetUser} = props;
+export const LoginView = ({
+  setGetUser,
+  show,
+  onHide,
+  handleaccountaddress,
+  issign,
+  settwofamodal,
+}) => {
+  //const { handleaccountaddress, settwofamodal , setGetUser} = props;
   const [checkValue, setCheckValue] = useState(null);
   const [accountAddress, setAccountAddress] = useState("");
   const dispatch = useDispatch();
@@ -206,11 +213,11 @@ export const LoginView = (props) => {
           library: library,
           checkValue: checkValue,
           deactivate: deactivate,
-          hideLoginModal: props.onHide,
+          hideLoginModal: onHide,
         };
 
         settwofamodal(false);
-        props.onHide();
+        onHide();
         dispatch(checkAuth(checkAuthParams)).unwrap();
       }
     };
@@ -260,12 +267,12 @@ export const LoginView = (props) => {
   }, [accountAddress]);
 
   useEffect(() => {
-    if (props.issign === true) {
+    if (issign === true) {
       settwofamodal(false);
       disconnect();
       dispatch(notificationSuccess("User logout successfully !"));
     }
-  }, [props.issign]);
+  }, [issign]);
 
   const disconnect = async () => {
     setAccountAddress("");
@@ -299,7 +306,7 @@ export const LoginView = (props) => {
       } else if(response?.loginCheck == "success") {
         dispatch(notificationSuccess("user login successfully"));
       }
-      props.onHide();
+      onHide();
       setAccountAddress(accounts[0]);
     });
   };
@@ -346,15 +353,15 @@ export const LoginView = (props) => {
             signature: data,
             refrence_by: referrance
           };
-          props.onHide();
-        let response = await dispatch(checkAuth(checkAuthParams)).unwrap();
-        
-        if(referrance && response?.loginCheck == "success"){
-          dispatch(notificationSuccess("user login successfully"));
-          navigate("/")
-        } else if(response?.loginCheck == "success") {
-          dispatch(notificationSuccess("user login successfully"));
-        }
+          onHide();
+          let response = await dispatch(checkAuth(checkAuthParams)).unwrap();
+          
+          if(referrance && response?.loginCheck == "success"){
+            dispatch(notificationSuccess("user login successfully"));
+            navigate("/")
+          } else if(response?.loginCheck == "success") {
+            dispatch(notificationSuccess("user login successfully"));
+          }
         } catch (error) {
           console.error("Error fetching data:", error);
         }
@@ -431,7 +438,7 @@ export const LoginView = (props) => {
       default:
         break;
     }
-    props.onHide();
+    onHide();
   };
 
   const onChange = (event) => {
@@ -439,7 +446,7 @@ export const LoginView = (props) => {
   };
 
   const cancelButtonHandler = () => {
-    props.onHide();
+    onHide();
     setCheckValue(null);
   };
 
@@ -459,9 +466,10 @@ export const LoginView = (props) => {
         </>
       ) : (
         <>
-          {props.show && (
+          {show && (
             <Modal
-              {...props}
+              show={show} // Controls visibility
+              onHide={onHide} // Handles modal close behavior
               dialogClassName="login-modal"
               backdropClassName="login-modal-backdrop"
               aria-labelledby="contained-modal"

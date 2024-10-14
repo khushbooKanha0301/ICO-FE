@@ -4,13 +4,15 @@ import commonReducer from './slices/commonSlice'
 import currenyReducer from './slices/currencySlice'
 import notificationReducer from './slices/notificationSlice'
 import loderReducer from "./slices/LoderSlice";
+import transactionReducer from './slices/transactionSlice';
 
 const rootReducer = combineReducers({
   authReducer,
   commonReducer,
   notificationReducer,
   currenyReducer,
-  loderReducer
+  loderReducer,
+  transactions: transactionReducer,
 })
 
 const store = configureStore({ reducer: rootReducer })

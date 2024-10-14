@@ -20,17 +20,17 @@ import {
   userDetails,
   userGetData,
 } from "./store/slices/AuthSlice";
-import { checkCurrentSale} from "./store/slices/currencySlice";
+import { checkCurrentSale } from "./store/slices/currencySlice";
 import { database, firebaseMessages } from "./config";
-import { onValue, ref, get , update} from "firebase/database";
+import { onValue, ref, get, update } from "firebase/database";
 import {
   notificationFail,
   notificationSuccess,
 } from "./store/slices/notificationSlice";
 import moment from "moment";
-import jwtAxios from "./service/jwtAxios";
 import * as flatted from "flatted";
-import { useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
+import { getTransaction , clearTransactions} from "./store/slices/transactionSlice";
 
 let PageSize = 5;
 
@@ -51,10 +51,8 @@ export const App = () => {
   const handleAccountAddress = (address) => {
     setIsSign(false);
   };
-  const [transactionLoading, setTransactionLoading] = useState(true);
-  const [transactions, setTransactions] = useState(null);
-  const [totalTransactionsCount, setTotalTransactionsCount] = useState(0);
-
+  const { transactions, totalTransactionsCount, transactionLoading } =
+    useSelector((state) => state.transactions);
   const [typeFilter, setTypeFilter] = useState(
     flatted.parse(flatted.stringify([]))
   );
@@ -79,6 +77,7 @@ export const App = () => {
   }, []);
 
   const signOut = () => {
+    dispatch(clearTransactions());
     setIsSign(true);
   };
 
@@ -104,7 +103,7 @@ export const App = () => {
           // Cleanup function to unsubscribe from Firebase listener
           return () => unsubscribe();
         } catch (error) {
-          console.error('Failed to fetch user data', error);
+          console.error("Failed to fetch user data", error);
         }
       }
     };
@@ -118,115 +117,129 @@ export const App = () => {
     }
   }, [getUser]);
 
-  const gettransaction = async (typeFilter , statusFilter) => {
-    if (currentPage) {
-      let bodyData = {
-        typeFilter: typeFilter,
-        statusFilter: statusFilter,
-      };
-      await jwtAxios
-        .post(
-          `/transactions/getTransactions?page=${currentPage}&pageSize=${PageSize}`,
-          bodyData
-        )
-        .then((res) => {
-          setTransactionLoading(false);
-          setTransactions(res.data?.transactions);
-          setTotalTransactionsCount(res.data?.totalTransactionsCount);
+  useEffect(() => {
+    if (location.pathname === "/" && acAddress.authToken) {
+      dispatch(
+        getTransaction({
+          currentPage,
+          pageSize: PageSize,
+          typeFilter,
+          statusFilter,
         })
-        .catch((err) => {
-          setTransactionLoading(false);
-          console.log(err);
-        });
+      );
     }
-  };
-  useEffect(() => {
-    if(acAddress.authToken){
-      gettransaction(typeFilter, statusFilter);
-    }
-  }, [location, currentPage, typeFilter, statusFilter, acAddress.authToken]);
+  }, [
+    location.pathname,
+    acAddress.authToken,
+    currentPage,
+    typeFilter,
+    statusFilter,
+    dispatch,
+  ]);
 
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        gettransaction(typeFilter, statusFilter);
-      }
-    };
-  
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-  
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [typeFilter, statusFilter, currentPage, acAddress.authToken]);
-
-
-  useEffect(() => {
-    const userRef = ref(
-      database,
-      firebaseMessages?.ICO_TRANSACTIONS
-    );
+    const userRef = ref(database, firebaseMessages?.ICO_TRANSACTIONS);
     const updateLastActive = () => {
-      get(userRef).then((snapshot) => {
-        if (snapshot.exists()) {
-          const transactions = snapshot.val();
-          for (const [key, value] of Object.entries(transactions)) {
-            const dateMoment = moment.utc(value?.lastActive);
-            const currentMoment = moment.utc();
-            const differenceInMinutes = currentMoment.diff(dateMoment, 'minutes');
+      get(userRef)
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            const transactions = snapshot.val();
+            for (const [key, value] of Object.entries(transactions)) {
+              const dateMoment = moment.utc(value?.lastActive);
+              const currentMoment = moment.utc();
+              const differenceInMinutes = currentMoment.diff(
+                dateMoment,
+                "minutes"
+              );
 
-            if(value.user_wallet_address ===  acAddress?.account){
-              if(differenceInMinutes < 1){
-                if (!value.is_pending  && !value.is_open && value.status == "pending") {
-                  dispatch(notificationFail(`Outside Transaction Pending`));
-                  gettransaction(typeFilter, statusFilter);
-                  const userUpdateRef = ref(
-                    database,
-                    firebaseMessages?.ICO_TRANSACTIONS  + "/" + key
-                  );
-                  update(userUpdateRef, {
-                    lastActive: Date.now(),
-                    is_pending: true
-                  });
-                }
-                if (!value.is_pending  && !value.is_open && value.status == "failed") {
-                  dispatch(notificationFail(`Outside Transaction Failed`));
-                  gettransaction(typeFilter, statusFilter);
-                  const userUpdateRef = ref(
-                    database,
-                    firebaseMessages?.ICO_TRANSACTIONS  + "/" + key
-                  );
-                  update(userUpdateRef, {
-                    lastActive: Date.now(),
-                    is_pending: true
-                  });
-                }
+              if (value.user_wallet_address === acAddress?.account) {
+                if (differenceInMinutes < 1) {
+                  if (
+                    !value.is_pending &&
+                    !value.is_open &&
+                    value.status == "pending"
+                  ) {
+                    dispatch(notificationFail(`Outside Transaction Pending`));
+                    dispatch(
+                      getTransaction({
+                        currentPage,
+                        pageSize: PageSize,
+                        typeFilter,
+                        statusFilter,
+                      })
+                    );
+                    const userUpdateRef = ref(
+                      database,
+                      firebaseMessages?.ICO_TRANSACTIONS + "/" + key
+                    );
+                    update(userUpdateRef, {
+                      lastActive: Date.now(),
+                      is_pending: true,
+                    });
+                  }
+                  if (
+                    !value.is_pending &&
+                    !value.is_open &&
+                    value.status == "failed"
+                  ) {
+                    dispatch(notificationFail(`Outside Transaction Failed`));
+                    dispatch(
+                      getTransaction({
+                        currentPage,
+                        pageSize: PageSize,
+                        typeFilter,
+                        statusFilter,
+                      })
+                    );
+                    const userUpdateRef = ref(
+                      database,
+                      firebaseMessages?.ICO_TRANSACTIONS + "/" + key
+                    );
+                    update(userUpdateRef, {
+                      lastActive: Date.now(),
+                      is_pending: true,
+                    });
+                  }
 
-                if (value.is_pending && !value.is_open  && value.status == "paid") {
-                  dispatch(notificationSuccess(`Outside Transaction Successfull`));
-                  gettransaction(typeFilter, statusFilter);
-                  const userUpdateRef = ref(
-                    database,
-                    firebaseMessages?.ICO_TRANSACTIONS  + "/" + key
-                  );
-                  update(userUpdateRef, {
-                    lastActive: Date.now(),
-                    is_open: true
-                  });
+                  if (
+                    value.is_pending &&
+                    !value.is_open &&
+                    value.status == "paid"
+                  ) {
+                    dispatch(
+                      notificationSuccess(`Outside Transaction Successfull`)
+                    );
+                    dispatch(
+                      getTransaction({
+                        currentPage,
+                        pageSize: PageSize,
+                        typeFilter,
+                        statusFilter,
+                      })
+                    );
+                    const userUpdateRef = ref(
+                      database,
+                      firebaseMessages?.ICO_TRANSACTIONS + "/" + key
+                    );
+                    update(userUpdateRef, {
+                      lastActive: Date.now(),
+                      is_open: true,
+                    });
+                  }
                 }
               }
             }
           }
-        } 
-      }).catch((error) => {
-        console.error("Error fetching data:", error);
-      });
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+        });
     };
 
     const interval = setInterval(function () {
-      updateLastActive()
+      updateLastActive();
     }, 1000); // 5 seconds in milliseconds
-    
+
     window.addEventListener("beforeunload", updateLastActive());
     window.addEventListener("mousemove", updateLastActive());
     window.addEventListener("keydown", updateLastActive());
@@ -242,8 +255,12 @@ export const App = () => {
       window.removeEventListener("click", updateLastActive());
 
       clearInterval(interval);
-    }
+    };
   }, [acAddress?.userid]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [location.pathname]);
 
   return (
     <>
@@ -270,11 +287,18 @@ export const App = () => {
                 path="/"
                 element={
                   <>
-                    <DashboardComponent getUser={getUser} transactionLoading={transactionLoading} transactions={transactions} 
-                    setTransactionLoading={setTransactionLoading} setTransactions={setTransactions}/>
+                    <DashboardComponent
+                      getUser={getUser}
+                      transactionLoading={transactionLoading}
+                    />
                     {twoFAModal === true &&
-                      getUser && getUser?.is_2FA_verified === false && (
-                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} getUser={getUser} setGetUser={setGetUser}/>
+                      getUser &&
+                      getUser?.is_2FA_verified === false && (
+                        <TwoFAvalidate
+                          setTwoFAModal={setTwoFAModal}
+                          getUser={getUser}
+                          setGetUser={setGetUser}
+                        />
                       )}
                   </>
                 }
@@ -285,8 +309,13 @@ export const App = () => {
                   <>
                     <BuyTokenComponent />
                     {twoFAModal === true &&
-                      getUser && getUser?.is_2FA_verified === false && (
-                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} getUser={getUser} setGetUser={setGetUser}/>
+                      getUser &&
+                      getUser?.is_2FA_verified === false && (
+                        <TwoFAvalidate
+                          setTwoFAModal={setTwoFAModal}
+                          getUser={getUser}
+                          setGetUser={setGetUser}
+                        />
                       )}
                   </>
                 }
@@ -297,8 +326,13 @@ export const App = () => {
                   <>
                     <IcoDistributionComponent />
                     {twoFAModal === true &&
-                      getUser && getUser?.is_2FA_verified === false && (
-                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} getUser={getUser} setGetUser={setGetUser}/>
+                      getUser &&
+                      getUser?.is_2FA_verified === false && (
+                        <TwoFAvalidate
+                          setTwoFAModal={setTwoFAModal}
+                          getUser={getUser}
+                          setGetUser={setGetUser}
+                        />
                       )}
                   </>
                 }
@@ -309,8 +343,13 @@ export const App = () => {
                   <>
                     <StakeScallopComponent />
                     {twoFAModal === true &&
-                      getUser && getUser?.is_2FA_verified === false && (
-                        <TwoFAvalidate setTwoFAModal={setTwoFAModal} getUser={getUser} setGetUser={setGetUser}/>
+                      getUser &&
+                      getUser?.is_2FA_verified === false && (
+                        <TwoFAvalidate
+                          setTwoFAModal={setTwoFAModal}
+                          getUser={getUser}
+                          setGetUser={setGetUser}
+                        />
                       )}
                   </>
                 }
@@ -320,11 +359,17 @@ export const App = () => {
                 element={
                   <>
                     <AuthRoute>
-                      <TransactionComponent transactionLoading={transactionLoading} transactions={transactions} 
-                      totalTransactionsCount={totalTransactionsCount} gettransaction={gettransaction}
-                      setTypeFilter={setTypeFilter} setStatusFilter={setStatusFilter} typeFilter={typeFilter} 
-                      statusFilter={statusFilter} PageSize={PageSize}
-                      setCurrentPage={setCurrentPage} currentPage={currentPage}/>
+                      <TransactionComponent
+                        transactionLoading={transactionLoading}
+                        totalTransactionsCount={totalTransactionsCount}
+                        setTypeFilter={setTypeFilter}
+                        setStatusFilter={setStatusFilter}
+                        typeFilter={typeFilter}
+                        statusFilter={statusFilter}
+                        PageSize={PageSize}
+                        setCurrentPage={setCurrentPage}
+                        currentPage={currentPage}
+                      />
                     </AuthRoute>
                   </>
                 }

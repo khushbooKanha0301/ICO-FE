@@ -14,26 +14,41 @@ import {
   SettingIcon
 } from "../../component/SVGIcon";
 import TransactionDetails from "../../component/TransactionDetails";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { formattedNumber, getDateFormate, hideAddress } from "../../utils";
 import { userDetails } from "../../store/slices/AuthSlice";
+import { getTransaction , selectTransactions, selectTotalCount, selectLoading } from '../../store/slices/transactionSlice';
 
 export const TransactionPage = (props) => {
-  const {totalTransactionsCount , transactionLoading , transactions, gettransaction, setStatusFilter, setTypeFilter ,PageSize,  currentPage , setCurrentPage , statusFilter, typeFilter} = props
- 
+  const {
+    setStatusFilter,
+    setTypeFilter,
+    PageSize,
+    currentPage,
+    setCurrentPage,
+    statusFilter,
+    typeFilter,
+  } = props;
+  const dispatch = useDispatch();
+  const transactions = useSelector(selectTransactions);
+  const totalTransactionsCount = useSelector(selectTotalCount);
+  const transactionLoading = useSelector(selectLoading);
+
   const [modalShow, setModalShow] = useState(false);
   const [stateTransactions, setStateTransactions] = useState(null);
   const acAddress = useSelector(userDetails);
+
   const modalToggle = (transaction) => {
     setModalShow(!modalShow);
     setStateTransactions(transaction);
   };
  
+  // Fetch transactions whenever authToken or filters change
   useEffect(() => {
-    if(acAddress.authToken){
-      gettransaction(typeFilter, statusFilter);
+    if (acAddress.authToken) {
+      dispatch(getTransaction({ typeFilter, statusFilter, pageSize: PageSize, currentPage }));
     }
-  }, [currentPage, typeFilter, statusFilter, acAddress.authToken]);
+  }, [acAddress.authToken, currentPage, typeFilter, statusFilter, dispatch]);
 
   const handleFilterTypeChange = (filterType) => {
     setTypeFilter((prevValues) => {
