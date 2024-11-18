@@ -16,6 +16,49 @@ import { forwardRef } from "react";
 import SelectOptionDropdown from "./../../component/SelectOptionDropdown";
 import SelectLocationDropdown from "./../../component/SelectLocationDropdown";
 
+import CryptoJS from "crypto-js";
+
+const secretKey = "your-secret-key";
+
+function decryptEmail(encryptedEmail) {
+  try {
+    // Split the encrypted email into IV and encrypted text (assuming 'IV:EncryptedData' format)
+    const [iv, encryptedText] = encryptedEmail.split(":");
+
+    if (!iv || !encryptedText) {
+      throw new Error("Invalid encrypted email format");
+    }
+
+    // Ensure the secret key is hashed and truncated to 32 bytes, just like in Node.js
+    const hashedKey = CryptoJS.SHA256(secretKey)
+      .toString(CryptoJS.enc.Base64)
+      .substr(0, 32);
+
+    // Convert the IV and encrypted text to the appropriate formats
+    const ivHex = CryptoJS.enc.Hex.parse(iv); // Convert IV to a Hex format
+    const encryptedData = CryptoJS.enc.Hex.parse(encryptedText); // Convert encrypted text to Hex format
+
+    // Decrypt the email using AES-256-CBC with the hashed key and IV
+    const decryptedBytes = CryptoJS.AES.decrypt(
+      { ciphertext: encryptedData },
+      CryptoJS.enc.Utf8.parse(hashedKey),
+      { iv: ivHex, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }
+    );
+
+    // Convert the decrypted bytes back to a string
+    const decryptedEmail = decryptedBytes.toString(CryptoJS.enc.Utf8);
+
+    if (!decryptedEmail) {
+      throw new Error("Failed to decrypt email. Invalid data or key.");
+    }
+
+    return decryptedEmail; // Return the decrypted email
+  } catch (error) {
+    console.error("Decryption error:", error.message);
+    return null;
+  }
+}
+
 export const PersonalData = () => {
   const dispatch = useDispatch();
   const [fname, setFname] = useState("");
@@ -29,7 +72,7 @@ export const PersonalData = () => {
   const [countryCallingCode, setCountryCallingCode] = useState("");
   const userDetailsAll = useSelector(userGetFullDetails);
   const [isMobile, setIsMobile] = useState(false);
- 
+
   const [imageUrlSet, setImageUrl] = useState("https://flagcdn.com/h40/us.png");
   const [imageSearchUrlSet, setImageSearchUrl] = useState(
     "https://flagcdn.com/h40/us.png"
@@ -41,7 +84,7 @@ export const PersonalData = () => {
     iso: "US",
     cca3: "USA",
   });
- 
+
   const [searchText, setSearchText] = useState(
     `${selectedOption?.country} (${selectedOption?.code})`
   );
@@ -82,7 +125,9 @@ export const PersonalData = () => {
       setFname(user?.fname ? user?.fname : "");
       setLname(user?.lname ? user?.lname : "");
       setPhone(user?.phone ? user?.phone : "");
-      setEmail(user?.email ? user?.email : "");
+      const decryptedEmail = decryptEmail(user?.email || "");
+      setEmail(decryptedEmail);
+      //setEmail(user?.email ? user?.email : "");
       setCity(user?.city ? user?.city : "");
       setDob(user?.dob ? moment(user?.dob, "DD/MM/YYYY").toDate() : "");
       setLocation(user?.location ? user?.location : "US");
@@ -245,79 +290,37 @@ export const PersonalData = () => {
               <div
                 className={`d-flex items-center phone-number-dropdown justify-between relative`}
               >
-                {!isMobile && (
-                  <>
-                    <Form.Control
-                      placeholder={countryCallingCode}
-                      name="phone"
-                      type="text"
-                      value={phone}
-                      onChange={(e) => {
-                        onChange(e);
-                      }}
-                      maxLength="10"
-                    />
-                    {selectedOption?.code ? (
-                      <img
-                        src={imageUrlSet}
-                        alt="Flag"
-                        className="circle-data"
-                      />
-                    ) : (
-                      "No Flag"
-                    )}
-                    <SelectOptionDropdown
-                      imageUrlSet={imageUrlSet}
-                      setImageUrl={setImageUrl}
-                      selectedOption={selectedOption}
-                      setSelectedOption={setSelectedOption}
-                      setCountryCallingCode={setCountryCallingCode}
-                      countryCallingCode={countryCallingCode}
-                      setSearchText={setSearchText}
-                      searchText={searchText}
-                      setImageSearchUrl={setImageSearchUrl}
-                      imageSearchUrlSet={imageSearchUrlSet}
-                    />
-                  </>
-                )}
-                {isMobile && (
-                  <>
-                    <Form.Control
-                      placeholder={countryCallingCode}
-                      name="phone"
-                      type="text"
-                      value={phone}
-                      onChange={(e) => {
-                        onChange(e);
-                      }}
-                      maxLength="10"
-                      className="md:w-auto w-full"
-                    />
-                    <div className="text-center relative mobile-setting-dropdown flex items-center">
-                      {selectedOption?.code ? (
-                        <img
-                          src={imageUrlSet}
-                          alt="Flag"
-                          className="circle-data"
-                        />
-                      ) : (
-                        "No Flag"
-                      )}
-                      <SelectOptionDropdown
-                        imageUrlSet={imageUrlSet}
-                        setImageUrl={setImageUrl}
-                        selectedOption={selectedOption}
-                        setSelectedOption={setSelectedOption}
-                        setCountryCallingCode={setCountryCallingCode}
-                        countryCallingCode={countryCallingCode}
-                        setSearchText={setSearchText}
-                        searchText={searchText}
-                        setImageSearchUrl={setImageSearchUrl}
-                        imageSearchUrlSet={imageSearchUrlSet}
-                      />
-                    </div>
-                  </>
-                )}
+                <Form.Control
+                  placeholder={countryCallingCode}
+                  name="phone"
+                  type="text"
+                  value={phone}
+                  onChange={(e) => onChange(e)}
+                  maxLength="10"
+                  className={isMobile ? "md:w-auto w-full" : ""}
+                />
+                <div
+                  className={`text-center flex items-center mobile-setting-dropdown ${
+                    isMobile ? "relative" : ""
+                  }`}
+                >
+                  {selectedOption?.code ? (
+                    <img src={imageUrlSet} alt="Flag" className="circle-data" />
+                  ) : (
+                    "No Flag"
+                  )}
+                  <SelectOptionDropdown
+                    setImageUrl={setImageUrl}
+                    selectedOption={selectedOption}
+                    setSelectedOption={setSelectedOption}
+                    setCountryCallingCode={setCountryCallingCode}
+                    countryCallingCode={countryCallingCode}
+                    setSearchText={setSearchText}
+                    searchText={searchText}
+                    setImageSearchUrl={setImageSearchUrl}
+                    imageSearchUrlSet={imageSearchUrlSet}
+                  />
+                </div>
               </div>
             </Form.Group>
           </Col>
@@ -345,19 +348,23 @@ export const PersonalData = () => {
             <Form.Group className="form-group">
               <Form.Label>Location</Form.Label>
               <div className="d-flex items-center location-dropdown justify-between relative">
-                {!isMobile && (
-                  <>
-                    <Form.Control
-                      placeholder={"City"}
-                      name="city"
-                      type="text"
-                      value={city}
-                      onChange={(e) => {
-                        onChange(e);
-                      }}
-                    />
-
-                    {location ? (
+                <Form.Control
+                  placeholder={"City"}
+                  name="city"
+                  type="text"
+                  value={city}
+                  onChange={(e) => {
+                    onChange(e);
+                  }}
+                  className={isMobile ? "md:w-auto w-full" : ""}
+                />
+              
+                <div
+                  className={`text-center flex items-center mobile-setting-dropdown ${
+                    isMobile ? "relative" : ""
+                  }`}
+                >
+                  {location ? (
                       <img
                         src={imageUrlLocationSet}
                         alt="Flag"
@@ -379,48 +386,7 @@ export const PersonalData = () => {
                       country={location}
                       setNationality={setNationality}
                     />
-                  </>
-                )}
-
-                {isMobile && (
-                  <>
-                    <Form.Control
-                      placeholder={"City"}
-                      name="city"
-                      type="text"
-                      value={city}
-                      className="md:w-auto w-full"
-                      onChange={(e) => {
-                        onChange(e);
-                      }}
-                    />
-
-                    <div className="text-center relative mobile-setting-dropdown flex items-center">
-                      {location ? (
-                        <img
-                          src={imageUrlLocationSet}
-                          alt="Flag"
-                          className="circle-data"
-                        />
-                      ) : (
-                        "No Flag"
-                      )}
-                      <SelectLocationDropdown
-                        selectedLocationOption={selectedLocationOption}
-                        setSelectedLocationOption={setSelectedLocationOption}
-                        setImageLocationUrl={setImageLocationUrl}
-                        imageUrlLocationSet={imageUrlLocationSet}
-                        setImageLocationSearchUrl={setImageLocationSearchUrl}
-                        imageLocationSearchUrlSet={imageLocationSearchUrlSet}
-                        setSearchLocationText={setSearchLocationText}
-                        searchLocationText={searchLocationText}
-                        setCountry={setLocation}
-                        country={location}
-                        setNationality={setNationality}
-                      />
-                    </div>
-                  </>
-                )}
+                </div>
               </div>
             </Form.Group>
           </Col>

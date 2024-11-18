@@ -7,7 +7,7 @@ import Sheet from "react-modal-sheet";
 //this component is used for token sale dropdown
 export const TokenSale = (props) => {
   const { getUser } = props;
-  const [showDropdown, setShowDropdown] = useState(false);
+  // const [showDropdown, setShowDropdown] = useState(false);
   const [totalToken, setTotalToken] = useState(0);
   const [filterValue, setFilterValue] = useState("thisWeekDate");
   const [filterLabel, setFilterLabel] = useState("This Week");
@@ -48,12 +48,10 @@ export const TokenSale = (props) => {
     },
   ];
 
-  const [selectedOption, setSelectedOption] = useState({
-    label: "This Week",
-    value: "thisWeekDate",
-  });
-  const [showOptions, setShowOptions] = useState(categories);
-  const [category, setCategory] = useState("This Week");
+  const [selectedOption, setSelectedOption] = useState(categories[0]);
+  const [showOptions, setShowOptions] = useState();
+  const [openDr, setOpenDr] = useState(false);
+  //const [category, setCategory] = useState("This Week");
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -66,16 +64,12 @@ export const TokenSale = (props) => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const handleDrawerOverlay = () => {
-    setShowDropdown(false); 
-  };
-
   const handleCheckboxChange = (option) => {
     setSelectedOption(option);
-    setCategory(option.label);
+    //setCategory(option.label);
     setFilterValue(option.value);
     setFilterLabel(option.label);
-    setShowDropdown(false);
+    setOpenDr(false);
   };
 
   const handleCheckboxChangeOnMobile = (option) => {
@@ -86,8 +80,8 @@ export const TokenSale = (props) => {
     setSelectedOption(option);
     setFilterValue(option.value);
     setFilterLabel(option.label);
-    setCategory(option.label);
-    setShowDropdown(false);
+    // setCategory(option.label);
+    setOpenDr(false);
   };
 
   const setTotalTokenValue = (value) => {
@@ -97,9 +91,13 @@ export const TokenSale = (props) => {
   const setLineGraphData = (value) => {
     setLineToken(value);
   };
-  
+
   const setTransactionData = (value) => {
     setTransactions(value);
+  };
+  const handleDropdownClick = () => {
+    setShowOptions(categories);
+    setOpenDr(true);
   };
 
   return (
@@ -110,20 +108,17 @@ export const TokenSale = (props) => {
           <div
             className={`statisticBox d-flex items-center token-graph-dropdown justify-between relative token-sales-filter`}
           >
-            {!isMobile && (
+            {!isMobile ? (
               <>
-                <div
-                  className="form-control"
-                  onClick={() => setShowDropdown(!showDropdown)}
-                >
-                  {category}
+                <div className="form-control" onClick={handleDropdownClick}>
+                  {selectedOption.label}
                 </div>
                 <Dropdown
-                  className="account-setting-dropdown"
-                  show={showDropdown}
-                  onToggle={(isOpen) => setShowDropdown(isOpen)}
+                  className="custom-dropdown"
+                  show={openDr}
+                  onToggle={(isOpen) => setOpenDr(isOpen)}
                 >
-                  <Dropdown.Toggle>
+                  <Dropdown.Toggle onClick={handleDropdownClick}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 448 512"
@@ -131,39 +126,37 @@ export const TokenSale = (props) => {
                       <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
                     </svg>
                   </Dropdown.Toggle>
-                  <Dropdown.Menu className="dropdownMenu">
-                    <div className="filter-option">
-                      {showOptions?.map((data, key) => (
-                        <div
-                          key={`${data.value}`}
-                          className={`yourself-option form-check`}
-                          onClick={() => handleCheckboxChange(data)}
-                        >
+                  {openDr && (
+                    <Dropdown.Menu className="dropdownMenu">
+                      <div className="filter-option">
+                        {showOptions?.map((data, key) => (
                           <div
-                            className={`form-check-input check-input ${
-                              JSON.stringify(selectedOption) ===
-                              JSON.stringify(data)
-                                ? "selected"
-                                : ""
-                            }`}
-                          />
-                          <label className="form-check-label">
-                            {data.label}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  </Dropdown.Menu>
+                            key={`${data.value}`}
+                            className={`yourself-option form-check`}
+                            onClick={() => handleCheckboxChange(data)}
+                          >
+                            <div
+                              className={`form-check-input check-input ${
+                                JSON.stringify(selectedOption) ===
+                                JSON.stringify(data)
+                                  ? "selected"
+                                  : ""
+                              }`}
+                            />
+                            <label className="form-check-label">
+                              {data.label}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </Dropdown.Menu>
+                  )}
                 </Dropdown>
               </>
-            )}
-            {isMobile && (
+            ) : (
               <>
-                <div
-                  className="form-control"
-                  onClick={() => setShowDropdown(!showDropdown)}
-                >
-                  {category}
+                <div className="form-control" onClick={handleDropdownClick}>
+                  {selectedOption.label}
                 </div>
                 <button
                   className="text-white font-medium rounded-lg text-sm"
@@ -174,81 +167,71 @@ export const TokenSale = (props) => {
                   data-drawer-edge="true"
                   data-drawer-edge-offset="bottom-[60px]"
                   aria-controls="drawer-swipe"
-                  onClick={() => setShowDropdown(true)}
+                  onClick={handleDropdownClick}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
                     <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
                   </svg>
                 </button>
-                <div
-                  className={showDropdown ? "mobile-setting-dropdown-overlay" : ""}
-                  onClick={handleDrawerOverlay}
-                ></div>
                 <Sheet
-                    isOpen={showDropdown}
-                    onClose={() => setShowDropdown(false)} // Close the dropdown when the Sheet is closed
-                  >
+                  isOpen={openDr}
+                  onClose={() => {
+                    setOpenDr(false);
+                    setShowOptions([]);
+                  }}
+                >
                   <Sheet.Container className="statisticBox phone-number-dropdown">
                     <Sheet.Header />
                     <Sheet.Content>
-                      <div className="drawer-swipe-wrapper">
-                        <div
-                          className="drawer-swiper"
-                          onClick={handleDrawerOverlay}
-                        />
-                        <div className="filter-option">
-                          {showOptions?.map((data, key) => (
-                            <div
-                              key={`${data.label}`}
-                              className={`yourself-option form-check`}
-                              onClick={() => handleCheckboxChangeOnMobile(data)}
-                            >
+                      {openDr && (
+                        <div className="drawer-swipe-wrapper">
+                          <div className="filter-option">
+                            {showOptions?.map((data, key) => (
                               <div
-                                className={`form-check-input check-input ${
-                                  JSON.stringify(selectedOption) ===
-                                  JSON.stringify(data)
-                                    ? "selected"
-                                    : ""
-                                }`}
-                              />
-                              <label className="form-check-label">
-                                {data.label}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="edit-btn flex justify-center">
-                          {selectedOption ? (
-                            <>
-                              <button
-                                type="button"
-                                class="btn btn-primary mx-1"
+                                key={`${data.label}`}
+                                className={`yourself-option form-check`}
                                 onClick={() =>
-                                  handlePhoneNumberMobile(selectedOption)
+                                  handleCheckboxChangeOnMobile(data)
                                 }
                               >
-                                Save
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                type="button"
-                                class="btn btn-primary mx-1"
-                              >
-                                Save
-                              </button>
-                            </>
-                          )}
-                          <button
-                            type="button"
-                            class="btn mx-1 bg-gray text-white"
-                            onClick={handleDrawerOverlay}
-                          >
-                            Cancel
-                          </button>
+                                <div
+                                  className={`form-check-input check-input ${
+                                    JSON.stringify(selectedOption) ===
+                                    JSON.stringify(data)
+                                      ? "selected"
+                                      : ""
+                                  }`}
+                                />
+                                <label className="form-check-label">
+                                  {data.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="edit-btn flex justify-center">
+                            <button
+                              type="button"
+                              className="btn btn-primary mx-1"
+                              onClick={
+                                selectedOption
+                                  ? () =>
+                                      handlePhoneNumberMobile(selectedOption)
+                                  : null
+                              }
+                            >
+                              Save
+                            </button>
+
+                            <button
+                              type="button"
+                              class="btn mx-1 bg-gray text-white"
+                              onClick={() => setOpenDr(false)}
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </Sheet.Content>
                   </Sheet.Container>
                   <Sheet.Backdrop />

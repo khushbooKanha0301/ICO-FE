@@ -72,7 +72,6 @@ export const DashboardPage = (props) => {
       ) // Adjust the filters as needed
         .unwrap()
         .then((data) => {
-          console.log("data ", data);
           setTransactionList(data.transactions);
         });
     }

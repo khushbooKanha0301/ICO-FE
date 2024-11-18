@@ -138,9 +138,6 @@ export const KYCVerification = (props) => {
     if (e.target.name === "country") {
       setCountryOfIssue(e.target.value);
     }
-    // if (e.target.name === "verified_with") {
-    //   setVerifiedWith(e.target.value);
-    // }
     if (e.target.name === "wallet_type") {
       setWalletType(e.target.value);
     }
@@ -465,85 +462,48 @@ export const KYCVerification = (props) => {
               <Form.Group className="form-group">
                 <Form.Label>Nationality</Form.Label>
                 <div className="d-flex items-center phone-number-dropdown justify-between phone-number-dropdown-kyc">
-                  {!isMobile && (
-                    <>
-                      <Form.Control
-                        name="nationality"
-                        placeholder={nationality}
-                        type="text"
-                        value={nationality}
-                        onChange={(e) => {
-                          onChange(e);
-                        }}
-                        disabled
-                        maxLength="10"
+                  <Form.Control
+                    name="nationality"
+                    placeholder={nationality}
+                    type="text"
+                    value={nationality}
+                    onChange={(e) => {
+                      onChange(e);
+                    }}
+                    disabled
+                    maxLength="10"
+                    className={isMobile ? "md:w-auto w-full" : ""}
+                  />
+                  <div
+                    className={`kyc-mobile-popup ${
+                      isMobile
+                        ? "text-center relative mobile-setting-dropdown flex items-center"
+                        : ""
+                    }`}
+                  >
+                    {nationality ? (
+                      <img
+                        src={imageUrlLocationSet}
+                        alt="Flag"
+                        className="circle-data"
                       />
-                      <div className="kyc-mobile-popup">
-                        {nationality ? (
-                          <img
-                            src={imageUrlLocationSet}
-                            alt="Flag"
-                            className="circle-data"
-                          />
-                        ) : (
-                          "No Flag"
-                        )}
-                        <SelectLocationKYCDropdown
-                          selectedLocationOption={selectedLocationOption}
-                          setSelectedLocationOption={setSelectedLocationOption}
-                          setImageLocationUrl={setImageLocationUrl}
-                          imageUrlLocationSet={imageUrlLocationSet}
-                          setImageLocationSearchUrl={setImageLocationSearchUrl}
-                          imageLocationSearchUrlSet={imageLocationSearchUrlSet}
-                          setSearchLocationText={setSearchLocationText}
-                          searchLocationText={searchLocationText}
-                          setCountry={setLocation}
-                          country={location}
-                          setNationality={setNationality}
-                        />
-                      </div>
-                    </>
-                  )}
-                  {isMobile && (
-                    <>
-                      <Form.Control
-                        name="nationality"
-                        placeholder={nationality}
-                        type="text"
-                        value={nationality}
-                        onChange={(e) => {
-                          onChange(e);
-                        }}
-                        className="md:w-auto w-full"
-                        disabled
-                      />
-
-                      <div className="text-center relative mobile-setting-dropdown kyc-mobile-popup flex items-center">
-                        {nationality ? (
-                          <img
-                            src={imageUrlLocationSet}
-                            alt="Flag"
-                            className="circle-data"
-                          />
-                        ) : (
-                          "No Flag"
-                        )}
-                        <SelectLocationKYCDropdown
-                          selectedLocationOption={selectedLocationOption}
-                          setSelectedLocationOption={setSelectedLocationOption}
-                          setImageLocationUrl={setImageLocationUrl}
-                          imageUrlLocationSet={imageUrlLocationSet}
-                          setImageLocationSearchUrl={setImageLocationSearchUrl}
-                          imageLocationSearchUrlSet={imageLocationSearchUrlSet}
-                          setSearchLocationText={setSearchLocationText}
-                          searchLocationText={searchLocationText}
-                          setCountry={setLocation}
-                          country={location}
-                          setNationality={setNationality}
-                        />
-                      </div>
-                    </>
-                  )}
+                    ) : (
+                      "No Flag"
+                    )}
+                    <SelectLocationKYCDropdown
+                      selectedLocationOption={selectedLocationOption}
+                      setSelectedLocationOption={setSelectedLocationOption}
+                      setImageLocationUrl={setImageLocationUrl}
+                      imageUrlLocationSet={imageUrlLocationSet}
+                      setImageLocationSearchUrl={setImageLocationSearchUrl}
+                      imageLocationSearchUrlSet={imageLocationSearchUrlSet}
+                      setSearchLocationText={setSearchLocationText}
+                      searchLocationText={searchLocationText}
+                      setCountry={setLocation}
+                      country={location}
+                      setNationality={setNationality}
+                    />
+                  </div>
                 </div>
               </Form.Group>
               <Row>
@@ -654,86 +614,49 @@ export const KYCVerification = (props) => {
               <Form.Group className="form-group mb-4">
                 <Form.Label>Country/Region of Issue</Form.Label>
                 <div className="d-flex items-center location-dropdown justify-between phone-number-dropdown-kyc ">
-                  {!isMobile && (
-                    <>
-                      <Form.Control
-                        name="country"
-                        placeholder={country_of_issue}
-                        type="text"
-                        value={country_of_issue}
-                        onChange={(e) => {
-                          onChange(e);
-                        }}
-                        disabled
-                        maxLength="10"
+                  <Form.Control
+                    name="country"
+                    placeholder={country_of_issue}
+                    type="text"
+                    value={country_of_issue}
+                    onChange={(e) => {
+                      onChange(e);
+                    }}
+                    disabled
+                    maxLength="10"
+                    className={isMobile ? "md:w-auto w-full" : ""}
+                  />
+                  <div
+                    className={`kyc-mobile-popup ${
+                      isMobile
+                        ? "text-center relative mobile-setting-dropdown flex items-center"
+                        : ""
+                    }`}
+                  >
+                    {country_of_issue ? (
+                      <img
+                        src={imageUrlCountrySet}
+                        alt="Flag"
+                        className="circle-data"
                       />
-                      <div className="kyc-mobile-popup">
-                        {country_of_issue ? (
-                          <img
-                            src={imageUrlCountrySet}
-                            alt="Flag"
-                            className="circle-data"
-                          />
-                        ) : (
-                          "No Flag"
-                        )}
+                    ) : (
+                      "No Flag"
+                    )}
 
-                        <SelectLocationDropdown
-                          selectedLocationOption={selectedCountryOption}
-                          setSelectedLocationOption={setSelectedCountryOption}
-                          setImageLocationUrl={setImageCountryUrl}
-                          imageUrlLocationSet={imageUrlCountrySet}
-                          setImageLocationSearchUrl={setImageCountrySearchUrl}
-                          imageLocationSearchUrlSet={imageCountrySearchUrlSet}
-                          setSearchLocationText={setSearchCountryText}
-                          searchLocationText={searchCountryText}
-                          setCountry={setCountry}
-                          country={country}
-                          setNationality={setCountryOfIssue}
-                        />
-                      </div>
-                    </>
-                  )}
-                  {isMobile && (
-                    <>
-                      <Form.Control
-                        name="country"
-                        placeholder={country_of_issue}
-                        type="text"
-                        value={country_of_issue}
-                        onChange={(e) => {
-                          onChange(e);
-                        }}
-                        className="md:w-auto w-full"
-                        disabled
-                      />
-
-                      <div className="text-center relative mobile-setting-dropdown kyc-mobile-popup flex items-center">
-                        {nationality ? (
-                          <img
-                            src={imageUrlCountrySet}
-                            alt="Flag"
-                            className="circle-data"
-                          />
-                        ) : (
-                          "No Flag"
-                        )}
-                        <SelectLocationDropdown
-                          selectedLocationOption={selectedCountryOption}
-                          setSelectedLocationOption={setSelectedCountryOption}
-                          setImageLocationUrl={setImageCountryUrl}
-                          imageUrlLocationSet={imageUrlCountrySet}
-                          setImageLocationSearchUrl={setImageCountrySearchUrl}
-                          imageLocationSearchUrlSet={imageCountrySearchUrlSet}
-                          setSearchLocationText={setSearchCountryText}
-                          searchLocationText={searchCountryText}
-                          setCountry={setCountry}
-                          country={country}
-                          setNationality={setCountryOfIssue}
-                        />
-                      </div>
-                    </>
-                  )}
+                    <SelectLocationDropdown
+                      selectedLocationOption={selectedCountryOption}
+                      setSelectedLocationOption={setSelectedCountryOption}
+                      setImageLocationUrl={setImageCountryUrl}
+                      imageUrlLocationSet={imageUrlCountrySet}
+                      setImageLocationSearchUrl={setImageCountrySearchUrl}
+                      imageLocationSearchUrlSet={imageCountrySearchUrlSet}
+                      setSearchLocationText={setSearchCountryText}
+                      searchLocationText={searchCountryText}
+                      setCountry={setCountry}
+                      country={country}
+                      setNationality={setCountryOfIssue}
+                    />
+                  </div>
                 </div>
               </Form.Group>
               <h4>Use a valid government-issued document</h4>

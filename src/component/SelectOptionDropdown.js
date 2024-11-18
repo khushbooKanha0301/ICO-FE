@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Form, Dropdown, FormControl } from "react-bootstrap";
+import { Dropdown, FormControl } from "react-bootstrap";
 import Search from "../content/images/search.svg";
 import listData from "../component/countryData";
 import Sheet from "react-modal-sheet";
@@ -54,7 +54,7 @@ const SelectOptionDropdown = (props) => {
     }
   };
   const handleCheckboxChange = (option) => {
-    setFilteredOptions(listData)
+    setFilteredOptions(listData);
     setSelectedOption(option);
     setCountryCallingCode(option.code);
     const imageUrl = phoneCountryData(option.code);
@@ -90,70 +90,76 @@ const SelectOptionDropdown = (props) => {
     setOpenDr(false);
   };
 
+  const handleDropdownClick = () => {
+    setFilteredOptions(listData);
+    setOpenDr(true);
+  };
+
   return (
     <>
-      {!isMobile && (
+      {!isMobile ? (
         <>
           <Dropdown
-            className="account-setting-dropdown"
+            className="custom-dropdown"
             show={openDr}
             onToggle={(isOpen) => setOpenDr(isOpen)}
           >
-            <Dropdown.Toggle>
+            <Dropdown.Toggle onClick={handleDropdownClick}>
               {listData.find((item) => item?.code === countryCallingCode)?.cca3}
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
                 <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
               </svg>
             </Dropdown.Toggle>
-            <Dropdown.Menu className="dropdownMenu" show={openDr}>
-              <div className="dropdown-menu-inner">
-                {searchText && imageSearchUrlSet ? (
-                  <img
-                    src={imageSearchUrlSet}
-                    alt="Flag"
-                    className="rectangle-data"
-                  />
-                ) : null}
-                <FormControl
-                  type="text"
-                  placeholder="Search..."
-                  className="mr-3 mb-2"
-                  value={searchText}
-                  onChange={handleSearchChange}
-                />
-                <img src={Search} alt="" className="search-icon" />
-              </div>
-              <div className="filter-option">
-                {filteredOptions?.map((data, key) => (
-                  <div
-                    key={`${data.code}_${data.country}`}
-                    className={`yourself-option form-check`}
-                    onClick={() => handleCheckboxChange(data)}
-                  >
-                    <label className="form-check-label">
-                      <img
-                        src={phoneCountryData(data.code)}
-                        alt="Flag"
-                        className="rectangle-data"
-                      />
-                      {data.country} ({data.code})
-                    </label>
-                    <div
-                      className={`form-check-input check-input ${
-                        JSON.stringify(selectedOption) === JSON.stringify(data)
-                          ? "selected"
-                          : ""
-                      }`}
+            {openDr && (
+              <Dropdown.Menu className="dropdownMenu">
+                <div className="dropdown-menu-inner">
+                  {searchText && imageSearchUrlSet ? (
+                    <img
+                      src={imageSearchUrlSet}
+                      alt="Flag"
+                      className="rectangle-data"
                     />
-                  </div>
-                ))}
-              </div>
-            </Dropdown.Menu>
+                  ) : null}
+                  <FormControl
+                    type="text"
+                    placeholder="Search..."
+                    className="mr-3 mb-2"
+                    value={searchText}
+                    onChange={handleSearchChange}
+                  />
+                  <img src={Search} alt="" className="search-icon" />
+                </div>
+                <div className="filter-option">
+                  {filteredOptions?.map((data, key) => (
+                    <div
+                      key={`${data.code}_${data.country}`}
+                      className={`yourself-option form-check`}
+                      onClick={() => handleCheckboxChange(data)}
+                    >
+                      <label className="form-check-label">
+                        <img
+                          src={phoneCountryData(data.code)}
+                          alt="Flag"
+                          className="rectangle-data"
+                        />
+                        {data.country} ({data.code})
+                      </label>
+                      <div
+                        className={`form-check-input check-input ${
+                          JSON.stringify(selectedOption) ===
+                          JSON.stringify(data)
+                            ? "selected"
+                            : ""
+                        }`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </Dropdown.Menu>
+            )}
           </Dropdown>
         </>
-      )}
-
-      {isMobile && (
+      ) : (
         <>
           <button
             className="text-white font-medium rounded-lg text-sm"
@@ -164,7 +170,7 @@ const SelectOptionDropdown = (props) => {
             data-drawer-edge="true"
             data-drawer-edge-offset="bottom-[60px]"
             aria-controls="drawer-swipe"
-            onClick={() => setOpenDr(true)}
+            onClick={handleDropdownClick}
           >
             <p className="text-white mb-0 personalDataLocation">
               {listData.find((item) => item?.code === countryCallingCode)?.cca3}
@@ -177,88 +183,85 @@ const SelectOptionDropdown = (props) => {
             className={openDr ? "mobile-setting-dropdown-overlay" : ""}
             onClick={handleDrawerOverlay}
           ></div>
-          <Sheet isOpen={openDr} onClose={() => setOpenDr(false)}>
+          <Sheet
+            isOpen={openDr}
+            onClose={() => {
+              setOpenDr(false);
+              setFilteredOptions([]);
+            }}
+          >
             <Sheet.Container className="phone-number-dropdown">
               <Sheet.Header />
               <Sheet.Content>
-                <div className="drawer-swipe-wrapper">
-                  <div
-                    className="drawer-swiper"
-                    onClick={handleDrawerOverlay}
-                  />
-                  <div className="dropdown-menu-inner">
-                    {searchText && imageSearchUrlSet ? (
-                      <img
-                        src={imageSearchUrlSet}
-                        alt="Flag"
-                        className="rectangle-data"
-                      />
-                    ) : null}
-
-                    <FormControl
-                      type="text"
-                      placeholder="Search..."
-                      className="mr-3 mb-2"
-                      value={searchText}
-                      onChange={handleSearchChange}
-                    />
-                    <img src={Search} alt="" className="search-icon" />
-                  </div>
-                  <div className="filter-option">
-                    {filteredOptions?.map((data, key) => (
-                      <div
-                        key={`${data.code}_${data.country}`}
-                        className={`yourself-option form-check`}
-                        onClick={() => handleCheckboxChangeOnMobile(data)}
-                      >
-                        <label className="form-check-label">
-                          <img
-                            src={phoneCountryData(data.code)}
-                            alt="Flag"
-                            className="rectangle-data"
-                          />
-                          {data.country} ({data.code})
-                        </label>
-                        <div
-                          className={`form-check-input check-input ${
-                            JSON.stringify(selectedOption) ===
-                            JSON.stringify(data)
-                              ? "selected"
-                              : ""
-                          }`}
+                {openDr && (
+                  <div className="drawer-swipe-wrapper">
+                    <div className="drawer-swiper" />
+                    <div className="dropdown-menu-inner">
+                      {searchText && imageSearchUrlSet ? (
+                        <img
+                          src={imageSearchUrlSet}
+                          alt="Flag"
+                          className="rectangle-data"
                         />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="edit-btn flex justify-center">
-                    {selectedOption ? (
-                      <>
-                        <button
-                          type="button"
-                          class="btn btn-primary mx-1"
-                          onClick={() =>
-                            handlePhoneNumberMobile(selectedOption)
-                          }
+                      ) : null}
+
+                      <FormControl
+                        type="text"
+                        placeholder="Search..."
+                        className="mr-3 mb-2"
+                        value={searchText}
+                        onChange={handleSearchChange}
+                      />
+                      <img src={Search} alt="" className="search-icon" />
+                    </div>
+                    <div className="filter-option">
+                      {filteredOptions?.map((data, key) => (
+                        <div
+                          key={`${data.code}_${data.country}`}
+                          className={`yourself-option form-check`}
+                          onClick={() => handleCheckboxChangeOnMobile(data)}
                         >
-                          Save
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button type="button" class="btn btn-primary mx-1">
-                          Save
-                        </button>
-                      </>
-                    )}
-                    <button
-                      type="button"
-                      class="btn mx-1 bg-gray text-white"
-                      onClick={handleDrawerOverlay}
-                    >
-                      Cancel
-                    </button>
+                          <label className="form-check-label">
+                            <img
+                              src={phoneCountryData(data.code)}
+                              alt="Flag"
+                              className="rectangle-data"
+                            />
+                            {data.country} ({data.code})
+                          </label>
+                          <div
+                            className={`form-check-input check-input ${
+                              JSON.stringify(selectedOption) ===
+                              JSON.stringify(data)
+                                ? "selected"
+                                : ""
+                            }`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="edit-btn flex justify-center">
+                      <button
+                        type="button"
+                        className="btn btn-primary mx-1"
+                        onClick={
+                          selectedOption
+                            ? () => handlePhoneNumberMobile(selectedOption)
+                            : null
+                        }
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        class="btn mx-1 bg-gray text-white"
+                        onClick={() => setOpenDr(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </Sheet.Content>
             </Sheet.Container>
             <Sheet.Backdrop />

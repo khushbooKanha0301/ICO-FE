@@ -26,6 +26,7 @@
 		"bootstrap": "^5.2.3",
 		"bootstrap-icons": "^1.10.3",
 		"coingate": "^1.2.3",
+		"crypto-js": "^4.2.0",
 		"ethers-react": "^1.1.0",
 		"firebase": "^9.23.0",
 		"flatted": "^3.2.9",

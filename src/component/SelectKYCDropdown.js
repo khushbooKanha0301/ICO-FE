@@ -56,7 +56,7 @@ const SelectLocationKYCDropdown = (props) => {
   };
 
   const handleCheckboxLocationChange = (option) => {
-    setFilteredLocationOptions(listData)
+    setFilteredLocationOptions(listData);
     setSelectedLocationOption(option);
     setCountry(option.iso);
     setNationality(option?.country);
@@ -90,24 +90,27 @@ const SelectLocationKYCDropdown = (props) => {
     return `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`;
   };
 
-  const handleDrawerOverlay = () => {
-    setOpenDr(false);
+  const handleDropdownClick = () => {
+    setFilteredLocationOptions(listData);
+    setOpenDr(true);
   };
 
   return (
     <>
-      {!isMobile && (
-        <>
-          <Dropdown className="account-setting-dropdown" 
-            show={openDr}
-            onToggle={(isOpen) => setOpenDr(isOpen)}>
-            <Dropdown.Toggle>
-              {listData.find((item) => item?.iso === country)?.cca3}
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-                <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
-              </svg>
-            </Dropdown.Toggle>
-            <Dropdown.Menu className="dropdownMenu" show={openDr}>
+      {!isMobile ? (
+        <Dropdown
+          className="custom-dropdown"
+          show={openDr}
+          onToggle={(isOpen) => setOpenDr(isOpen)}
+        >
+          <Dropdown.Toggle onClick={handleDropdownClick}>
+            {listData.find((item) => item?.iso === country)?.cca3}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+              <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
+            </svg>
+          </Dropdown.Toggle>
+          {openDr && (
+            <Dropdown.Menu className="dropdownMenu">
               <div className="dropdown-menu-inner">
                 {searchLocationText && imageLocationSearchUrlSet ? (
                   <img
@@ -152,11 +155,9 @@ const SelectLocationKYCDropdown = (props) => {
                 ))}
               </div>
             </Dropdown.Menu>
-          </Dropdown>
-        </>
-      )}
-
-      {isMobile && (
+          )}
+        </Dropdown>
+      ) : (
         <>
           <button
             className="text-white font-medium rounded-lg text-sm"
@@ -167,7 +168,7 @@ const SelectLocationKYCDropdown = (props) => {
             data-drawer-edge="true"
             data-drawer-edge-offset="bottom-[60px]"
             aria-controls="drawer-swipe"
-            onClick={() => setOpenDr(true)}
+            onClick={handleDropdownClick}
           >
             <p className="text-white mb-0 personalDataLocation">
               {listData.find((item) => item?.iso === country)?.cca3}
@@ -176,20 +177,18 @@ const SelectLocationKYCDropdown = (props) => {
               <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
             </svg>
           </button>
-          <div
-            className={openDr ? "mobile-setting-dropdown-overlay" : ""}
-            onClick={handleDrawerOverlay}
-          ></div>
-          <Sheet isOpen={openDr} onClose={() => setOpenDr(false)}>
+          <Sheet
+            isOpen={openDr}
+            onClose={() => {
+              setOpenDr(false);
+              setFilteredLocationOptions([]);
+            }}
+          >
             <Sheet.Container className="phone-number-dropdown">
               <Sheet.Header />
               <Sheet.Content>
-                <div tabindex="-1" aria-labelledby="drawer-swipe-label">
+                {openDr && (
                   <div className="drawer-swipe-wrapper">
-                    <div
-                      className="drawer-swiper"
-                      onClick={handleDrawerOverlay}
-                    />
                     <div className="dropdown-menu-inner">
                       {searchLocationText && imageLocationSearchUrlSet ? (
                         <img
@@ -236,37 +235,30 @@ const SelectLocationKYCDropdown = (props) => {
                       ))}
                     </div>
                     <div className="edit-btn flex justify-center">
-                      {selectedLocationOption ? (
-                        <>
-                          <button
-                            type="button"
-                            class="btn btn-primary mx-1"
-                            onClick={() =>
-                              handlePhoneNumberLocationMobile(
-                                selectedLocationOption
-                              )
-                            }
-                          >
-                            Save
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button type="button" class="btn btn-primary mx-1">
-                            Save
-                          </button>
-                        </>
-                      )}
+                      <button
+                        type="button"
+                        className="btn btn-primary mx-1"
+                        onClick={
+                          selectedLocationOption
+                            ? () =>
+                                handlePhoneNumberLocationMobile(
+                                  selectedLocationOption
+                                )
+                            : null
+                        }
+                      >
+                        Save
+                      </button>
                       <button
                         type="button"
                         class="btn mx-1 bg-gray text-white"
-                        onClick={handleDrawerOverlay}
+                        onClick={() => setOpenDr(false)}
                       >
                         Cancel
                       </button>
                     </div>
                   </div>
-                </div>
+                )}
               </Sheet.Content>
             </Sheet.Container>
             <Sheet.Backdrop />
