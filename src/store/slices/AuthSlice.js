@@ -102,7 +102,7 @@ export const checkAuth = createAsyncThunk(
             window.localStorage.clear();
             deactivate();          
           });
-        if (verifyTokenData.data.token) {
+        if (verifyTokenData?.data?.token) {
           //window.localStorage.removeItem("referred_by");
           setAuthToken(verifyTokenData.data.token);
         }
@@ -127,6 +127,12 @@ export const checkAuth = createAsyncThunk(
           verifyTokenData.data?.userInfo?.is_2FA_login_verified === true
         ) {
           userData.loginCheck = 'success';
+        }
+        if (
+          (verifyTokenData.data?.is_2FA_enabled === undefined ||
+          verifyTokenData.data?.is_2FA_enabled === false) && (verifyTokenData.data?.is_2FA_SMS_enabled === false || verifyTokenData.data?.is_2FA_SMS_enabled === undefined || verifyTokenData.data?.isPhoneCode === false)
+        ) {
+          dispatch(notificationSuccess("user login successfully"));
         }
         return userData;
       }
@@ -187,8 +193,12 @@ export const userGetData = createAsyncThunk(
       let kyc_status = false;
       let is_2FA_enable = false;
       let email_verified = false;
-      let email = "";
+      let email = null;
+      let phone = null;
+      let phone_code = null;
       let imageUrl = "";
+      let is_2FA_twilio_login_verified = "";
+      let is_2FA_SMS_enabled = false;
       await jwtAxios
         .get(`/users/getuser`)
         .then((response) => {
@@ -196,8 +206,22 @@ export const userGetData = createAsyncThunk(
           kyc_verify = parseInt(response.headers['kyc_verify']) || 0;
           kyc_status = response.headers['kyc_status'] === 'true';
           is_2FA_enable = response.headers['2fa_enable'] === 'true';
+          is_2FA_twilio_login_verified = response.headers['2fa_twilio_verified'] === 'true';
+          is_2FA_SMS_enabled = response.headers['2fa_sms_enable'] === 'true';
           email_verified = response.headers['is_email_verified'] === 'true';
-          email = response.headers['is_email']; 
+         // Ensure null values instead of "null" strings
+          email = response.headers['is_email'] && response.headers['is_email'] !== 'null' 
+          ? response.headers['is_email'] 
+          : null;
+
+          phone = response.headers['is_phone'] && response.headers['is_phone'] !== 'null' 
+          ? response.headers['is_phone'] 
+          : null;
+
+          phone_code = response.headers['phone_code'] && response.headers['phone_code'] !== 'null' 
+          ? response.headers['phone_code'] 
+          : null;
+      
           user = response.data.User;
           imageUrl = response.data.imageUrl;
         })
@@ -205,9 +229,20 @@ export const userGetData = createAsyncThunk(
           dispatch(notificationFail("Something went wrong with get user"));
         });
       dispatch(setLoading(false));
-      return { ...user, imageUrl: imageUrl , is_2FA_verified: is_2FA_verified,
-        email_verified: email_verified, email: email,
-        kyc_verify: kyc_verify, kyc_status: kyc_status, is_2FA_enable: is_2FA_enable};
+      return { 
+        ...user, 
+        imageUrl, 
+        is_2FA_verified,
+        email_verified, 
+        email, 
+        phone,
+        kyc_verify, 
+        kyc_status, 
+        is_2FA_enable, 
+        is_2FA_twilio_login_verified, 
+        is_2FA_SMS_enabled,
+        phoneCountry: phone_code
+      };
     } catch (error) {
       dispatch(setLoading(false));
 
@@ -227,7 +262,7 @@ export const getCountryDetails = createAsyncThunk(
       );
       dispatch(setLoading(false));
       let country_calling_code =
-        countryCodes.find((x) => x.code === response?.country_code).dial_code ||
+        countryCodes.find((x) => x.code === response?.country_code)?.dial_code ||
         "";
       let countryData = Object.assign(response, {
         country_calling_code: country_calling_code,

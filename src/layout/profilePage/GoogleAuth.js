@@ -4,7 +4,7 @@ import googleAuth from "../../content/images/google-authenticator.png";
 import TwoFactorSetup from "../../component/TwoFactorSetup";
 import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2/src/sweetalert2.js";
-import { userDetails, userGetData } from "../../store/slices/AuthSlice";
+import { userDetails, userGetData, userGetFullDetails } from "../../store/slices/AuthSlice";
 import jwtAxios from "../../service/jwtAxios";
 import {
   notificationFail,
@@ -13,8 +13,10 @@ import {
 
 export const GoogleAuth = () => {
   const acAddress = useSelector(userDetails);
+  const userData = useSelector(userGetFullDetails);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [is2FAEnabled, setIs2FAEnabled] = useState(null);
+  const [is2FASMSEnabled, setIs2FASMSEnabled] = useState(null);
   const [secret, setSecret] = useState("");
   const [qrCodeUrl, setQRCodeUrl] = useState("");
   const dispatch = useDispatch();
@@ -22,7 +24,7 @@ export const GoogleAuth = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (acAddress) {
+      if (acAddress?.userid) {
         try {
           const user = await dispatch(userGetData(acAddress.userid)).unwrap();
           setGetUser(user);
@@ -39,6 +41,11 @@ export const GoogleAuth = () => {
 
     fetchUserData();
   }, [acAddress, dispatch]);
+
+  useEffect(() => {
+    setIs2FASMSEnabled(userData?.is_2FA_SMS_enabled);
+  }, [userData?.is_2FA_SMS_enabled]);
+
 
   const openModal = async () => {
     await jwtAxios
@@ -64,7 +71,7 @@ export const GoogleAuth = () => {
   const disable2FA = async () => {
     Swal.fire({
       title: "Are you sure?",
-      text: "Do you want to disable Google 2FA?",
+      text: "Do you want to Disable Google 2FA?",
       showCancelButton: true,
       confirmButtonColor: "red",
       cancelButtonColor: "#808080",
@@ -92,6 +99,36 @@ export const GoogleAuth = () => {
       }
     });
   };
+  const changeSMSEnabled = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: `Do you want to ${is2FASMSEnabled === null ? ("Enable") : (is2FASMSEnabled === false ? ("Enable") : ("Disable"))} SMS 2FA?`,  
+      showCancelButton: true,
+      confirmButtonColor: "red",
+      cancelButtonColor: "#808080",
+      confirmButtonText: `${is2FASMSEnabled === null ? ("Enable") : (is2FASMSEnabled === false ? ("Enable") : ("Disable"))}`,
+      customClass: {
+        popup: "suspend",
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        await jwtAxios
+        .get("users/disable2FASMS")
+        .then(async (res) => {
+          dispatch(notificationSuccess(res?.data?.message));
+          setIs2FASMSEnabled(false);
+          dispatch(userGetData(userGetData.userid)).unwrap();
+        })
+        .catch((err) => {
+          if (typeof err == "string") {
+            dispatch(notificationFail(err));
+          } else {
+            dispatch(notificationFail(err?.response?.data?.message));
+          }
+        });
+      }
+    });
+  }
 
   return (
     <Card body className="cards-dark two-fa">
@@ -103,9 +140,9 @@ export const GoogleAuth = () => {
               <img src={googleAuth} alt="Google Authentication" />
               <h4>Google Authentication</h4>
               {is2FAEnabled === false ? (
-                <p>Click to enable Google 2FA Authentication</p>
+                <p>Click on Enable to start Google 2FA Authentication</p>
               ) : (
-                <p>You've successfully enabled Google 2FA</p>
+                <p>You have successfully activated Google 2FA</p>
               )}
             </div>
 
@@ -132,6 +169,40 @@ export const GoogleAuth = () => {
           )}
         </div>
       </div>
+      <div
+          className="ul-button-row"
+        >
+          <ul className="two-fa mb-3">
+            <li>
+              <div className="two-fa-step">
+                <img
+                  src={require("../../content/images/mobile-device.png")}
+                  alt="Google Authentication"
+                />
+                <h4>SMS Authentication</h4>
+                {!is2FASMSEnabled ? (
+                  <p>Click on Enable to Start SMS 2FA Authentication</p>
+                ) : (
+                  <p>You have successfully activated SMS 2FA</p>
+                )}
+              </div>
+            </li>
+          </ul>
+
+          <div className="button-row">
+           {is2FASMSEnabled === null ? (
+              ""
+            ) : is2FASMSEnabled === false ? (
+              <Button variant="primary" onClick={changeSMSEnabled}>
+                Enable
+              </Button>
+            ) : (
+              <Button variant="danger" onClick={changeSMSEnabled}>
+                Disable
+              </Button>
+            )}
+          </div>
+        </div>
     </Card>
   );
 };

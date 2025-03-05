@@ -57,7 +57,7 @@ const SelectOptionDropdown = (props) => {
     setFilteredOptions(listData);
     setSelectedOption(option);
     setCountryCallingCode(option.code);
-    const imageUrl = phoneCountryData(option.code);
+    const imageUrl = phoneCountryData(option.cca3);
     setImageUrl(imageUrl);
     setImageSearchUrl(imageUrl);
     setSearchText(`${option.country} (${option.code})`);
@@ -67,22 +67,27 @@ const SelectOptionDropdown = (props) => {
 
   const handleCheckboxChangeOnMobile = (option) => {
     setSelectedOption(option);
-    const imageUrl = phoneCountryData(option.code);
+    const imageUrl = phoneCountryData(option.cca3);
+ console.log("imageUrl ", imageUrl);
     setImageSearchUrl(imageUrl);
     setSearchText(`${option.country} (${option.code})`);
     setSearchTextOrigin(option);
   };
 
   const handlePhoneNumberMobile = (option) => {
+ console.log("option ", option);
     setSelectedOption(option);
     setCountryCallingCode(option.code);
-    const imageUrl = phoneCountryData(option.code);
+    const imageUrl = phoneCountryData(option.cca3);
+ console.log("imageUrl ", imageUrl);
     setImageUrl(imageUrl);
     setOpenDr(false);
   };
 
-  const phoneCountryData = (code) => {
-    const result = listData.find((item) => item?.code === code);
+  const phoneCountryData = (cca3) => {
+ console.log("cca3 ", cca3);
+    const result = listData.find((item) => item?.cca3 == cca3 );
+ console.log("result ", result);
     return `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`;
   };
 
@@ -105,7 +110,7 @@ const SelectOptionDropdown = (props) => {
             onToggle={(isOpen) => setOpenDr(isOpen)}
           >
             <Dropdown.Toggle onClick={handleDropdownClick}>
-              {listData.find((item) => item?.code === countryCallingCode)?.cca3}
+            {listData.find((item) => item?.iso === selectedOption?.iso)?.cca3 || "United States"}
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
                 <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
               </svg>
@@ -138,7 +143,7 @@ const SelectOptionDropdown = (props) => {
                     >
                       <label className="form-check-label">
                         <img
-                          src={phoneCountryData(data.code)}
+                          src={phoneCountryData(data.cca3)}
                           alt="Flag"
                           className="rectangle-data"
                         />
@@ -173,7 +178,7 @@ const SelectOptionDropdown = (props) => {
             onClick={handleDropdownClick}
           >
             <p className="text-white mb-0 personalDataLocation">
-              {listData.find((item) => item?.code === countryCallingCode)?.cca3}
+            {listData.find((item) => item?.iso === selectedOption?.iso)?.cca3 || "United States"}
             </p>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
               <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
@@ -223,7 +228,7 @@ const SelectOptionDropdown = (props) => {
                         >
                           <label className="form-check-label">
                             <img
-                              src={phoneCountryData(data.code)}
+                              src={phoneCountryData(data.cca3)}
                               alt="Flag"
                               className="rectangle-data"
                             />

@@ -40,9 +40,6 @@ export const Timestamp = (date) => {
   const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
   const formattedMinutes = minutes < 10 ? "0" + minutes : minutes;
   const formattedTime = `${formattedHours}:${formattedMinutes} ${amPm}`;
-
-  // format the date and time in a readable way
-  //${timestamp.toLocaleDateString(undefined, options)}
   const formattedDateTime = `${formattedTime}`;
 
   return formattedDateTime;

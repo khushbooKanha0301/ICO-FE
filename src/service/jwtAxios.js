@@ -10,6 +10,9 @@ const jwtAxios = axios.create({
   baseURL: API_URL, // YOUR_API_URL HERE
   headers: {
     "Content-Type": "application/json",
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    Pragma: "no-cache",
+    Expires: "0",
     mode: "no-cors",
     "Access-Control-Allow-Origin": "*",
     ...(token && { Authorization: `Bearer ${token}` }),

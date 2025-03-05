@@ -34,14 +34,52 @@ const TwoFAvalidate = (props) => {
   const [numIndex, setNumIndex] = useState("");
   const navigate = useNavigate();
   const { deactivate } = useWeb3React();
-  const [lastAttemptTime, setLastAttemptTime] = useState("");
-  const [invalidAttempts, setInvalidAttempts] = useState("");
+  const [lastAttemptTime, setLastAttemptTime] = useState(
+    localStorage.getItem("lastAttemptTime") || ""
+  );
+  const [invalidAttempts, setInvalidAttempts] = useState(
+    Number(localStorage.getItem("invalidAttempts")) || 0
+  );
   const [error, setError] = useState("");
   useEffect(() => {
     if (numIndex === 5 && otpValue.length === 6) {
       makeAPICall();
     }
   }, [numIndex, otpValue]);
+
+  useEffect(() => {
+    const handleStorageChange = (event) => {
+      if (event.key === "lastAttemptTime" || event.key === "invalidAttempts") {
+          logoutUser();
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const now = Date.now();
+    if (invalidAttempts >= 3 && now - lastAttemptTime < 5 * 60 * 1000) {
+      setError("You can try again after 5 minutes");
+    }
+  }, [invalidAttempts, lastAttemptTime]);
+
+  const handleInvalidAttempt = (now) => {
+    const newAttempts = invalidAttempts + 1;
+    localStorage.setItem("invalidAttempts", newAttempts);
+    setInvalidAttempts(newAttempts);
+
+    if (newAttempts >= 3) {
+      localStorage.setItem("lastAttemptTime", now);
+      setLastAttemptTime(now);
+      setError("You can try again after 5 minutes");
+    }
+    dispatch(notificationFail("Invalid Code"));
+    setOTPValue("");
+    inputRefs.current[0].focus();
+  }
 
   const handleKeyDown = (e, index) => {
     if (e.key === "Backspace" && index > 0 && !otpValue[index]) {
@@ -116,35 +154,28 @@ const TwoFAvalidate = (props) => {
               props.setGetUser(user);
               navigate("/");
               props.setTwoFAModal(false);
-              dispatch(notificationSuccess("user login successfully"));
-            } else {
-              if (now - lastAttemptTime1 >= 5 * 60 * 1000) {
-                setInvalidAttempts(1);
-                setLastAttemptTime(now);
+              if (user?.phoneCountry && user?.phone && user?.is_2FA_SMS_enabled) {
+                if (!user?.is_2FA_twilio_login_verified && !props?.istotptriggered) {
+                  await props.handleLoginSuccess(user.phone, user.phoneCountry);
+                }
               } else {
-                setInvalidAttempts(invalidAttempts1 + 1);
+                dispatch(notificationSuccess("user login successfully"));
+                window.localStorage.removeItem("lastAttemptTime");
+                window.localStorage.removeItem("invalidAttempts");
               }
-              dispatch(notificationFail("Invalid Code"));
-              setOTPValue("");
-              inputRefs.current[0].focus();
+            } else {
+              handleInvalidAttempt(now);
             }
           })
           .catch((err) => {
-            if(typeof err == "string")
-            {
+            if(typeof err == "string") {
               dispatch(notificationFail(err));
-            }else if(err?.response?.data?.message){
+            } else if(err?.response?.data?.message) {
               dispatch(notificationFail(err?.response?.data?.message));
-            }else{
+            } else {
               dispatch(notificationFail("Something Went Wrong"));
             }
-            if (now - lastAttemptTime1 >= 5 * 60 * 1000) {
-              setInvalidAttempts(1);
-              setLastAttemptTime(now);
-            } else {
-              setInvalidAttempts(invalidAttempts1 + 1);
-            }
-            setOTPValue("");
+            handleInvalidAttempt(now);
           });
       }
     }

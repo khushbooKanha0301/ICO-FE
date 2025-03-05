@@ -64,7 +64,7 @@ const transactionSlice = createSlice({
         state.transactionLoading = false;
         state.error = action.payload; // Store error message
       });
-  },
+  }
 });
 
 // Export actions and reducer

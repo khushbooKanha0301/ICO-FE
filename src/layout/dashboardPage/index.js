@@ -84,23 +84,12 @@ export const DashboardPage = (props) => {
     link.click();
   };
 
-  let addressLine = "";
-  if (acAddress.account === "Connect Wallet" && getUser === undefined) {
-    addressLine = "Connect Wallet";
-  } else if (
-    acAddress.account !== "Connect Wallet" &&
-    getUser &&
-    getUser?.is_2FA_verified === false
-  ) {
-    addressLine = "Connect Wallet";
-  } else if (
-    acAddress.account !== "Connect Wallet" &&
-    getUser &&
-    getUser?.is_2FA_verified === true
-  ) {
-    addressLine = hideAddress(acAddress?.account, 5);
-  } else {
-    addressLine = "Connect Wallet";
+  let addressLine = "Connect Wallet";
+
+  if (acAddress.account !== "Connect Wallet" && getUser) {
+    if (getUser.is_2FA_verified) {
+      addressLine = hideAddress(acAddress.account, 5);
+    }
   }
 
   useEffect(() => {

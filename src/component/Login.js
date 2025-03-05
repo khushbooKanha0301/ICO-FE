@@ -218,7 +218,7 @@ export const LoginView = ({
 
         settwofamodal(false);
         onHide();
-        dispatch(checkAuth(checkAuthParams)).unwrap();
+        await dispatch(checkAuth(checkAuthParams)).unwrap();
       }
     };
     checkMetaAcc();
@@ -299,13 +299,7 @@ export const LoginView = ({
         checkValue: checkValue,
         refrence_by: referrance
       };
-      let response = await dispatch(checkAuth(checkAuthParams)).unwrap();
-      if(referrance && response?.loginCheck == "success"){
-        dispatch(notificationSuccess("user login successfully"));
-        navigate("/")
-      } else if(response?.loginCheck == "success") {
-        dispatch(notificationSuccess("user login successfully"));
-      }
+      await dispatch(checkAuth(checkAuthParams)).unwrap();
       onHide();
       setAccountAddress(accounts[0]);
     });
@@ -320,13 +314,7 @@ export const LoginView = ({
       refrence_by: referrance
     };
     
-    let response = await dispatch(checkAuth(checkAuthParams)).unwrap();
-    if(referrance && response?.loginCheck == "success"){
-      dispatch(notificationSuccess("user login successfully"));
-      navigate("/")
-    } else if(response?.loginCheck == "success") {
-      dispatch(notificationSuccess("user login successfully"));
-    }
+    await dispatch(checkAuth(checkAuthParams)).unwrap();
     setAccountAddress(address);
   };
 
@@ -354,14 +342,7 @@ export const LoginView = ({
             refrence_by: referrance
           };
           onHide();
-          let response = await dispatch(checkAuth(checkAuthParams)).unwrap();
-          
-          if(referrance && response?.loginCheck == "success"){
-            dispatch(notificationSuccess("user login successfully"));
-            navigate("/")
-          } else if(response?.loginCheck == "success") {
-            dispatch(notificationSuccess("user login successfully"));
-          }
+          await dispatch(checkAuth(checkAuthParams)).unwrap();
         } catch (error) {
           console.error("Error fetching data:", error);
         }

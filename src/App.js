@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Container } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate, Route, Routes } from "react-router-dom";
@@ -24,13 +24,14 @@ import { checkCurrentSale } from "./store/slices/currencySlice";
 import { database, firebaseMessages } from "./config";
 import { onValue, ref, get, update } from "firebase/database";
 import {
-  notificationFail,
-  notificationSuccess,
+  notificationFail
 } from "./store/slices/notificationSlice";
 import moment from "moment";
 import * as flatted from "flatted";
 import { useLocation } from "react-router-dom";
 import { getTransaction , clearTransactions} from "./store/slices/transactionSlice";
+import TwoFATwilioValidate from "./component/TwoFATwilioValidate";
+import jwtAxios from "./service/jwtAxios";
 
 let PageSize = 5;
 
@@ -48,6 +49,9 @@ export const App = () => {
   const [isResponsive, setIsResponsive] = useState(false);
   const [getUser, setGetUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [twoFATwilioModal, setTwoFATwilioModal] = useState(false);
+  const [isTOTPTriggered, setIsTOTPTriggered] = useState(false);
+  const hasRun = useRef(false);
   const handleAccountAddress = (address) => {
     setIsSign(false);
   };
@@ -79,41 +83,76 @@ export const App = () => {
   const signOut = () => {
     dispatch(clearTransactions());
     setIsSign(true);
+    setTwoFATwilioModal(false);
+    setIsTOTPTriggered(false);
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (acAddress?.userid) {
-        try {
-          const user = await dispatch(userGetData(acAddress.userid)).unwrap();
-          setGetUser(user);
-          dispatch(getCountryDetails());
-          dispatch(checkCurrentSale());
-          let childKey = firebaseMessages.ICO_USERS + "/" + acAddress?.userid;
-          const setReciverReadCountNode = ref(database, childKey);
-          const unsubscribe = onValue(setReciverReadCountNode, (snapshot) => {
-            if (snapshot && snapshot.val() && localStorage.getItem("token")) {
-              let findUser = snapshot.val();
-              if (findUser.is_active === false || findUser.is_delete === true) {
-                signOut();
-              }
+    const fetchUserData = async () => {
+      try {
+        if (!acAddress?.userid) return;
+  
+        const user = await dispatch(userGetData(acAddress.userid)).unwrap();
+        setGetUser(user);
+  
+        // Dispatch other required actions
+        dispatch(getCountryDetails());
+        dispatch(checkCurrentSale());
+  
+        // Set up Firebase listener
+        const childKey = `${firebaseMessages.ICO_USERS}/${acAddress.userid}`;
+        const setReceiverReadCountNode = ref(database, childKey);
+  
+        const unsubscribe = onValue(setReceiverReadCountNode, (snapshot) => {
+          if (snapshot?.val() && localStorage.getItem("token")) {
+            const findUser = snapshot.val();
+            if (!findUser.is_active || findUser.is_delete) {
+              signOut();
             }
-          });
-
-          // Cleanup function to unsubscribe from Firebase listener
-          return () => unsubscribe();
-        } catch (error) {
-          console.error("Failed to fetch user data", error);
-        }
+          }
+        });
+  
+        // Return cleanup function
+        return unsubscribe;
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
       }
     };
-
-    fetchData();
+  
+    const unsubscribe = fetchUserData();
+  
+    return () => {
+      if (typeof unsubscribe === "function") {
+        unsubscribe();
+      }
+    };
   }, [acAddress?.userid, dispatch]);
 
   useEffect(() => {
-    if (getUser && getUser?.is_2FA_verified === false) {
-      setTwoFAModal(true);
+    if (getUser && getUser?.length !== 0) {
+      if (hasRun.current) return;
+      if (getUser && getUser?.is_2FA_verified === false) {
+        setTwoFAModal(true);
+        hasRun.current = true;
+      } else if (
+        getUser &&
+        getUser?.is_2FA_twilio_login_verified === false &&
+        getUser?.is_2FA_verified === true &&
+        getUser?.phoneCountry &&
+        getUser?.phone &&
+        getUser?.is_2FA_SMS_enabled
+      ) {
+        const isTOTPTriggeredFromStorage =
+          localStorage.getItem("isTOTPTriggered") === "true";
+        if (isTOTPTriggeredFromStorage) {
+          setTwoFATwilioModal(true);
+        } else {
+          handleLoginSuccess(getUser?.phone, getUser?.phoneCountry);
+        }
+        hasRun.current = true;
+      }
+    } else {
+      hasRun.current = false;
     }
   }, [getUser]);
 
@@ -139,128 +178,103 @@ export const App = () => {
 
   useEffect(() => {
     const userRef = ref(database, firebaseMessages?.ICO_TRANSACTIONS);
-    const updateLastActive = () => {
-      get(userRef)
-        .then((snapshot) => {
-          if (snapshot.exists()) {
-            const transactions = snapshot.val();
-            for (const [key, value] of Object.entries(transactions)) {
-              const dateMoment = moment.utc(value?.lastActive);
-              const currentMoment = moment.utc();
-              const differenceInMinutes = currentMoment.diff(
-                dateMoment,
-                "minutes"
-              );
-
-              if (value.user_wallet_address === acAddress?.account) {
-                if (differenceInMinutes < 1) {
-                  if (
-                    !value.is_pending &&
-                    !value.is_open &&
-                    value.status == "pending"
-                  ) {
-                    dispatch(notificationFail(`Outside Transaction Pending`));
-                    dispatch(
-                      getTransaction({
-                        currentPage,
-                        pageSize: PageSize,
-                        typeFilter,
-                        statusFilter,
-                      })
-                    );
-                    const userUpdateRef = ref(
-                      database,
-                      firebaseMessages?.ICO_TRANSACTIONS + "/" + key
-                    );
-                    update(userUpdateRef, {
-                      lastActive: Date.now(),
-                      is_pending: true,
-                    });
-                  }
-                  if (
-                    !value.is_pending &&
-                    !value.is_open &&
-                    value.status == "failed"
-                  ) {
-                    dispatch(notificationFail(`Outside Transaction Failed`));
-                    dispatch(
-                      getTransaction({
-                        currentPage,
-                        pageSize: PageSize,
-                        typeFilter,
-                        statusFilter,
-                      })
-                    );
-                    const userUpdateRef = ref(
-                      database,
-                      firebaseMessages?.ICO_TRANSACTIONS + "/" + key
-                    );
-                    update(userUpdateRef, {
-                      lastActive: Date.now(),
-                      is_pending: true,
-                    });
-                  }
-
-                  if (
-                    value.is_pending &&
-                    !value.is_open &&
-                    value.status == "paid"
-                  ) {
-                    dispatch(
-                      notificationSuccess(`Outside Transaction Successfull`)
-                    );
-                    dispatch(
-                      getTransaction({
-                        currentPage,
-                        pageSize: PageSize,
-                        typeFilter,
-                        statusFilter,
-                      })
-                    );
-                    const userUpdateRef = ref(
-                      database,
-                      firebaseMessages?.ICO_TRANSACTIONS + "/" + key
-                    );
-                    update(userUpdateRef, {
-                      lastActive: Date.now(),
-                      is_open: true,
-                    });
-                  }
+  
+    const processTransaction = (key, value, message, updateData) => {
+      if (message) {
+        dispatch(notificationFail(message));
+      }
+      dispatch(
+        getTransaction({
+          currentPage,
+          pageSize: PageSize,
+          typeFilter,
+          statusFilter,
+        })
+      );
+      const userUpdateRef = ref(database, `${firebaseMessages?.ICO_TRANSACTIONS}/${key}`);
+      update(userUpdateRef, { lastActive: Date.now(), ...updateData });
+    };
+  
+    const updateLastActive = async () => {
+      try {
+        const snapshot = await get(userRef);
+        if (!snapshot.exists()) return;
+  
+        const transactions = snapshot.val();
+        const currentMoment = moment.utc();
+  
+        Object.entries(transactions).forEach(([key, value]) => {
+          if (value.user_wallet_address === acAddress?.account) {
+            const dateMoment = moment.utc(value?.lastActive);
+            const differenceInMinutes = currentMoment.diff(dateMoment, "minutes");
+  
+            if (differenceInMinutes < 1) {
+              if (!value.is_pending && !value.is_open) {
+                if (value.status === "pending") {
+                  processTransaction(key, value, "Outside Transaction Pending", { is_pending: true });
+                } else if (value.status === "failed") {
+                  processTransaction(key, value, "Outside Transaction Failed", { is_pending: true });
                 }
+              }
+  
+              if (value.is_pending && !value.is_open && value.status === "paid") {
+                processTransaction(key, value, "Outside Transaction Successful", { is_open: true });
               }
             }
           }
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
         });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     };
-
-    const interval = setInterval(function () {
-      updateLastActive();
-    }, 1000); // 5 seconds in milliseconds
-
-    window.addEventListener("beforeunload", updateLastActive());
-    window.addEventListener("mousemove", updateLastActive());
-    window.addEventListener("keydown", updateLastActive());
-    window.addEventListener("scroll", updateLastActive());
-    window.addEventListener("click", updateLastActive());
-
-    // Clean up the listeners when the component unmounts or user logs out
+  
+    const handleActivity = () => updateLastActive();
+  
+    const interval = setInterval(updateLastActive, 5000); // Polling interval
+  
+    const events = ["beforeunload", "mousemove", "keydown", "scroll", "click"];
+    events.forEach((event) => window.addEventListener(event, handleActivity));
+  
     return () => {
-      window.removeEventListener("beforeunload", updateLastActive());
-      window.removeEventListener("mousemove", updateLastActive());
-      window.removeEventListener("keydown", updateLastActive());
-      window.removeEventListener("scroll", updateLastActive());
-      window.removeEventListener("click", updateLastActive());
-
+      events.forEach((event) => window.removeEventListener(event, handleActivity));
       clearInterval(interval);
     };
   }, [acAddress?.userid]);
-
+  
   useEffect(() => {
     setCurrentPage(1);
   }, [location.pathname]);
+
+  
+  const handleLoginSuccess = async (phoneNumber, phoneCountry) => {
+    if (phoneNumber && phoneCountry) {
+      try {
+        const response = await jwtAxios.post("users/sendTOTP", {
+          phone: phoneNumber,
+          phoneCountry: phoneCountry,
+        });
+
+        if (response?.data?.sid) {
+          setIsTOTPTriggered(true);
+          setTwoFATwilioModal(true);
+          localStorage.setItem("isTOTPTriggered", "true");
+          const expiryTime = Date.now() + 20 * 1000; // 20 seconds from now
+          localStorage.setItem("expiryTime", expiryTime.toString());
+        } else {
+          setTwoFATwilioModal(false);
+          setIsTOTPTriggered(false);
+          signOut();
+        }
+      } catch (error) {
+        dispatch(
+          notificationFail(
+            error?.response?.data?.message || "Something Went Wrong"
+          )
+        );
+        signOut();
+      }
+    }
+  };
 
   return (
     <>
@@ -297,6 +311,19 @@ export const App = () => {
                         <TwoFAvalidate
                           setTwoFAModal={setTwoFAModal}
                           getUser={getUser}
+                          setGetUser={setGetUser}
+                          istotptriggered={isTOTPTriggered}
+                          settwofatwiliomodal={setTwoFATwilioModal} 
+                          setistotptriggered={setIsTOTPTriggered}
+                          handleLoginSuccess={handleLoginSuccess}
+                        />
+                      )}
+                    {getUser &&
+                      getUser?.is_2FA_twilio_login_verified === false && twoFATwilioModal && getUser?.is_2FA_verified === true &&(
+                        <TwoFATwilioValidate 
+                          settwofatwiliomodal={setTwoFATwilioModal} 
+                          setistotptriggered={setIsTOTPTriggered}
+                          handleLoginSuccess={handleLoginSuccess}
                           setGetUser={setGetUser}
                         />
                       )}

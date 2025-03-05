@@ -69,7 +69,8 @@ export const PersonalData = () => {
   const [dob, setDob] = useState("");
   const [location, setLocation] = useState("US");
   const [nationality, setNationality] = useState("United States");
-  const [countryCallingCode, setCountryCallingCode] = useState("");
+  const [countryCallingCode, setCountryCallingCode] = useState(" +1");
+ console.log("countryCallingCode ", countryCallingCode);
   const userDetailsAll = useSelector(userGetFullDetails);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -120,14 +121,13 @@ export const PersonalData = () => {
 
   useEffect(() => {
     let user = userDetailsAll;
+ console.log("user ", user);
 
     if (user) {
       setFname(user?.fname ? user?.fname : "");
       setLname(user?.lname ? user?.lname : "");
-      setPhone(user?.phone ? user?.phone : "");
-      const decryptedEmail = decryptEmail(user?.email || "");
-      setEmail(decryptedEmail);
-      //setEmail(user?.email ? user?.email : "");
+      setPhone(user?.phone ? decryptEmail(user?.phone) : "");
+      setEmail(user?.email ? decryptEmail(user?.email) : "");
       setCity(user?.city ? user?.city : "");
       setDob(user?.dob ? moment(user?.dob, "DD/MM/YYYY").toDate() : "");
       setLocation(user?.location ? user?.location : "US");
@@ -147,8 +147,8 @@ export const PersonalData = () => {
     }
 
     if (user?.phoneCountry) {
-      setCountryCallingCode(user?.phoneCountry);
-      const result = listData.find((item) => item?.code === user?.phoneCountry);
+      setCountryCallingCode(decryptEmail(user?.phoneCountry));
+      const result = listData.find((item) => item?.cca3 === (user?.cca3?.trim() || 'USA'));
       setSelectedOption(result);
       setImageUrl(`https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`);
       setSearchText(`${result?.country} (${result?.code})`);
@@ -156,6 +156,7 @@ export const PersonalData = () => {
         `https://flagcdn.com/h40/${result?.iso?.toLowerCase()}.png`
       );
     } else {
+      console.log("else")
       setCountryCallingCode(" +1");
     }
   }, [userDetailsAll]);
@@ -204,6 +205,7 @@ export const PersonalData = () => {
         location: location,
         city: city,
         phoneCountry: countryCallingCode,
+        cca3: selectedOption?.cca3
       };
       let updateUser = await jwtAxios
         .put(`/users/updateAccountSettings`, formSubmit)
